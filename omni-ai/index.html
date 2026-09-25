@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Omni AI Assistant — Intelligent Multi-Model Workspace</title>
+  <meta name="description" content="Workspace Asisten AI Multi-Model: Gemma Open Weights & Efficient Flash Models">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Markdown & Syntax Highlighter -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark-dimmed.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  
+  <link rel="stylesheet" href="style.css?v=2.5.0">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="logo-glow">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+              <path d="M2 17l10 5 10-5"></path>
+              <path d="M2 12l10 5 10-5"></path>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <h1>Omni AI</h1>
+            <span>Multi-Model Core</span>
+          </div>
+        </div>
+      </div>
+
+      <button id="btnNewChat" class="btn-new-chat">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Obrolan Baru
+      </button>
+
+      <div class="chat-history-container" id="chatHistoryContainer">
+        <div class="section-label">Riwayat Sesi</div>
+        <div id="historyList"></div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="model-selector-wrap">
+          <label for="modelSelect">Model Engine</label>
+          <select id="modelSelect" class="select-custom">
+            <!-- Verified Active Models -->
+            <optgroup label="High Performance & Fast (Rekomendasi)">
+              <option value="gemini-3-flash-preview" selected>Flash 3 Preview (Paling Cepat & Stabil)</option>
+            </optgroup>
+            <optgroup label="Agentic & Robotics Intelligence">
+              <option value="gemini-robotics-er-2-preview">Embodied Agentic ER-2 (Robotics & Reasoning)</option>
+            </optgroup>
+            <optgroup label="Open Weights">
+              <option value="gemma-4-26b-a4b-it">Gemma 4 26B (DeepMind Open Weights)</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="status-badge">
+          <span class="status-dot"></span>
+          <span id="apiStatusText">Engine Siap & Terhubung</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Chat Content -->
+    <main class="chat-main">
+      <header class="chat-header">
+        <div class="header-left">
+          <button class="toggle-sidebar-btn" id="btnToggleSidebar" aria-label="Toggle menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <h2 class="current-chat-title" id="currentChatTitle">Percakapan Baru</h2>
+        </div>
+
+        <div class="header-actions">
+          <button class="btn-icon" id="btnClearChat" title="Hapus pesan saat ini">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </button>
+          <button class="btn-icon" id="btnSettings" title="Pengaturan Model & Parameter">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Messages Viewport -->
+      <div class="messages-viewport" id="messagesViewport">
+        <!-- Welcome Screen shown when chat is empty -->
+        <div class="welcome-screen" id="welcomeScreen">
+          <div class="welcome-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+          </div>
+          <h2>Omni AI Workspace</h2>
+          <p>Asisten AI cerdas multi-model dengan dukungan Gemma open weights, arsitektur hemat token Flash Lite, dan streaming respons interaktif.</p>
+          
+          <div class="prompt-suggestions">
+            <div class="suggestion-card" data-prompt="Jelaskan konsep arsitektur microservices vs monolith dan strategi transisinya dalam sistem berskala besar.">
+              <div class="card-title">💡 Arsitektur Sistem</div>
+              <div class="card-desc">Komparasi pola microservices vs modular monolith secara mendalam.</div>
+            </div>
+            <div class="suggestion-card" data-prompt="Buatkan skrip bash Linux untuk memonitor utilitas CPU, memori RAM, dan disk space serta mengirim peringatan saat mencapai ambang batas 85%.">
+              <div class="card-title">⚙️ Otomasi DevOps Linux</div>
+              <div class="card-desc">Skrip pemantauan resource server Debian dengan peringatan ambang batas.</div>
+            </div>
+            <div class="suggestion-card" data-prompt="Rancang arsitektur jaringan VLAN dan routing inter-VLAN pada Cisco Switch L3 beserta subnetting efisien /24 ke /27.">
+              <div class="card-title">🌐 Topologi Jaringan</div>
+              <div class="card-desc">Konfigurasi Inter-VLAN Routing & skema IP subnetting enterprise.</div>
+            </div>
+            <div class="suggestion-card" data-prompt="Tuliskan analisis best practice pengamanan API RESTful menggunakan JWT, refresh token rotation, dan rate limiting.">
+              <div class="card-title">🔒 Keamanan API</div>
+              <div class="card-desc">Strategi implementasi token auth dan mitigasi brute-force API.</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="messagesList"></div>
+      </div>
+
+      <!-- Chat Input -->
+      <footer class="chat-input-container">
+        <div class="input-box-wrapper">
+          <!-- Image Attachment Preview Box (muncul jika ada gambar dipilih) -->
+          <div id="imagePreviewContainer" class="image-preview-container" style="display: none;">
+            <div class="image-preview-item">
+              <img id="imagePreviewImg" src="" alt="Preview Gambar">
+              <button type="button" id="btnRemoveImage" class="btn-remove-image" title="Hapus Gambar">
+                &times;
+              </button>
+            </div>
+            <span id="imagePreviewName" class="image-preview-name"></span>
+          </div>
+
+          <textarea 
+            id="chatInput" 
+            class="chat-textarea" 
+            placeholder="Tulis pesan atau pertanyaan teknis... (Shift + Enter untuk baris baru)" 
+            rows="1"
+          ></textarea>
+          
+          <div class="input-bottom-bar">
+            <div class="input-actions-left">
+              <!-- Upload Image Input & Button -->
+              <input type="file" id="imageFileInput" accept="image/png, image/jpeg, image/webp, image/gif" style="display: none;" onchange="if(window.processSelectedImage && this.files[0]) window.processSelectedImage(this.files[0]);">
+              <button type="button" id="btnUploadImage" class="btn-action-tool" onclick="if(window.triggerImageUpload) window.triggerImageUpload(); else document.getElementById('imageFileInput').click();" title="Unggah Gambar untuk Dianalisis (PNG, JPG, WebP)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <span>Gambar</span>
+              </button>
+
+              <span class="tool-badge" id="activeModelBadge">Flash Lite Latest</span>
+              <span class="tool-badge" style="background: rgba(16, 185, 129, 0.12); color: #34d399; border-color: rgba(16, 185, 129, 0.3);">Stream Active</span>
+            </div>
+            <button id="btnSend" class="btn-send" aria-label="Kirim Pesan">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="input-disclaimer">
+          Omni AI dapat memproses beragam model AI. Pastikan memeriksa informasi teknis penting secara mandiri.
+        </div>
+      </footer>
+    </main>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div>
+            <h3>Pengaturan Model & API Provider</h3>
+            <p style="font-size: 0.74rem; color: var(--text-dim); margin-top: 2px;">Kelola API key, endpoint router, dan parameter respon sistem</p>
+          </div>
+          <button class="modal-close-btn" id="btnCloseSettings" aria-label="Tutup">&times;</button>
+        </div>
+        <form id="settingsForm">
+          <div class="form-group">
+            <label for="providerSelect">API Provider & Gateway</label>
+            <select id="providerSelect" class="form-input select-custom" style="padding: 8px 10px;">
+              <option value="google" selected>Google AI Studio (Direct Free Tier)</option>
+              <option value="9router">9Router / Local AI Proxy (http://localhost:20128)</option>
+              <option value="openrouter">OpenRouter API (https://openrouter.ai/api/v1)</option>
+              <option value="custom">Custom OpenAI-Compatible Endpoint</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="customEndpointGroup" style="display: none;">
+            <label for="customEndpointInput">Custom Base URL Endpoint</label>
+            <input type="text" id="customEndpointInput" class="form-input" placeholder="Contoh: http://localhost:20128/v1">
+            <span style="font-size: 0.7rem; color: var(--text-dim); display: block; margin-top: 4px;">Gunakan untuk menghubungkan 9Router lokal atau LiteLLM proxy.</span>
+          </div>
+
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label for="apiKeyInput" style="margin-bottom: 0;">API Key</label>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" id="btnToggleKeyVisibility" class="btn-subtle" title="Tampilkan/Sembunyikan Key">
+                  <span id="keyVisibilityIcon">👁️ Lihat</span>
+                </button>
+                <button type="button" id="btnResetDefaultKey" class="btn-subtle" title="Kembalikan ke API Key Bawaan Server">
+                  <span>↺ Reset Default</span>
+                </button>
+              </div>
+            </div>
+            <div class="input-with-action">
+              <input type="password" id="apiKeyInput" class="form-input" placeholder="Masukkan API Key...">
+            </div>
+            <span style="font-size: 0.7rem; color: var(--text-dim); display: block; margin-top: 4px;">Kunci disimpan aman hanya di browser lokal Anda (LocalStorage).</span>
+          </div>
+
+          <div class="form-group">
+            <label for="systemInstructionInput">System Instruction (System Prompt)</label>
+            <textarea id="systemInstructionInput" class="form-input" rows="3" placeholder="Contoh: Anda adalah Omni AI, asisten teknis ahli dalam sistem Linux, jaringan komputer, dan software engineering..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label for="temperatureInput" style="margin-bottom: 0;">Creativity Temperature</label>
+              <span id="tempValue" style="font-family: var(--font-code); font-size: 0.76rem; color: var(--primary); background: var(--primary-dim); padding: 2px 6px; border-radius: 4px;">0.7</span>
+            </div>
+            <input type="range" id="temperatureInput" min="0" max="2" step="0.1" value="0.7" style="width: 100%; accent-color: var(--primary);">
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button type="button" id="btnCancelSettings" class="btn-secondary" style="flex: 1; padding: 10px; border-radius: var(--radius-sm); font-size: 0.85rem; cursor: pointer;">Batal</button>
+            <button type="submit" class="btn-primary" style="flex: 2; margin: 0;">Simpan Konfigurasi</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=2.5.0"></script>
+</body>
+</html>

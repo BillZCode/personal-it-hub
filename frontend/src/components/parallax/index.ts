@@ -1,0 +1,1 @@
+export { StellarHeroParallax } from './StellarHeroParallax';

@@ -1,0 +1,208 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  passwordHash String
+  name         String
+  role         Role        @default(ADMIN)
+  driveItems   DriveItem[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+enum Role {
+  ADMIN
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String   @db.Text
+  content     String?  @db.Text
+  image       String?
+  technologies Json
+  demoUrl     String?
+  repoUrl     String?
+  status      ProjectStatus @default(COMPLETED)
+  featured    Boolean  @default(false)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  COMPLETED
+  ARCHIVED
+}
+
+model Certificate {
+  id              String   @id @default(cuid())
+  name            String
+  provider        String
+  issueDate       DateTime
+  expiryDate      DateTime?
+  credentialId    String?
+  verificationUrl String?
+  imageUrl        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model TechnicalNote {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  category    String
+  tags        Json
+  summary     String   @db.Text
+  content     String   @db.Text
+  readingTime Int
+  published   Boolean  @default(true)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([published])
+}
+
+model GuestbookEntry {
+  id        String   @id @default(cuid())
+  name      String
+  message   String   @db.Text
+  ipHash    String
+  userAgent String?
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([approved])
+  @@index([createdAt])
+}
+
+model ChangelogEntry {
+  id        String   @id @default(cuid())
+  version   String   @unique
+  date      DateTime
+  added     Json
+  changed   Json
+  fixed     Json
+  improved  Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model GalleryItem {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    String
+  imageUrl    String
+  thumbnailUrl String?
+  tags        Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+}
+
+model ServerMetric {
+  id            String   @id @default(cuid())
+  cpuUsage      Float
+  ramUsage      Float
+  diskUsage     Float
+  cpuTemp       Float?
+  networkDown   Float
+  networkUp     Float
+  uptime        BigInt
+  processCount  Int
+  recordedAt    DateTime @default(now())
+
+  @@index([recordedAt])
+}
+
+model Statistics {
+  id            String   @id @default(cuid())
+  date          DateTime @unique
+  visitors      Int      @default(0)
+  pageViews     Int      @default(0)
+  toolUsage     Json     // { toolName: count }
+  articleViews  Json     // { slug: count }
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model PersonalMedia {
+  id          String   @id @default(cuid())
+  type        MediaType
+  title       String
+  artist      String?
+  album       String?
+  platform    String?
+  coverUrl    String?
+  status      String   // playing, completed, planned, watching
+  rating      Float?
+  progress    Int?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum MediaType {
+  GAME
+  MUSIC
+  ANIME
+  MOVIE
+}
+
+model LinuxSetup {
+  id              String   @id @default(cuid())
+  distribution    String
+  desktopEnv      String?
+  windowManager   String?
+  terminal        String
+  shell           String
+  editor          String
+  tools           Json
+  hardware        Json?
+  dotfilesUrl     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+enum DriveItemType {
+  FILE
+  FOLDER
+}
+
+model DriveItem {
+  id          String        @id @default(cuid())
+  name        String
+  type        DriveItemType
+  mimeType    String?
+  size        BigInt        @default(0)
+  storagePath String?       // Path file fisik di disk server
+  parentId    String?
+  parent      DriveItem?    @relation("DriveHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    DriveItem[]   @relation("DriveHierarchy")
+  isTrash     Boolean       @default(false)
+  trashedAt   DateTime?
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([parentId])
+  @@index([userId])
+  @@index([isTrash])
+}

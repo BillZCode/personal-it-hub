@@ -8,6 +8,7 @@ import { Calendar, Clock, ArrowLeft, Copy, Check } from 'lucide-react';
 import { cn, formatDate, formatRelativeTime } from '../../utils';
 import ReactMarkdown from 'react-markdown';
 import { allNotesMap, allNotesList } from '../../data/notesData';
+import { useDocumentTitle } from '../../hooks';
 
 function extractHeadings(content: string) {
   if (!content) return [];
@@ -50,6 +51,7 @@ export function NoteDetail() {
   });
 
   const activeNote = note || localNote;
+  useDocumentTitle(activeNote?.title || 'Technical Note');
 
   const headings = activeNote ? extractHeadings(activeNote.content) : [];
 
@@ -74,8 +76,8 @@ export function NoteDetail() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 animate-in pb-16">
-      <Link to="/notes" className="inline-flex items-center gap-2 text-xs font-mono text-dark-400 hover:text-emerald-400 transition-colors">
-        <ArrowLeft className="h-4 w-4" />
+      <Link to="/notes" className="inline-flex items-center gap-2 text-xs font-mono text-dark-400 hover:text-amber-400 transition-colors">
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         Kembali ke Daftar Notes
       </Link>
 
@@ -88,8 +90,8 @@ export function NoteDetail() {
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-dark-100 font-sans tracking-tight leading-snug">{activeNote.title}</h1>
           <p className="text-dark-400 text-sm sm:text-base leading-relaxed">{activeNote.summary}</p>
           <div className="flex flex-wrap items-center gap-4 text-xs text-dark-500 pt-2 font-mono">
-            <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5 text-emerald-400" />{formatDate(activeNote.publishedAt || activeNote.createdAt)}</span>
-            <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-emerald-400" />{activeNote.readingTime} min read</span>
+            <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" />{formatDate(activeNote.publishedAt || activeNote.createdAt)}</span>
+            <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" />{activeNote.readingTime} min read</span>
             <div className="flex gap-1.5">
               {activeNote.tags.map((tag) => (
                 <Badge key={tag} variant="neutral" className="text-2xs font-mono">#{tag}</Badge>
@@ -99,24 +101,24 @@ export function NoteDetail() {
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <aside className="lg:col-span-1 hidden lg:block">
+          <aside className="lg:col-span-1 hidden lg:block" aria-label="Navigasi artikel dan materi terkait">
             <div className="sticky top-24 space-y-4">
               <Card className="p-4 bg-dark-900/60 border border-dark-800">
-                <h3 className="font-semibold text-dark-100 mb-3 flex items-center justify-between text-xs font-mono uppercase text-emerald-400">
+                <h3 className="font-semibold text-dark-100 mb-3 flex items-center justify-between text-xs font-mono uppercase text-amber-400">
                   Daftar Isi
-                  <button onClick={() => setTocOpen(!tocOpen)} className="text-dark-400 hover:text-emerald-400 text-2xs">
+                  <button onClick={() => setTocOpen(!tocOpen)} aria-expanded={tocOpen} className="text-dark-400 hover:text-amber-400 text-2xs">
                     {tocOpen ? 'Tutup' : 'Buka'}
                   </button>
                 </h3>
                 {tocOpen && headings.length > 0 ? (
-                  <nav className="space-y-1.5">
+                  <nav className="space-y-1.5" aria-label="Daftar isi catatan">
                     {headings.map((heading) => (
                       <a
                         key={heading.slug}
                         href={`#${heading.slug}`}
                         className={cn(
-                          'block text-xs text-dark-400 hover:text-emerald-400 transition-colors pl-2 border-l-2',
-                          heading.level === 1 ? 'border-emerald-500 font-medium text-dark-200' : 'border-dark-800',
+                          'block text-xs text-dark-400 hover:text-amber-400 transition-colors pl-2 border-l-2',
+                          heading.level === 1 ? 'border-amber-500 font-medium text-dark-200' : 'border-dark-800',
                           heading.level >= 2 && 'ml-2'
                         )}
                       >
@@ -131,11 +133,11 @@ export function NoteDetail() {
 
               {relatedNotes.length > 0 && (
                 <Card className="p-4 bg-dark-900/60 border border-dark-800">
-                  <h3 className="font-semibold text-dark-100 mb-3 text-xs font-mono uppercase text-emerald-400">Materi Terkait</h3>
-                  <ul className="space-y-2">
+                  <h3 className="font-semibold text-dark-100 mb-3 text-xs font-mono uppercase text-amber-400">Materi Terkait</h3>
+                  <ul className="space-y-2" role="list">
                     {relatedNotes.map((related) => (
-                      <li key={related.id}>
-                        <Link to={`/notes/${related.slug}`} className="text-xs text-dark-400 hover:text-emerald-400 transition-colors line-clamp-2 block leading-snug">
+                      <li key={related.id} role="listitem">
+                        <Link to={`/notes/${related.slug}`} className="text-xs text-dark-400 hover:text-amber-400 transition-colors line-clamp-2 block leading-snug">
                           • {related.title}
                         </Link>
                       </li>
@@ -147,9 +149,24 @@ export function NoteDetail() {
           </aside>
 
           <div className="lg:col-span-3">
-            <div className="prose prose-invert max-w-none prose-headings:text-dark-100 prose-headings:font-semibold prose-a:text-emerald-400 prose-a:no-underline hover:prose-a:underline prose-code:bg-dark-850 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-emerald-400 prose-code:before:content-none prose-code:after:content-none prose-pre:bg-dark-900 prose-pre:border prose-pre:border-dark-750 prose-pre:rounded-xl">
+            <div className="prose prose-invert max-w-none prose-headings:text-dark-100 prose-headings:font-semibold prose-a:text-amber-400 prose-a:no-underline hover:prose-a:underline prose-code:bg-dark-850 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-amber-400 prose-code:before:content-none prose-code:after:content-none prose-pre:bg-dark-900 prose-pre:border prose-pre:border-dark-750 prose-pre:rounded-xl">
               <ReactMarkdown
                 components={{
+                  h1: ({ children, ...props }) => {
+                    const text = String(children);
+                    const headingSlug = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+                    return <h1 id={headingSlug} className="scroll-mt-24 font-bold text-dark-100" {...props}>{children}</h1>;
+                  },
+                  h2: ({ children, ...props }) => {
+                    const text = String(children);
+                    const headingSlug = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+                    return <h2 id={headingSlug} className="scroll-mt-24 font-semibold text-dark-100" {...props}>{children}</h2>;
+                  },
+                  h3: ({ children, ...props }) => {
+                    const text = String(children);
+                    const headingSlug = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+                    return <h3 id={headingSlug} className="scroll-mt-24 font-medium text-dark-100" {...props}>{children}</h3>;
+                  },
                   code: ({ node, className, children, ...props }) => {
                     const match = /language-(\w+)/.exec(className || '');
                     const language = match ? match[1] : '';
@@ -157,7 +174,7 @@ export function NoteDetail() {
 
                     if (!match) {
                       return (
-                        <code className="bg-dark-850 text-emerald-400 px-1.5 py-0.5 rounded text-xs font-mono border border-dark-750" {...props}>
+                        <code className="bg-dark-850 text-amber-400 px-1.5 py-0.5 rounded text-xs font-mono border border-dark-750" {...props}>
                           {children}
                         </code>
                       );
@@ -169,10 +186,10 @@ export function NoteDetail() {
                           <span className="text-2xs text-dark-400 font-mono uppercase">{language || 'code'}</span>
                           <button
                             onClick={() => copyToClipboard(codeString, language)}
-                            className="p-1 rounded bg-dark-800 text-dark-300 hover:text-emerald-400 transition-colors"
-                            aria-label="Copy code"
+                            className="p-1 rounded bg-dark-800 text-dark-300 hover:text-amber-400 transition-colors"
+                            aria-label={`Salin potongan kode ${language}`}
                           >
-                            {copiedCode === language ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                            {copiedCode === language ? <Check className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
                           </button>
                         </div>
                         <pre className="p-4 overflow-x-auto text-xs font-mono leading-relaxed bg-dark-950/90 text-dark-200">

@@ -10,8 +10,8 @@ export const createRateLimiter = (options: { windowMs: number; max: number; mess
     standardHeaders: true,
     legacyHeaders: false,
     keyGenerator: (req) => req.ip || 'unknown',
-    handler: (req, res) => {
-      throw new AppError('Too many requests, please try again later', 429, 'RATE_LIMITED');
+    handler: (req, res, next) => {
+      next(new AppError(options.message || 'Terlalu banyak permintaan, silakan coba lagi nanti', 429, 'RATE_LIMITED'));
     },
   });
 };

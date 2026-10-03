@@ -1,12 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { animate, stagger } from 'animejs';
+import { certificatesApi } from '../../services/api';
 import { Card, CardContent, Button, Input, Select, Modal } from '../../components/ui';
-import { Award, Eye, ExternalLink, Search, Tag, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Award, Eye, ExternalLink, Search, Tag, ShieldCheck, CheckCircle2, X } from 'lucide-react';
 import { formatDate } from '../../utils';
 import { Certificate } from '../../types';
+import { useDocumentTitle } from '../../hooks';
 
 export const sabbilCertificates: Certificate[] = [
+
   {
     id: 'cert-1',
     name: 'Introduction to Cybersecurity',
@@ -94,30 +97,43 @@ export const sabbilCertificates: Certificate[] = [
 ];
 
 export function Certificates() {
+  useDocumentTitle('Industry Certifications & Credentials');
   const [search, setSearch] = useState('');
   const [providerFilter, setProviderFilter] = useState('');
+
   const [selectedCert, setSelectedCert] = useState<Certificate | null>(null);
 
   const { data } = useQuery({
     queryKey: ['certificates'],
     queryFn: async () => {
-      const res = await fetch('/api/certificates');
-      if (!res.ok) return { data: sabbilCertificates };
-      const json = await res.json();
-      return json.data && json.data.length > 0 ? json : { data: sabbilCertificates };
+      try {
+        const res = await certificatesApi.getAll();
+        return (res?.data && res.data.length > 0) ? res : { data: sabbilCertificates };
+      } catch {
+        return { data: sabbilCertificates };
+      }
     },
-    placeholderData: { data: sabbilCertificates },
+    placeholderData: { data: sabbilCertificates, total: sabbilCertificates.length, page: 1, limit: 20, totalPages: 1 },
   });
 
-  const certificates: Certificate[] = (data?.data && data.data.length > 0) ? (data.data as Certificate[]) : sabbilCertificates;
-  const allProviders: string[] = [...new Set(certificates.map((c: Certificate) => c.provider))].sort();
+  const certificates: Certificate[] = useMemo(() => {
+    return (data?.data && data.data.length > 0) ? (data.data as Certificate[]) : sabbilCertificates;
+  }, [data]);
 
-  const filtered: Certificate[] = certificates.filter((cert: Certificate) => {
-    const matchesSearch = cert.name.toLowerCase().includes(search.toLowerCase()) ||
-      (cert.credentialId && cert.credentialId.toLowerCase().includes(search.toLowerCase()));
-    const matchesProvider = !providerFilter || cert.provider === providerFilter;
-    return matchesSearch && matchesProvider;
-  });
+  const allProviders: string[] = useMemo(() => {
+    return [...new Set(certificates.map((c: Certificate) => c.provider))].sort();
+  }, [certificates]);
+
+  const filtered: Certificate[] = useMemo(() => {
+    const searchLower = search.toLowerCase().trim();
+    return certificates.filter((cert: Certificate) => {
+      const matchesSearch = !searchLower ||
+        cert.name.toLowerCase().includes(searchLower) ||
+        (cert.credentialId && cert.credentialId.toLowerCase().includes(searchLower));
+      const matchesProvider = !providerFilter || cert.provider === providerFilter;
+      return matchesSearch && matchesProvider;
+    });
+  }, [certificates, search, providerFilter]);
 
   // Anime.js staggered entrance for certificates
   useEffect(() => {
@@ -137,7 +153,7 @@ export function Certificates() {
         <p className="text-dark-400 text-sm mt-1">Verified technical credentials, Cisco networking, and government IT certifications</p>
       </div>
 
-      <div className="p-4 rounded-xl bg-dark-900/40 border border-dark-800 flex flex-col sm:flex-row gap-4">
+      <div className="p-4 rounded-xl bg-dark-900/40 border border-dark-800 flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
         <Input
           placeholder="Cari nama sertifikasi atau nomor credential ID..."
           value={search}
@@ -155,6 +171,19 @@ export function Certificates() {
           ]}
           className="w-full sm:w-64"
         />
+        {(search || providerFilter) && (
+          <button
+            onClick={() => {
+              setSearch('');
+              setProviderFilter('');
+            }}
+            className="px-3 py-2 rounded-xl bg-dark-800 hover:bg-dark-750 text-dark-300 hover:text-white border border-dark-750 text-xs font-mono flex items-center justify-center gap-1.5 transition-colors self-start sm:self-auto"
+            title="Reset semua filter sertifikat"
+          >
+            <X className="h-3.5 w-3.5" />
+            <span>Reset</span>
+          </button>
+        )}
       </div>
 
       {filtered.length === 0 ? (
@@ -163,23 +192,34 @@ export function Certificates() {
           <p className="text-dark-400">Tidak ada sertifikat yang cocok dengan kriteria pencarian.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" role="list">
           {filtered.map((cert) => (
-            <Card key={cert.id} className="cert-grid-card card-hover overflow-hidden flex flex-col border border-dark-800/90 bg-dark-900/60 hover:border-emerald-500/50 hover:shadow-[0_12px_28px_-6px_rgba(16,185,129,0.18)] transition-all duration-300 group">
+            <Card key={cert.id} role="listitem" className="cert-grid-card card-hover overflow-hidden flex flex-col border border-dark-800/90 bg-dark-900/60 hover:border-amber-500/50 hover:shadow-[0_12px_28px_-6px_rgba(245,158,11,0.18)] transition-all duration-300 group">
               {/* Preview Thumbnail */}
               {cert.imageUrl ? (
                 <div 
-                  className="w-full h-48 bg-dark-950 overflow-hidden cursor-pointer relative border-b border-dark-800"
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Lihat pratinjau sertifikat: ${cert.name}`}
+                  className="w-full h-48 bg-dark-950 overflow-hidden cursor-pointer relative border-b border-dark-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
                   onClick={() => setSelectedCert(cert)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setSelectedCert(cert);
+                    }
+                  }}
                 >
                   <img 
                     src={cert.imageUrl} 
                     alt={cert.name} 
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300" 
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-dark-950/80 via-transparent to-transparent" />
-                  <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-mono font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 backdrop-blur-md">
+                  <div className="absolute inset-0 bg-gradient-to-t from-dark-950/80 via-transparent to-transparent pointer-events-none" />
+                  <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between pointer-events-none">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-mono font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30 backdrop-blur-md">
                       <ShieldCheck className="h-3 w-3" />
                       Verified Credential
                     </span>
@@ -194,13 +234,21 @@ export function Certificates() {
               <CardContent className="p-5 flex-1 flex flex-col justify-between">
                 <div>
                   <h3 
-                    className="font-semibold text-dark-100 mb-1.5 line-clamp-2 text-sm sm:text-base leading-snug group-hover:text-emerald-400 transition-colors cursor-pointer"
+                    role="button"
+                    tabIndex={0}
+                    className="font-semibold text-dark-100 mb-1.5 line-clamp-2 text-sm sm:text-base leading-snug group-hover:text-amber-400 transition-colors cursor-pointer focus-visible:outline-none focus-visible:text-amber-400"
                     onClick={() => setSelectedCert(cert)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSelectedCert(cert);
+                      }
+                    }}
                   >
                     {cert.name}
                   </h3>
                   <p className="text-dark-400 text-xs mb-3 flex items-center gap-1.5">
-                    <Tag className="h-3.5 w-3.5 text-emerald-400 flex-shrink-0" />
+                    <Tag className="h-3.5 w-3.5 text-amber-400 flex-shrink-0" />
                     <span className="truncate">{cert.provider}</span>
                   </p>
                   <div className="flex flex-col gap-1 text-xs text-dark-400 mb-4 bg-dark-950/60 p-2.5 rounded-lg border border-dark-800 font-mono">
@@ -217,7 +265,7 @@ export function Certificates() {
 
                 <div className="flex gap-2 pt-2 border-t border-dark-800/80">
                   <Button variant="ghost" size="sm" onClick={() => setSelectedCert(cert)} className="flex-1 text-xs text-dark-300 hover:text-white">
-                    <Eye className="h-3.5 w-3.5 mr-1 text-emerald-400" />
+                    <Eye className="h-3.5 w-3.5 mr-1 text-amber-400" />
                     Preview
                   </Button>
                   {cert.verificationUrl && (
@@ -226,7 +274,7 @@ export function Certificates() {
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="btn-secondary text-xs flex-1 justify-center py-1.5 flex items-center" 
-                      aria-label="Verify certificate"
+                      aria-label={`Verifikasi kredensial ${cert.name}`}
                     >
                       <ExternalLink className="h-3 w-3 mr-1" />
                       Verify
@@ -260,7 +308,7 @@ export function Certificates() {
               </div>
               <div>
                 <p className="text-2xs text-dark-500 uppercase tracking-wider font-mono">Credential ID / No. Sertifikat</p>
-                <p className="font-mono text-xs font-medium text-emerald-400 mt-0.5 break-all">{selectedCert.credentialId || 'N/A'}</p>
+                <p className="font-mono text-xs font-medium text-amber-400 mt-0.5 break-all">{selectedCert.credentialId || 'N/A'}</p>
               </div>
               <div>
                 <p className="text-2xs text-dark-500 uppercase tracking-wider font-mono">Tanggal Terbit</p>
@@ -268,8 +316,8 @@ export function Certificates() {
               </div>
               <div>
                 <p className="text-2xs text-dark-500 uppercase tracking-wider font-mono">Validitas</p>
-                <p className="font-medium text-emerald-400 mt-0.5 flex items-center gap-1">
-                  <CheckCircle2 className="h-3.5 w-3.5" /> Lifetime Credential
+                <p className="font-medium text-amber-400 mt-0.5 flex items-center gap-1">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" /> Lifetime Credential
                 </p>
               </div>
             </div>
@@ -279,9 +327,9 @@ export function Certificates() {
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="btn-primary w-full justify-center py-2.5 text-xs font-medium flex items-center" 
-                aria-label="Verify certificate online"
+                aria-label={`Verifikasi online kredensial ${selectedCert.name} di situs resmi`}
               >
-                <ExternalLink className="h-4 w-4 mr-2" />
+                <ExternalLink className="h-4 w-4 mr-2" aria-hidden="true" />
                 Validasi / Kunjungi Situs Resmi Penerbit
               </a>
             )}

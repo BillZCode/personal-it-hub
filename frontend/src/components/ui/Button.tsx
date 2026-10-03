@@ -2,7 +2,7 @@ import { forwardRef, ButtonHTMLAttributes } from 'react';
 import { cn } from '../../utils';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline' | 'gold' | 'v7';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
   leftIcon?: React.ReactNode;
@@ -11,11 +11,13 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', loading, leftIcon, rightIcon, disabled, children, ...props }, ref) => {
-    const baseClasses = 'group relative inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-200 ease-fluid active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-950 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100';
+    const baseClasses = 'group relative inline-flex items-center justify-center gap-2 font-medium rounded-xl transition-all duration-200 ease-fluid active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-950 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100';
 
     const variantClasses = {
       primary: 'bg-primary-500 text-dark-950 font-semibold hover:bg-primary-400 active:bg-primary-600 focus-visible:ring-primary-500 shadow-console border border-primary-300/30',
-      secondary: 'bg-dark-900 text-dark-100 border border-dark-750 hover:bg-dark-850 hover:border-dark-700 active:bg-dark-800 focus-visible:ring-dark-500 shadow-console',
+      gold: 'v7-btn-gold text-dark-950 font-bold focus-visible:ring-amber-400 border border-amber-300/40',
+      v7: 'v7-btn-gold text-dark-950 font-bold focus-visible:ring-amber-400 border border-amber-300/40',
+      secondary: 'bg-dark-900/90 text-dark-100 border border-dark-750 hover:bg-dark-850 hover:border-dark-700 active:bg-dark-800 focus-visible:ring-dark-500 shadow-console backdrop-blur-md',
       ghost: 'bg-transparent text-dark-300 hover:bg-dark-900 hover:text-dark-100 active:bg-dark-850 focus-visible:ring-dark-500',
       danger: 'bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 focus-visible:ring-rose-500 shadow-console border border-rose-400/30',
       outline: 'border border-primary-500/40 text-primary-400 hover:bg-primary-500/10 active:bg-primary-500/20 focus-visible:ring-primary-500',

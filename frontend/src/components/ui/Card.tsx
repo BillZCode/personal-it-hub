@@ -2,7 +2,7 @@ import { HTMLAttributes, forwardRef } from 'react';
 import { cn } from '../../utils';
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'hover' | 'glass' | 'glass-strong' | 'bezel';
+  variant?: 'default' | 'hover' | 'glass' | 'glass-strong' | 'bezel' | 'v7' | 'v7-glow';
   padding?: 'none' | 'sm' | 'md' | 'lg';
 }
 
@@ -10,9 +10,11 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = 'default', padding = 'md', children, ...props }, ref) => {
     const variantClasses = {
       default: 'bg-dark-900/80 dark:bg-dark-900/70 border border-dark-700/80 dark:border-white/[0.07] shadow-console',
-      hover: 'bg-dark-900/80 dark:bg-dark-900/70 border border-dark-700/80 dark:border-white/[0.07] hover:border-emerald-500/40 hover:shadow-card-hover transition-all duration-300 ease-fluid',
+      hover: 'bg-dark-900/80 dark:bg-dark-900/70 border border-dark-700/80 dark:border-white/[0.07] hover:border-amber-500/40 hover:shadow-card-hover transition-all duration-300 ease-fluid',
       glass: 'bg-dark-900/85 dark:bg-dark-900/80 backdrop-blur-md border border-dark-700/70 dark:border-white/[0.08] shadow-console',
       'glass-strong': 'bg-dark-900/95 backdrop-blur-xl border border-dark-600/80 dark:border-white/[0.12] shadow-card',
+      v7: 'v7-glass-card border border-white/[0.12] shadow-2xl backdrop-blur-2xl',
+      'v7-glow': 'v7-glass-card border border-amber-500/30 shadow-[0_12px_40px_-10px_rgba(245,158,11,0.18)] backdrop-blur-2xl',
       bezel: 'bg-dark-800/40 dark:bg-white/[0.02] border border-dark-700/60 dark:border-white/[0.07] shadow-console p-1.5',
     };
 

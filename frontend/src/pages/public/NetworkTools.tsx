@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { networkToolsApi } from '../../services/api';
 import { Card, Badge, Input, Select, Button, Textarea } from '../../components/ui';
-import { useCopyToClipboard, useToast, animate, stagger } from '../../hooks';
+import { useCopyToClipboard, useToast, useDocumentTitle, animate, stagger } from '../../hooks';
 import {
   Copy, Check, Globe, Terminal, Search, Wifi, Route, Shield,
   RefreshCw, ExternalLink, Activity, Network, Layers, Server, Key, Braces
@@ -156,7 +156,7 @@ function IPCalculator() {
           <h3 className="font-semibold text-dark-100 text-lg font-mono">IPv4 Network & Bitmask Visualizer</h3>
           <p className="text-xs text-dark-400">Kalkulasi presisi alokasi host, network address, dan bitmask representasi visual</p>
         </div>
-        <span className="px-2.5 py-1 rounded-full text-2xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 w-fit">
+        <span className="px-2.5 py-1 rounded-full text-2xs font-mono bg-amber-500/10 text-amber-400 border border-amber-500/20 w-fit">
           Anime.js Micro-Wave Active
         </span>
       </div>
@@ -173,14 +173,14 @@ function IPCalculator() {
         <div>
           <label className="block text-xs font-mono text-dark-400 mb-1.5">Prefix Length (CIDR)</label>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-emerald-400 font-bold text-base">/</span>
+            <span className="font-mono text-amber-400 font-bold text-base">/</span>
             <input
               type="number"
               min={0}
               max={32}
               value={cidr}
               onChange={(e) => setCidr(parseInt(e.target.value) || 0)}
-              className="w-full px-3 py-2 bg-dark-950 border border-dark-750 rounded-lg font-mono text-dark-100 text-sm focus:outline-none focus:border-emerald-500"
+              className="w-full px-3 py-2 bg-dark-950 border border-dark-750 rounded-lg font-mono text-dark-100 text-sm focus:outline-none focus:border-amber-500"
             />
           </div>
         </div>
@@ -196,7 +196,7 @@ function IPCalculator() {
           <div className="p-4 rounded-xl bg-dark-950/90 border border-dark-800 space-y-2">
             <div className="flex items-center justify-between text-2xs font-mono">
               <span className="text-dark-400 font-medium">32-BIT REPRESENTASI BINARY SUBNET MASK</span>
-              <span className="text-emerald-400">/{cidr} ({result.hosts.toLocaleString()} usable)</span>
+              <span className="text-amber-400">/{cidr} ({result.hosts.toLocaleString()} usable)</span>
             </div>
             <div className="grid grid-cols-4 gap-2 pt-1">
               {result.binaryMask.map((octet, octetIdx) => (
@@ -208,7 +208,7 @@ function IPCalculator() {
                         className={cn(
                           'bit-dot inline-block w-2.5 h-3.5 text-[10px] font-mono font-bold rounded-sm leading-none flex items-center justify-center',
                           bit === '1'
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                            ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
                             : 'bg-dark-800 text-dark-500 border border-dark-750'
                         )}
                       >
@@ -227,13 +227,13 @@ function IPCalculator() {
           {/* Results Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: 'Network Address', val: result.network, color: 'text-emerald-400' },
+              { label: 'Network Address', val: result.network, color: 'text-amber-400' },
               { label: 'Broadcast Address', val: result.broadcast, color: 'text-cyan-400' },
               { label: 'First Usable Host', val: result.first, color: 'text-dark-200' },
               { label: 'Last Usable Host', val: result.last, color: 'text-dark-200' },
               { label: 'Subnet Mask', val: result.mask, color: 'text-dark-100' },
               { label: 'Wildcard Mask', val: result.wildcard, color: 'text-amber-400' },
-              { label: 'Usable Hosts', val: result.hosts.toLocaleString(), color: 'text-emerald-400' },
+              { label: 'Usable Hosts', val: result.hosts.toLocaleString(), color: 'text-amber-400' },
               { label: 'IP Classification', val: `${result.ipClass} ${result.isPrivate ? '(Private RFC 1918)' : '(Public)'}`, color: 'text-indigo-400' },
             ].map((item) => (
               <div key={item.label} className="p-3 bg-dark-950/70 border border-dark-800 rounded-lg">
@@ -314,7 +314,7 @@ function SubnetCalculator() {
             <tbody className="divide-y divide-dark-800">
               {result.map((r, i) => (
                 <tr key={i}>
-                  <td className="py-2.5 font-bold text-emerald-400">{r.network}</td>
+                  <td className="py-2.5 font-bold text-amber-400">{r.network}</td>
                   <td className="py-2.5 text-dark-200">{r.broadcast}</td>
                   <td className="py-2.5 text-dark-300">{r.range}</td>
                   <td className="py-2.5 text-cyan-400 font-semibold">{r.hosts}</td>
@@ -365,9 +365,9 @@ function CIDRConverter() {
       />
       <Button onClick={convert} className="mb-4 w-full mt-4">Konversi Nilai</Button>
       {result && (
-        <div className="bg-dark-950 p-4 rounded-lg font-mono text-emerald-400 flex items-center justify-between border border-dark-800">
+        <div className="bg-dark-950 p-4 rounded-lg font-mono text-amber-400 flex items-center justify-between border border-dark-800">
           <span>{result}</span>
-          <Button variant="secondary" size="sm" onClick={() => navigator.clipboard.writeText(result)}>
+          <Button variant="secondary" size="sm" onClick={() => navigator.clipboard.writeText(result)} aria-label="Salin hasil konversi">
             <Copy className="h-4 w-4" />
           </Button>
         </div>
@@ -513,9 +513,9 @@ function PublicIPTool() {
       <h3 className="font-semibold text-dark-100 text-lg mb-4 font-mono">Public IP Address & Gateway</h3>
       <Button onClick={() => mutate()} loading={isPending} className="mb-4 w-full">Deteksi Public IP Node</Button>
       {data && (
-        <div className="bg-dark-950 p-4 rounded-lg font-mono text-base text-emerald-400 flex items-center justify-between border border-dark-800">
+        <div className="bg-dark-950 p-4 rounded-lg font-mono text-base text-amber-400 flex items-center justify-between border border-dark-800">
           <span>{(data as any).ip || JSON.stringify(data)}</span>
-          <Button variant="secondary" size="sm" onClick={() => navigator.clipboard.writeText((data as any).ip || JSON.stringify(data))}>
+          <Button variant="secondary" size="sm" onClick={() => navigator.clipboard.writeText((data as any).ip || JSON.stringify(data))} aria-label="Salin Public IP">
             <Copy className="h-4 w-4" />
           </Button>
         </div>
@@ -525,6 +525,7 @@ function PublicIPTool() {
 }
 
 export function NetworkTools() {
+  useDocumentTitle('Network Tools');
   const [activeTool, setActiveTool] = useState<string | null>('ip-calc');
   const [portFilter, setPortFilter] = useState('');
 
@@ -545,32 +546,43 @@ export function NetworkTools() {
       </div>
 
       {/* Grid of Diagnostic Tools */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="Koleksi Network Diagnostic Tools">
         {networkTools.map((tool) => (
-          <Card
-            key={tool.id}
-            className={cn(
-              'card-hover cursor-pointer p-4 bg-dark-900/60 border border-dark-800 transition-all',
-              activeTool === tool.id && 'border-emerald-500/50 bg-dark-900/90 shadow-console'
-            )}
-            onClick={() => setActiveTool(activeTool === tool.id ? null : tool.id)}
-          >
-            <div className="flex items-start gap-3">
-              <div className={cn(
-                'p-2.5 rounded-xl border border-white/5',
-                activeTool === tool.id ? 'bg-emerald-500/20 text-emerald-400' : 'bg-dark-850 text-dark-400'
-              )}>
-                <tool.icon className="h-5 w-5" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-dark-100 text-sm font-mono truncate">{tool.name}</h3>
-                  {activeTool === tool.id && <Badge variant="primary" className="text-2xs">Active</Badge>}
+          <div key={tool.id} role="listitem">
+            <Card
+              className={cn(
+                'card-hover cursor-pointer p-4 bg-dark-900/60 border border-dark-800 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 h-full',
+                activeTool === tool.id && 'border-amber-500/50 bg-dark-900/90 shadow-console'
+              )}
+              role="button"
+              tabIndex={0}
+              aria-pressed={activeTool === tool.id}
+              aria-label={`Pilih tool ${tool.name}`}
+              onClick={() => setActiveTool(activeTool === tool.id ? null : tool.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setActiveTool(activeTool === tool.id ? null : tool.id);
+                }
+              }}
+            >
+              <div className="flex items-start gap-3">
+                <div className={cn(
+                  'p-2.5 rounded-xl border border-white/5 transition-colors',
+                  activeTool === tool.id ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-dark-850 text-dark-400'
+                )}>
+                  <tool.icon className="h-5 w-5" aria-hidden="true" />
                 </div>
-                <p className="text-dark-400 text-xs mt-1 line-clamp-2 leading-relaxed">{tool.description}</p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-dark-100 text-sm font-mono truncate">{tool.name}</h3>
+                    {activeTool === tool.id && <Badge variant="primary" className="text-2xs bg-amber-500/20 text-amber-400 border-amber-500/30">Active</Badge>}
+                  </div>
+                  <p className="text-dark-400 text-xs mt-1 line-clamp-2 leading-relaxed">{tool.description}</p>
+                </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          </div>
         ))}
       </div>
 
@@ -598,10 +610,10 @@ export function NetworkTools() {
       )}
 
       {/* Permanent Reference Section 1: CIDR & Subnetting Cheat Sheet */}
-      <section className="space-y-4">
+      <section className="space-y-4" aria-labelledby="cidr-cheatsheet-heading">
         <div className="flex items-center gap-2 border-b border-dark-800/80 pb-3">
-          <Layers className="h-5 w-5 text-emerald-400" />
-          <h2 className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide">
+          <Layers className="h-5 w-5 text-amber-400" aria-hidden="true" />
+          <h2 id="cidr-cheatsheet-heading" className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide">
             CIDR & Subnetting Cheat Sheet (TKJ Reference)
           </h2>
         </div>
@@ -620,10 +632,10 @@ export function NetworkTools() {
               <tbody className="divide-y divide-dark-800">
                 {cidrCheatSheet.map((item) => (
                   <tr key={item.cidr} className="hover:bg-dark-850/50">
-                    <td className="py-2.5 font-bold text-emerald-400">{item.cidr}</td>
+                    <td className="py-2.5 font-bold text-amber-400">{item.cidr}</td>
                     <td className="py-2.5 text-dark-200">{item.mask}</td>
                     <td className="py-2.5 text-cyan-400">{item.wildcard}</td>
-                    <td className="py-2.5 text-dark-300">{item.total} / <span className="text-emerald-400 font-semibold">{item.usable}</span></td>
+                    <td className="py-2.5 text-dark-300">{item.total} / <span className="text-amber-400 font-semibold">{item.usable}</span></td>
                     <td className="py-2.5 text-dark-400 font-sans text-xs">{item.use}</td>
                   </tr>
                 ))}
@@ -634,11 +646,11 @@ export function NetworkTools() {
       </section>
 
       {/* Permanent Reference Section 2: Essential TKJ Network Ports */}
-      <section className="space-y-4">
+      <section className="space-y-4" aria-labelledby="tkj-ports-heading">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-dark-800/80 pb-3">
           <div className="flex items-center gap-2">
-            <Server className="h-5 w-5 text-cyan-400" />
-            <h2 className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide">
+            <Server className="h-5 w-5 text-amber-400" aria-hidden="true" />
+            <h2 id="tkj-ports-heading" className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide">
               Daftar Port Jaringan Esensial (TKJ Protocol Matrix)
             </h2>
           </div>
@@ -648,13 +660,14 @@ export function NetworkTools() {
             onChange={(e) => setPortFilter(e.target.value)}
             className="w-full sm:w-64"
             leftIcon={<Search className="h-4 w-4" />}
+            aria-label="Filter port jaringan"
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" role="list" aria-label="Daftar Port Jaringan Esensial">
           {filteredPorts.map((p) => (
-            <div key={p.port} className="p-3 rounded-xl bg-dark-900/60 border border-dark-800 flex items-start gap-3 hover:border-dark-700 transition-colors">
-              <div className="p-2 rounded-lg bg-dark-850 border border-dark-750 font-mono text-xs font-bold text-emerald-400 min-w-[52px] text-center">
+            <div key={p.port} role="listitem" className="p-3 rounded-xl bg-dark-900/60 border border-dark-800 flex items-start gap-3 hover:border-dark-700 transition-colors">
+              <div className="p-2 rounded-lg bg-dark-850 border border-dark-750 font-mono text-xs font-bold text-amber-400 min-w-[52px] text-center">
                 {p.port}
               </div>
               <div className="min-w-0 flex-1">

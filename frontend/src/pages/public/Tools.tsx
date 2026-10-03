@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, Badge, Input, Textarea, Button, Select } from '../../components/ui';
-import { useCopyToClipboard, useToast } from '../../hooks';
+import { useCopyToClipboard, useToast, useDocumentTitle } from '../../hooks';
 import { networkToolsApi } from '../../services/api';
 import { Copy, Check, Download, RefreshCw, Hash, QrCode, Braces, Clock, Globe, FileText, Terminal, Key } from 'lucide-react';
 import { cn } from '../../utils';
@@ -102,7 +102,7 @@ function FileDownloader() {
           <h3 className="font-semibold text-dark-100 text-lg font-mono">Universal Media & File Downloader</h3>
           <p className="text-xs text-dark-400">Mendukung ekstraksi video/foto TikTok tanpa watermark, YouTube, dan unduhan file langsung</p>
         </div>
-        <span className="px-2.5 py-1 rounded-full text-2xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 w-fit">
+        <span className="px-2.5 py-1 rounded-full text-2xs font-mono bg-amber-500/10 text-amber-400 border border-amber-500/20 w-fit">
           yt-dlp Engine Active
         </span>
       </div>
@@ -165,6 +165,7 @@ function IPChecker() {
   const [ip, setIp] = useState('');
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
+  const { copied, copy } = useCopyToClipboard();
 
   const checkIP = async () => {
     setLoading(true);
@@ -173,10 +174,16 @@ function IPChecker() {
       const data = await res.json();
       setIp(data.ip);
     } catch {
-      showToast('Failed to fetch IP', 'error');
+      showToast('Gagal memuat alamat IP publik', 'error');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCopy = () => {
+    if (!ip) return;
+    copy(ip);
+    showToast('Alamat IP disalin ke clipboard', 'success');
   };
 
   return (
@@ -184,10 +191,15 @@ function IPChecker() {
       <h3 className="font-semibold text-dark-100 mb-4 font-mono">IP Address Checker</h3>
       <Button onClick={checkIP} loading={loading} className="mb-4">Check My IP</Button>
       {ip && (
-        <div className="p-3 rounded-lg bg-dark-950 border border-dark-750 font-mono text-base text-emerald-400 flex items-center justify-between">
+        <div className="p-3 rounded-lg bg-dark-950 border border-dark-750 font-mono text-base text-amber-400 flex items-center justify-between">
           <span>{ip}</span>
-          <button onClick={() => navigator.clipboard.writeText(ip)} className="text-dark-400 hover:text-emerald-400">
-            <Copy className="h-4 w-4" />
+          <button 
+            type="button"
+            onClick={handleCopy} 
+            className="text-dark-400 hover:text-amber-400 p-1.5 rounded transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-500"
+            aria-label={copied ? "Alamat IP berhasil disalin" : "Salin alamat IP ke papan klip"}
+          >
+            {copied ? <Check className="h-4 w-4 text-amber-400" aria-hidden="true" /> : <Copy className="h-4 w-4" aria-hidden="true" />}
           </button>
         </div>
       )}
@@ -377,10 +389,10 @@ function QRGenerator() {
     if (!input.trim()) return;
     setGenerating(true);
     try {
-      const dataUrl = await QRCode.toDataURL(input, { width: 256, margin: 2, color: { dark: '#10b981', light: '#090a0f' } });
+      const dataUrl = await QRCode.toDataURL(input, { width: 256, margin: 2, color: { dark: '#f59e0b', light: '#090a0f' } });
       setQrCode(dataUrl);
     } catch {
-      showToast('Failed to generate QR code', 'error');
+      showToast('Gagal membuat kode QR', 'error');
     } finally {
       setGenerating(false);
     }
@@ -394,14 +406,18 @@ function QRGenerator() {
       {qrCode && (
         <div className="flex flex-col items-center gap-4 pt-2">
           <div className="p-3 bg-dark-950 rounded-xl border border-dark-750">
-            <img src={qrCode} alt="QR Code" className="rounded" />
+            <img src={qrCode} alt="Generated QR Code" className="rounded" />
           </div>
           <Button variant="secondary" size="sm" onClick={() => {
             const link = document.createElement('a');
             link.href = qrCode;
             link.download = 'qrcode.png';
             link.click();
-          }}>
+            showToast('QR Code berhasil diunduh', 'success');
+          }}
+          aria-label="Unduh QR Code sebagai gambar PNG"
+          >
+            <Download className="h-4 w-4 mr-2" aria-hidden="true" />
             Download PNG
           </Button>
         </div>
@@ -414,10 +430,15 @@ function SubnetCalculator() {
   const [ip, setIp] = useState('192.168.1.0');
   const [cidr, setCidr] = useState(24);
   const [result, setResult] = useState<Record<string, string> | null>(null);
+  const { copy } = useCopyToClipboard();
+  const { showToast } = useToast();
 
   const calculate = () => {
     const parts = ip.split('.').map(Number);
-    if (parts.length !== 4 || parts.some(p => p < 0 || p > 255)) return;
+    if (parts.length !== 4 || parts.some(p => isNaN(p) || p < 0 || p > 255)) {
+      showToast('Format IPv4 tidak valid. Masukkan format 4 oktet (0-255)', 'error');
+      return;
+    }
 
     const mask = ~((1 << (32 - cidr)) - 1);
     const network = parts.map((p, i) => p & ((mask >> (8 * (3 - i))) & 0xff)).join('.');
@@ -435,6 +456,11 @@ function SubnetCalculator() {
     });
   };
 
+  const handleCopyField = (label: string, val: string) => {
+    copy(val);
+    showToast(`${label.toUpperCase()} disalin: ${val}`, 'success');
+  };
+
   return (
     <Card className="p-6 bg-dark-900/80 border border-dark-800">
       <h3 className="font-semibold text-dark-100 mb-4 font-mono">IPv4 Subnet Calculator</h3>
@@ -444,11 +470,25 @@ function SubnetCalculator() {
       </div>
       <Button onClick={calculate} className="mb-4 w-full">Calculate Subnet</Button>
       {result && (
-        <div className="grid grid-cols-2 gap-3 text-xs font-mono">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono" role="list" aria-label="Hasil perhitungan subnet">
           {Object.entries(result).map(([k, v]) => (
-            <div key={k} className="bg-dark-950/80 p-3 rounded-lg border border-dark-800">
-              <p className="text-dark-500 uppercase text-2xs">{k}</p>
-              <p className="text-dark-100 font-semibold mt-0.5">{v}</p>
+            <div 
+              key={k} 
+              role="listitem"
+              className="bg-dark-950/80 p-3 rounded-lg border border-dark-800 flex items-center justify-between group hover:border-amber-500/40 transition-colors"
+            >
+              <div>
+                <p className="text-dark-500 uppercase text-2xs">{k}</p>
+                <p className="text-dark-100 font-semibold mt-0.5">{v}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleCopyField(k, v)}
+                className="text-dark-500 hover:text-amber-400 p-1.5 rounded transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-500"
+                aria-label={`Salin nilai ${k}: ${v}`}
+              >
+                <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+              </button>
             </div>
           ))}
         </div>
@@ -486,7 +526,7 @@ function DNSLookupTool() {
           <h3 className="font-semibold text-dark-100 text-lg font-mono">DNS Record Lookup</h3>
           <p className="text-xs text-dark-400">Query A, AAAA, MX, TXT, NS, and CNAME records via backend DNS resolver</p>
         </div>
-        <span className="px-2.5 py-1 rounded-full text-2xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+        <span className="px-2.5 py-1 rounded-full text-2xs font-mono bg-amber-500/10 text-amber-400 border border-amber-500/20">
           Live Resolver
         </span>
       </div>
@@ -565,7 +605,7 @@ function PingTesterTool() {
           <h3 className="font-semibold text-dark-100 text-lg font-mono">ICMP Ping Reachability Tester</h3>
           <p className="text-xs text-dark-400">Send 3 ICMP echo requests directly from the server node</p>
         </div>
-        <span className="px-2.5 py-1 rounded-full text-2xs font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+        <span className="px-2.5 py-1 rounded-full text-2xs font-mono bg-amber-500/10 text-amber-400 border border-amber-500/20">
           Raw ICMP Probe
         </span>
       </div>
@@ -668,7 +708,7 @@ function PortCheckerTool() {
           <h3 className="font-semibold text-dark-100 text-lg font-mono">TCP Port Availability Checker</h3>
           <p className="text-xs text-dark-400">Perform direct TCP handshake probe to detect open, closed, or firewalled services</p>
         </div>
-        <span className="px-2.5 py-1 rounded-full text-2xs font-mono bg-purple-500/10 text-purple-400 border border-purple-500/20">
+        <span className="px-2.5 py-1 rounded-full text-2xs font-mono bg-amber-500/10 text-amber-400 border border-amber-500/20">
           TCP Socket Scanner
         </span>
       </div>
@@ -703,7 +743,7 @@ function PortCheckerTool() {
             className={cn(
               "px-2.5 py-1 rounded text-2xs font-mono transition-colors border",
               port === p.port 
-                ? "bg-purple-500/20 text-purple-300 border-purple-500/40" 
+                ? "bg-amber-500/20 text-amber-300 border-amber-500/40" 
                 : "bg-dark-950 text-dark-300 border-dark-800 hover:border-dark-700"
             )}
           >
@@ -748,6 +788,7 @@ function PortCheckerTool() {
 }
 
 export function Tools() {
+  useDocumentTitle('Developer Tools');
   const [activeTool, setActiveTool] = useState<string | null>('downloader');
 
   return (
@@ -757,32 +798,43 @@ export function Tools() {
         <p className="text-dark-400 text-sm mt-1">Utility toolset for downloading, networking, hashing, decoding, and debugging</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="Available developer tools">
         {tools.map((tool) => (
-          <Card 
-            key={tool.id} 
-            className={cn(
-              'card-hover cursor-pointer p-4 bg-dark-900/60 border border-dark-800 transition-all', 
-              activeTool === tool.id && 'border-emerald-500/50 bg-dark-900/90 shadow-console'
-            )} 
-            onClick={() => setActiveTool(activeTool === tool.id ? null : tool.id)}
-          >
-            <div className="flex items-start gap-3">
-              <div className={cn(
-                'p-2.5 rounded-xl border border-white/5',
-                activeTool === tool.id ? 'bg-emerald-500/20 text-emerald-400' : 'bg-dark-850 text-dark-400'
-              )}>
-                <tool.icon className="h-5 w-5" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-dark-100 text-sm font-mono truncate">{tool.name}</h3>
-                  {activeTool === tool.id && <Badge variant="primary" className="text-2xs">Active</Badge>}
+          <div key={tool.id} role="listitem">
+            <Card 
+              role="button"
+              tabIndex={0}
+              aria-pressed={activeTool === tool.id}
+              aria-label={`Tool: ${tool.name} - ${tool.description}`}
+              className={cn(
+                'card-hover cursor-pointer p-4 bg-dark-900/60 border border-dark-800 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500', 
+                activeTool === tool.id && 'border-amber-500/50 bg-dark-900/90 shadow-console'
+              )} 
+              onClick={() => setActiveTool(activeTool === tool.id ? null : tool.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setActiveTool(activeTool === tool.id ? null : tool.id);
+                }
+              }}
+            >
+              <div className="flex items-start gap-3">
+                <div className={cn(
+                  'p-2.5 rounded-xl border border-white/5',
+                  activeTool === tool.id ? 'bg-amber-500/20 text-amber-400' : 'bg-dark-850 text-dark-400'
+                )}>
+                  <tool.icon className="h-5 w-5" aria-hidden="true" />
                 </div>
-                <p className="text-dark-400 text-xs mt-1 line-clamp-2 leading-relaxed">{tool.description}</p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-dark-100 text-sm font-mono truncate">{tool.name}</h3>
+                    {activeTool === tool.id && <Badge variant="primary" className="text-2xs">Active</Badge>}
+                  </div>
+                  <p className="text-dark-400 text-xs mt-1 line-clamp-2 leading-relaxed">{tool.description}</p>
+                </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          </div>
         ))}
       </div>
 

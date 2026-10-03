@@ -10,7 +10,10 @@ export interface AuthRequest extends Request {
 }
 
 export function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
-  const token = req.cookies?.accessToken || req.headers.authorization?.replace('Bearer ', '');
+  const token =
+    req.cookies?.accessToken ||
+    req.headers.authorization?.replace('Bearer ', '') ||
+    (typeof req.query?.token === 'string' ? req.query.token : undefined);
 
   if (!token) {
     return next(new AppError('Authentication required', 401, 'UNAUTHORIZED'));
@@ -44,7 +47,10 @@ export function requireAdmin(req: AuthRequest, res: Response, next: NextFunction
 }
 
 export async function loadUser(req: AuthRequest, res: Response, next: NextFunction) {
-  const token = req.cookies?.accessToken || req.headers.authorization?.replace('Bearer ', '');
+  const token =
+    req.cookies?.accessToken ||
+    req.headers.authorization?.replace('Bearer ', '') ||
+    (typeof req.query?.token === 'string' ? req.query.token : undefined);
 
   if (!token) return next();
 

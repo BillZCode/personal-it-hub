@@ -1,10 +1,15 @@
-import { useState } from 'react';
-import { ExternalLink, RefreshCw, Sparkles, ShieldCheck, Zap } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ExternalLink, RefreshCw, Sparkles, Maximize2, Minimize2 } from 'lucide-react';
 import { Badge } from '../../components/ui';
 
 export function Chatbot() {
   const [iframeKey, setIframeKey] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    document.title = 'Omni AI Assistant & Studio - Personal IT Hub';
+  }, []);
 
   const handleRefresh = () => {
     setIsLoading(true);
@@ -12,68 +17,69 @@ export function Chatbot() {
   };
 
   return (
-    <div className="space-y-4 animate-in pb-8">
-      {/* Top Banner & Quick Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-dark-800/80 pb-4">
+    <div className={`space-y-3 animate-in pb-4 ${isFullscreen ? 'fixed inset-0 z-50 bg-dark-950 p-4 space-y-2' : ''}`}>
+      {/* Top Banner & Quick Controls - Subdomain & Standalone Callout */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-dark-800/80 pb-3">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-2xl sm:text-3xl font-bold text-dark-100 tracking-tight font-sans">
-              Omni AI Assistant
+          <div className="flex items-center gap-2 mb-0.5">
+            <div className="p-1 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400">
+              <Sparkles className="h-4 w-4" aria-hidden="true" />
+            </div>
+            <h1 className="text-xl sm:text-2xl font-bold text-dark-100 tracking-tight font-sans">
+              Omni AI Assistant & Studio
             </h1>
-            <Badge variant="primary" dot className="font-mono text-2xs">
-              Live Core
+            <Badge variant="warning" dot className="font-mono text-2xs">
+              Subdomain: ai.sabbilferdyansyah.my.id
             </Badge>
           </div>
-          <p className="text-dark-400 text-xs sm:text-sm">
+          <p className="text-dark-400 text-xs">
             Workspace AI multi-model mandiri: didukung Gemma 4 Open Weights & Flash Lite hemat token.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
-            onClick={handleRefresh}
-            className="p-2 rounded-lg bg-dark-900 border border-dark-700/80 text-dark-300 hover:text-white hover:border-emerald-500/40 transition-colors flex items-center gap-1.5 text-xs font-mono shadow-sm"
-            title="Muat ulang chatbot"
+            type="button"
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className="px-2.5 py-1.5 rounded-lg bg-dark-900 border border-dark-750 text-dark-300 hover:text-white hover:border-amber-500/40 transition-colors flex items-center gap-1.5 text-xs font-mono shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-amber-400 cursor-pointer"
+            title={isFullscreen ? 'Keluar dari Fullscreen' : 'Layar Penuh Workstation'}
+            aria-label={isFullscreen ? 'Keluar dari Layar Penuh' : 'Masuk ke Layar Penuh'}
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin text-emerald-400' : ''}`} />
+            {isFullscreen ? <Minimize2 className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" /> : <Maximize2 className="h-3.5 w-3.5" aria-hidden="true" />}
+            <span>{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleRefresh}
+            className="px-2.5 py-1.5 rounded-lg bg-dark-900 border border-dark-750 text-dark-300 hover:text-white hover:border-amber-500/40 transition-colors flex items-center gap-1.5 text-xs font-mono shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-amber-400 cursor-pointer"
+            title="Muat ulang chatbot"
+            aria-label="Muat ulang antarmuka chatbot"
+          >
+            <RefreshCw className={`h-3 w-3 ${isLoading ? 'animate-spin text-amber-400' : ''}`} aria-hidden="true" />
             <span>Reload</span>
           </button>
 
           <a
-            href="/chatbot/"
+            href="https://ai.sabbilferdyansyah.my.id"
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-primary text-xs py-2 px-3 h-8 flex items-center gap-1.5 shadow-sm font-sans"
+            className="v7-btn-gold text-xs py-1.5 px-3 rounded-lg text-dark-950 font-bold font-mono flex items-center gap-1.5 shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-amber-400"
+            aria-label="Buka Omni AI di Subdomain Mandiri (Tab Baru)"
           >
-            <span>Buka Tab Penuh</span>
-            <ExternalLink className="h-3.5 w-3.5" />
+            <span>Buka Subdomain Mandiri</span>
+            <ExternalLink className="h-3 w-3" aria-hidden="true" />
           </a>
         </div>
       </div>
 
-      {/* Feature Badges Bar */}
-      <div className="flex flex-wrap items-center gap-2 p-2.5 rounded-xl bg-dark-900/60 border border-dark-800/80 text-xs text-dark-300 font-mono">
-        <span className="flex items-center gap-1 text-emerald-400">
-          <Zap className="h-3.5 w-3.5" />
-          <span>Flash 3 Preview (Instan)</span>
-        </span>
-        <span className="text-dark-600">•</span>
-        <span className="flex items-center gap-1 text-cyan-400">
-          <Sparkles className="h-3.5 w-3.5" />
-          <span>Embodied Agentic ER-2</span>
-        </span>
-        <span className="text-dark-600">•</span>
-        <span className="flex items-center gap-1 text-emerald-300">
-          <ShieldCheck className="h-3.5 w-3.5" />
-          <span>Gemma 4 26B Open Weights</span>
-        </span>
-      </div>
-
-      {/* Embedded Iframe Container */}
-      <div className="w-full h-[78vh] min-h-[620px] rounded-2xl overflow-hidden border border-dark-800 bg-dark-950 shadow-2xl relative">
+      {/* Embedded Iframe Container - Expansive View */}
+      <div className={`w-full rounded-xl overflow-hidden border border-dark-800 bg-dark-950 shadow-2xl relative ${
+        isFullscreen ? 'h-[calc(100vh-80px)]' : 'h-[calc(100vh-180px)] min-h-[600px] sm:min-h-[800px]'
+      }`}>
         {isLoading && (
-          <div className="absolute inset-0 bg-dark-950/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center gap-3">
-            <div className="w-8 h-8 rounded-full border-2 border-emerald-500/20 border-t-emerald-500 animate-spin" />
+          <div role="status" aria-live="polite" className="absolute inset-0 bg-dark-950/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center gap-3">
+            <div className="w-8 h-8 rounded-full border-2 border-amber-500/20 border-t-amber-500 animate-spin" aria-hidden="true" />
             <p className="text-xs font-mono text-dark-400">Menghubungkan ke Omni AI Core...</p>
           </div>
         )}
@@ -84,7 +90,7 @@ export function Chatbot() {
           title="Omni AI Assistant"
           className="w-full h-full border-0"
           onLoad={() => setIsLoading(false)}
-          allow="clipboard-read; clipboard-write"
+          allow="clipboard-read; clipboard-write; microphone"
         />
       </div>
     </div>
@@ -92,4 +98,3 @@ export function Chatbot() {
 }
 
 export default Chatbot;
-

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, Badge } from '../../components/ui';
 import { Users, FolderKanban, Wrench, FileText, Activity, ShieldCheck } from 'lucide-react';
 import { cn } from '../../utils';
+import { useDocumentTitle } from '../../hooks';
 import { Chart, registerables } from 'chart.js';
 import { Line, Bar } from 'react-chartjs-2';
 
@@ -45,6 +46,7 @@ const chartOptions = {
 };
 
 export function Statistics() {
+  useDocumentTitle('Statistics');
   const { data: overviewData } = useQuery({
     queryKey: ['statistics-overview'],
     queryFn: async () => {
@@ -149,20 +151,20 @@ export function Statistics() {
         )}
       </div>
 
-      <section>
+      <section aria-labelledby="portal-overview-heading">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xs font-mono font-bold text-dark-400 uppercase tracking-wider">PORTAL OVERVIEW</h2>
-          <span className="text-2xs font-mono text-emerald-400 flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <h2 id="portal-overview-heading" className="text-xs font-mono font-bold text-dark-400 uppercase tracking-wider">PORTAL OVERVIEW</h2>
+          <span className="text-2xs font-mono text-emerald-400 flex items-center gap-1.5" role="status" aria-live="polite">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" aria-hidden="true" />
             Live Polling (5s)
           </span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4" role="list">
           {statCards.map((stat) => (
-            <Card key={stat.label} className="p-5 border border-dark-800 bg-dark-900/60 card-hover">
+            <Card key={stat.label} role="listitem" className="p-5 border border-dark-800 bg-dark-900/60 card-hover">
               <div className="flex items-center gap-3">
                 <div className={cn('p-2.5 rounded-xl flex-shrink-0 border border-white/5', stat.bg)}>
-                  <stat.icon className={cn('h-5 w-5', stat.color)} />
+                  <stat.icon className={cn('h-5 w-5', stat.color)} aria-hidden="true" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-mono text-xl sm:text-2xl font-bold text-dark-100 truncate">{stat.value}</p>
@@ -175,7 +177,7 @@ export function Statistics() {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6" aria-label="Analytical Visualizations">
         <Card className="p-5 border border-dark-800 bg-dark-900/60">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-bold font-mono text-dark-100 uppercase tracking-wide">Visitors Over Time</h2>
@@ -183,7 +185,7 @@ export function Statistics() {
               {isCloudflare ? 'Cloudflare Daily Timeline' : 'Recent 7 Days'}
             </Badge>
           </div>
-          <div className="h-72">
+          <div className="h-72" role="region" aria-label="Visitors over time line chart">
             <Line data={dynamicVisitorData} options={chartOptions} />
           </div>
         </Card>
@@ -193,19 +195,19 @@ export function Statistics() {
             <h2 className="text-sm font-bold font-mono text-dark-100 uppercase tracking-wide">Tool Usage</h2>
             <Badge variant="info" className="font-mono text-2xs">Top Modules</Badge>
           </div>
-          <div className="h-72">
+          <div className="h-72" role="region" aria-label="Tool usage horizontal bar chart">
             <Bar data={toolUsageData} options={{ ...chartOptions, indexAxis: 'y' }} />
           </div>
         </Card>
       </section>
 
-      <section>
+      <section aria-labelledby="article-views-heading">
         <Card className="p-5 border border-dark-800 bg-dark-900/60">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-bold font-mono text-dark-100 uppercase tracking-wide">Article Views</h2>
+            <h2 id="article-views-heading" className="text-sm font-bold font-mono text-dark-100 uppercase tracking-wide">Article Views</h2>
             <Badge variant="info" className="font-mono text-2xs">Top Technical Guides</Badge>
           </div>
-          <div className="h-80">
+          <div className="h-80" role="region" aria-label="Article views horizontal bar chart">
             <Bar data={articleViewsData} options={{ ...chartOptions, indexAxis: 'y' }} />
           </div>
         </Card>

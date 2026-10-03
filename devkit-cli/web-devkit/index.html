@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevKit Studio - Modern Developer Toolbox Workstation</title>
+  <link rel="stylesheet" href="./css/devkit.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Top Glass Header -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <div>
+        <h1>
+          <span>DevKit Studio</span>
+          <span class="badge-tag">v1.0.0 CLI CORE</span>
+        </h1>
+      </div>
+    </div>
+    <div class="header-meta">
+      <span class="btn-pill">Terminal: <code>devkit &lt;command&gt;</code></span>
+      <span class="btn-pill" style="color:var(--accent-emerald);border-color:rgba(16,185,129,0.3);">● Online</span>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="nav-item active" id="nav-subnet" onclick="switchTab('subnet')">
+        <span>🌐</span> Subnet & CIDR
+      </div>
+      <div class="nav-item" id="nav-crypto" onclick="switchTab('crypto')">
+        <span>🔐</span> Crypto & Hashes
+      </div>
+      <div class="nav-item" id="nav-password" onclick="switchTab('password')">
+        <span>🔑</span> Password & UUID
+      </div>
+      <div class="nav-item" id="nav-json" onclick="switchTab('json')">
+        <span>📦</span> JSON Formatter
+      </div>
+      <div class="nav-item" id="nav-jwt" onclick="switchTab('jwt')">
+        <span>🎟️</span> JWT Inspector
+      </div>
+      <div class="nav-item" id="nav-encode" onclick="switchTab('encode')">
+        <span>🔄</span> Base64 & Encoders
+      </div>
+      <div class="nav-item" id="nav-regex" onclick="switchTab('regex')">
+        <span>🎯</span> Regex Lab
+      </div>
+      <div class="nav-item" id="nav-time" onclick="switchTab('time')">
+        <span>⏳</span> Time & Epoch
+      </div>
+      <div class="nav-item" id="nav-go-cli" onclick="switchTab('go-cli')">
+        <span>⚡</span> Go Automation CLI
+      </div>
+    </aside>
+
+    <!-- Workspace View -->
+    <main class="workspace">
+      <!-- 1. Subnet Tab -->
+      <section class="tab-pane" id="pane-subnet">
+        <div class="glass-card">
+          <div class="panel-header">
+            <h2 class="panel-title">🌐 IPv4 Subnet Calculator</h2>
+            <span class="cli-badge">devkit network subnet &lt;cidr&gt;</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">CIDR NOTATION (IP/PREFIX)</label>
+            <div style="display:flex;gap:10px;">
+              <input type="text" id="subnet-cidr" class="input-box" value="192.168.1.0/24">
+              <button class="btn-gold" onclick="runSubnetCalc()">Hitung Subnet</button>
+            </div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-item"><span class="stat-item-label">NETWORK ADDRESS</span><p class="stat-item-val" id="sub-net">-</p></div>
+            <div class="stat-item"><span class="stat-item-label">BROADCAST ADDRESS</span><p class="stat-item-val" id="sub-bcast">-</p></div>
+            <div class="stat-item"><span class="stat-item-label">SUBNET MASK</span><p class="stat-item-val" id="sub-mask">-</p></div>
+            <div class="stat-item"><span class="stat-item-label">WILDCARD MASK</span><p class="stat-item-val" id="sub-wildcard">-</p></div>
+            <div class="stat-item"><span class="stat-item-label">USABLE IP RANGE</span><p class="stat-item-val" id="sub-range" style="font-size:0.85rem;">-</p></div>
+            <div class="stat-item"><span class="stat-item-label">USABLE HOSTS</span><p class="stat-item-val" id="sub-hosts" style="color:var(--accent-emerald);">-</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Crypto & Hashes Tab -->
+      <section class="tab-pane" id="pane-crypto" style="display:none;">
+        <div class="glass-card">
+          <div class="panel-header">
+            <h2 class="panel-title">🔐 Cryptographic Digest</h2>
+            <span class="cli-badge">devkit hash sha256 &lt;text&gt;</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">TEXT STRING INPUT</label>
+            <input type="text" id="hash-input" class="input-box" value="Personal IT Hub 2026" oninput="runHash()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">SHA-256 HASH</label>
+            <div class="console-box" id="hash-sha256" style="min-height:50px;">-</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">SHA-512 HASH</label>
+            <div class="console-box" id="hash-sha512" style="min-height:70px;">-</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Password & UUID Tab -->
+      <section class="tab-pane" id="pane-password" style="display:none;">
+        <div class="glass-card">
+          <div class="panel-header">
+            <h2 class="panel-title">🔑 Cryptographically Secure Random Generator</h2>
+            <span class="cli-badge">devkit password | devkit uuid</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+            <div>
+              <div class="form-group">
+                <label class="form-label">PASSWORD LENGTH</label>
+                <div style="display:flex;gap:10px;">
+                  <input type="number" id="pass-len" class="input-box" value="24" min="8" max="64">
+                  <button class="btn-gold" onclick="runGeneratePassword()">Generate</button>
+                </div>
+              </div>
+              <input type="text" id="pass-output" class="input-box" readonly>
+            </div>
+            <div>
+              <div class="form-group">
+                <label class="form-label">RFC 4122 UUID V4</label>
+                <button class="btn-cyan" onclick="runGenerateUUID()" style="width:100%;margin-bottom:10px;">Generate New UUID</button>
+                <input type="text" id="uuid-output" class="input-box" readonly>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. JSON Tab -->
+      <section class="tab-pane" id="pane-json" style="display:none;">
+        <div class="glass-card">
+          <div class="panel-header">
+            <h2 class="panel-title">📦 JSON Validator & Minifier</h2>
+            <span class="cli-badge">devkit json format &lt;file&gt;</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">RAW JSON INPUT</label>
+            <textarea id="json-input" class="textarea-box">{"project":"devkit-cli","version":"1.0.0","tools":["subnet","jwt","crypto"]}</textarea>
+          </div>
+          <div style="display:flex;gap:10px;margin-bottom:12px;">
+            <button class="btn-gold" onclick="runJsonFormat()">Format JSON</button>
+            <button class="btn-cyan" onclick="runJsonMinify()">Minify JSON</button>
+            <span id="json-status" style="margin-left:auto;font-family:var(--font-mono);font-size:0.8rem;align-self:center;"></span>
+          </div>
+          <div class="console-box" id="json-output">// Formatted Output akan muncul disini...</div>
+        </div>
+      </section>
+
+      <!-- 5. JWT Tab -->
+      <section class="tab-pane" id="pane-jwt" style="display:none;">
+        <div class="glass-card">
+          <div class="panel-header">
+            <h2 class="panel-title">🎟️ JSON Web Token (JWT) Inspector</h2>
+            <span class="cli-badge">devkit jwt decode &lt;token&gt;</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">JWT TOKEN STRING</label>
+            <textarea id="jwt-input" class="textarea-box" placeholder="Paste encoded eyJhbGciOi... JWT token disini..."></textarea>
+          </div>
+          <button class="btn-gold" onclick="runJwtDecode()">Decode & Inspect Claims</button>
+          <div class="console-box" id="jwt-output" style="margin-top:14px;">// Header dan Payload claims akan diurai disini...</div>
+        </div>
+      </section>
+
+      <!-- 6. Encoders Tab -->
+      <section class="tab-pane" id="pane-encode" style="display:none;">
+        <div class="glass-card">
+          <div class="panel-header">
+            <h2 class="panel-title">🔄 Base64 Converter</h2>
+            <span class="cli-badge">devkit encode base64</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">RAW TEXT INPUT</label>
+            <input type="text" id="enc-input" class="input-box" value="Personal IT Hub by Sabbil">
+          </div>
+          <div style="display:flex;gap:10px;margin-bottom:12px;">
+            <button class="btn-gold" onclick="runEncodeBase64()">Encode Base64</button>
+            <button class="btn-cyan" onclick="runDecodeBase64()">Decode Base64</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">RESULT</label>
+            <input type="text" id="enc-output" class="input-box" readonly>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. Regex Tab -->
+      <section class="tab-pane" id="pane-regex" style="display:none;">
+        <div class="glass-card">
+          <div class="panel-header">
+            <h2 class="panel-title">🎯 Regular Expression Tester</h2>
+            <span class="cli-badge">devkit regex test "&lt;pattern&gt;" "&lt;text&gt;"</span>
+          </div>
+          <div style="display:grid;grid-template-columns:3fr 1fr;gap:10px;margin-bottom:14px;">
+            <div>
+              <label class="form-label">REGEX PATTERN</label>
+              <input type="text" id="regex-pattern" class="input-box" value="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}">
+            </div>
+            <div>
+              <label class="form-label">FLAGS</label>
+              <input type="text" id="regex-flags" class="input-box" value="g">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">TEST STRING</label>
+            <textarea id="regex-text" class="textarea-box">Hubungi admin di contact@sabbilaf.network atau dev@localhost untuk verifikasi akun.</textarea>
+          </div>
+          <button class="btn-gold" onclick="runRegexTest()">Test Regex</button>
+          <div class="console-box" id="regex-output" style="margin-top:14px;">// Hasil match regex akan ditampilkan disini...</div>
+        </div>
+      </section>
+
+      <!-- 8. Time Tab -->
+      <section class="tab-pane" id="pane-time" style="display:none;">
+        <div class="glass-card">
+          <div class="panel-header">
+            <h2 class="panel-title">⏳ Universal Time & Unix Epoch Clock</h2>
+            <span class="cli-badge">devkit time now</span>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-item"><span class="stat-item-label">UNIX SECONDS</span><p class="stat-item-val" id="clock-unix-sec" style="color:var(--primary);">-</p></div>
+            <div class="stat-item"><span class="stat-item-label">UNIX MILLISECONDS</span><p class="stat-item-val" id="clock-unix-ms">-</p></div>
+            <div class="stat-item" style="grid-column:1/-1;"><span class="stat-item-label">ISO 8601 UTC</span><p class="stat-item-val" id="clock-iso" style="color:var(--accent-cyan);font-size:0.95rem;">-</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9. Go Automation CLI Hub -->
+      <section class="tab-pane" id="pane-go-cli" style="display:none;">
+        <div class="glass-card">
+          <div class="panel-header">
+            <h2 class="panel-title">⚡ Go Developer Automation Engine</h2>
+            <span class="cli-badge">go build -o bin/devkit main.go</span>
+          </div>
+          <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:16px;">
+            High-performance, idiomatic Go automation engine powered by Cobra & Go Standard Library. Modular, concurrent, and zero unsafe dependencies.
+          </p>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:14px;margin-bottom:20px;">
+            <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;">
+              <div style="color:var(--primary);font-weight:600;font-size:0.85rem;margin-bottom:6px;">🛠️ PROJECT GENERATOR</div>
+              <code style="font-size:0.8rem;color:#38bdf8;">devkit init my-api -t go</code>
+              <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:6px;">Scaffolds clean enterprise directories (cmd, internal, pkg, go.mod, git).</p>
+            </div>
+            <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;">
+              <div style="color:var(--accent-emerald);font-weight:600;font-size:0.85rem;margin-bottom:6px;">🧹 SAFE WORKSPACE CLEANER</div>
+              <code style="font-size:0.8rem;color:#38bdf8;">devkit clean --dry-run</code>
+              <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:6px;">Audits node_modules, build, dist, and cache folders with confirmation safeguards.</p>
+            </div>
+            <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;">
+              <div style="color:var(--accent-cyan);font-weight:600;font-size:0.85rem;margin-bottom:6px;">🐳 DOCKER HYGIENE</div>
+              <code style="font-size:0.8rem;color:#38bdf8;">devkit docker clean</code>
+              <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:6px;">Reclaims gigabytes from dangling images and stopped containers safely.</p>
+            </div>
+            <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;">
+              <div style="color:#f59e0b;font-weight:600;font-size:0.85rem;margin-bottom:6px;">🔗 MARKDOWN LINK CHECKER</div>
+              <code style="font-size:0.8rem;color:#38bdf8;">devkit markdown links README.md</code>
+              <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:6px;">Audits internal relative files and external HTTP links concurrently with worker pools.</p>
+            </div>
+            <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;">
+              <div style="color:#a855f7;font-weight:600;font-size:0.85rem;margin-bottom:6px;">🩺 DOCTOR DIAGNOSTIC</div>
+              <code style="font-size:0.8rem;color:#38bdf8;">devkit doctor</code>
+              <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:6px;">Performs system audits across Go, Node, Docker, Git, Python, and SSH.</p>
+            </div>
+            <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;">
+              <div style="color:#ec4899;font-weight:600;font-size:0.85rem;margin-bottom:6px;">📦 PROJECT BACKUP</div>
+              <code style="font-size:0.8rem;color:#38bdf8;">devkit backup . -f tar.gz</code>
+              <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:6px;">Instant compressed snapshot automatically filtering heavy dependencies.</p>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">BINARY QUICK TEST RUNNER</label>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button class="btn-gold" onclick="loadCliSnippet('devkit doctor')">Run Doctor</button>
+              <button class="btn-cyan" onclick="loadCliSnippet('devkit project info .')">Project Info</button>
+              <button class="btn-gold" onclick="loadCliSnippet('devkit clean --dry-run')">Scan Cleanable</button>
+              <button class="btn-cyan" onclick="loadCliSnippet('devkit markdown links README.md')">Verify Links</button>
+            </div>
+          </div>
+          <div class="console-box" id="cli-mock-terminal">// Terminal command preview...</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./js/devkit.js"></script>
+</body>
+</html>

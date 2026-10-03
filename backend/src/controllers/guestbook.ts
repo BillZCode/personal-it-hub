@@ -7,16 +7,29 @@ import crypto from 'crypto';
 export const guestbookController = {
   getAll: asyncHandler(async (req: Request, res: Response) => {
     const { approved, page = 1, limit = 20 } = req.query;
+    const pageNum = Math.max(1, parseInt(String(page), 10) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(String(limit), 10) || 20));
     const where: any = {};
 
     if (approved !== undefined) where.approved = approved === 'true';
 
     const [entries, total] = await Promise.all([
-      prisma.guestbookEntry.findMany({ where, orderBy: { createdAt: 'desc' }, skip: (Number(page) - 1) * Number(limit), take: Number(limit) }),
+      prisma.guestbookEntry.findMany({ 
+        where, 
+        orderBy: { createdAt: 'desc' }, 
+        skip: (pageNum - 1) * limitNum, 
+        take: limitNum 
+      }),
       prisma.guestbookEntry.count({ where }),
     ]);
 
-    res.json({ data: entries, total, page: Number(page), limit: Number(limit), totalPages: Math.ceil(total / Number(limit)) });
+    res.json({ 
+      data: entries, 
+      total, 
+      page: pageNum, 
+      limit: limitNum, 
+      totalPages: Math.ceil(total / limitNum) 
+    });
   }),
 
   create: asyncHandler(async (req: Request, res: Response) => {

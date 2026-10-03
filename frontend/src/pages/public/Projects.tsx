@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { animate, stagger } from 'animejs';
 import { projectsApi } from '../../services/api';
 import { Card, CardContent, Badge, Button, Input, Select, Modal } from '../../components/ui';
 import { SkeletonCard } from '../../components/feedback/LoadingStates';
-import { Github, ExternalLink, Star, Code2, Search, Eye } from 'lucide-react';
+import { Github, ExternalLink, Star, Code2, Search, Eye, X } from 'lucide-react';
 import { Project, ProjectStatus } from '../../types';
+import { useDocumentTitle } from '../../hooks';
+
 
 const statusColors: Record<ProjectStatus, 'warning' | 'info' | 'success' | 'neutral'> = {
   PLANNING: 'warning',
@@ -16,10 +19,27 @@ const statusColors: Record<ProjectStatus, 'warning' | 'info' | 'success' | 'neut
 
 const sabbilProjects: Project[] = [
   {
+    id: 'proj-devkit-cli',
+    title: 'devkit-cli - Modular Developer Toolbox & CLI Suite',
+    slug: 'devkit-cli',
+    description: 'A modern developer toolbox for the terminal and web interface. Provides Subnet CIDR calculators, JWT inspectors, Cryptographic entropy & password generator, JSON formatters, HTTP probes, and system diagnostics.',
+    content: 'Aplikasi Developer CLI Toolkit modern, modular, production-ready, dan open-source yang menggabungkan kumpulan utilities developer harian dalam satu interface terpadu. Fitur utama mencakup: 1. Subnet CIDR Calculator (Network address, wildcard, usable hosts, broadcast, and IP classes), 2. JSON Tools (Formatter, minifier, validator, dot-notation path extractor, and structure inspector), 3. Cryptographic Suite (SHA-256/512, MD5, random bytes, UUID v4, and cryptographically secure password generator), 4. JWT Inspector (Token claims, issuer, subject, and expiration detection), 5. Text & Regex Lab (Regex matcher, pattern explanation, word/byte counters, and URL sluggers), 6. Network & HTTP Probe (DNS record query, network interface telemetry, and HTTP timing breakdown), 7. System Doctor (Comprehensive developer environment health diagnostic), dan 8. Interactive CLI & Web Studio (Glassmorphism web studio mirrored directly from the CLI architecture).',
+    technologies: ['TypeScript', 'Node.js', 'Commander.js', 'Chalk', 'WebCrypto', 'CIDR Engine', 'Vitest'],
+    image: '/images/gallery/dashboard_dark_theme.png',
+    demoUrl: '/devkit',
+    repoUrl: 'https://github.com/BillZCode',
+    status: 'COMPLETED',
+    featured: true,
+    startDate: '2026-09-26',
+    endDate: '2026-09-27',
+    createdAt: '2026-09-27',
+    updatedAt: '2026-09-27'
+  },
+  {
     id: 'proj-cyberlab-lks',
-    title: 'CyberLab LKS - Cybersecurity Toolkit & CTF Analysis Workspace',
-    slug: 'cyberlab-lks',
-    description: 'All-in-one cybersecurity toolkit & dynamic investigation workspace untuk persiapan LKS Cyber Security & CTF (Cryptography, Digital Forensics, Steganography, Web Exploitation, Reverse Engineering, Pwn, OSINT, Miscellaneous).',
+    title: 'CyberLab - Cybersecurity Toolkit & CTF Analysis Workspace',
+    slug: 'cyberlab',
+    description: 'All-in-one cybersecurity toolkit & dynamic investigation workspace untuk analisis Cyber Security & CTF (Cryptography, Digital Forensics, Steganography, Web Exploitation, Reverse Engineering, Pwn, OSINT, Miscellaneous).',
     content: 'Platform workstation investigasi keamanan siber dan CTF mandiri dengan 8 modul taktis lengkap: Cryptography (Classical Ciphers, Encoders, XOR Helper, RSA Toolkit, Hash Integrity), Digital Forensics (File Magic Analyzer, Hex/ASCII Viewer, Regex Strings, Entropy Blocks, Archive & SQLite Explorer), Steganography (LSB Bit-plane visualizer, PNG/JPEG chunk inspector, Audio Spectrogram, File Carving), Web Exploitation CTF (HTTP/CURL Analyzer, Cookie & JWT parser, Vulnerability knowledge matrices), Reverse Engineering (ELF/PE parser, Header & Sections, Opcodes Disassembler, Assembly manual), Pwn/Binary (Security Mitigations Checksec, Endianness, Cyclic De Bruijn pattern, Stack layout visualizer), OSINT (Domain/DNS/WHOIS analyzer, IP CIDR subnetting, Metadata investigator, Google Dork matrix), dan Miscellaneous (Text cleaners, Regex debugger, Unix timestamps, Format converter, Bitwise calc, QR tools, Hash verifiers). Dapat diakses via rute internal /cyberlab atau subdomain cybertool-sabbilferdyansyah.my.id.',
     technologies: ['TypeScript', 'JavaScript WebCrypto', 'Hex Analyzer', 'Stego Bitplane', 'ELF/PE Parser', 'CTF Toolkit', 'Tailwind CSS'],
     image: '/images/gallery/cyberlab_lks_preview.jpg',
@@ -154,8 +174,10 @@ const sabbilProjects: Project[] = [
 ];
 
 export function Projects() {
+  useDocumentTitle('Featured Projects & Engineering Works');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | 'ALL'>('ALL');
+
   const [techFilter, setTechFilter] = useState('');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
@@ -165,17 +187,31 @@ export function Projects() {
     placeholderData: { data: sabbilProjects, total: sabbilProjects.length, page: 1, limit: 20, totalPages: 1 },
   });
 
-  const projects = (data?.data && data.data.length > 0) ? data.data : sabbilProjects;
-  const allTechs = [...new Set(projects.flatMap(p => p.technologies))].sort();
+  // Combine DB projects and sabbilProjects (ensuring devkit-cli and cyberlab are always present)
+  const projects = useMemo(() => {
+    const dbProjects = data?.data || [];
+    const mergedProjectsMap = new Map<string, Project>();
+    sabbilProjects.forEach((p) => mergedProjectsMap.set(p.slug, p));
+    dbProjects.forEach((p) => mergedProjectsMap.set(p.slug, { ...mergedProjectsMap.get(p.slug), ...p }));
+    return Array.from(mergedProjectsMap.values());
+  }, [data]);
 
-  const filteredProjects = projects.filter((project) => {
-    const matchesSearch = project.title.toLowerCase().includes(search.toLowerCase()) ||
-      project.description.toLowerCase().includes(search.toLowerCase()) ||
-      project.technologies.some(t => t.toLowerCase().includes(search.toLowerCase()));
-    const matchesStatus = statusFilter === 'ALL' || project.status === statusFilter;
-    const matchesTech = !techFilter || project.technologies.includes(techFilter);
-    return matchesSearch && matchesStatus && matchesTech;
-  });
+  const allTechs = useMemo(() => {
+    return [...new Set(projects.flatMap((p) => p.technologies || []))].sort();
+  }, [projects]);
+
+  const filteredProjects = useMemo(() => {
+    const searchLower = search.toLowerCase().trim();
+    return projects.filter((project) => {
+      const matchesSearch = !searchLower ||
+        project.title.toLowerCase().includes(searchLower) ||
+        project.description.toLowerCase().includes(searchLower) ||
+        project.technologies.some((t) => t.toLowerCase().includes(searchLower));
+      const matchesStatus = statusFilter === 'ALL' || project.status === statusFilter;
+      const matchesTech = !techFilter || project.technologies.includes(techFilter);
+      return matchesSearch && matchesStatus && matchesTech;
+    });
+  }, [projects, search, statusFilter, techFilter]);
 
   // Staggered Anime.js card entrance
   useEffect(() => {
@@ -233,6 +269,20 @@ export function Projects() {
           ]}
           className="w-full sm:w-48"
         />
+        {(search || statusFilter !== 'ALL' || techFilter) && (
+          <button
+            onClick={() => {
+              setSearch('');
+              setStatusFilter('ALL');
+              setTechFilter('');
+            }}
+            className="px-3 py-2 rounded-xl bg-dark-800 hover:bg-dark-750 text-dark-300 hover:text-white border border-dark-700/80 text-xs font-mono flex items-center justify-center gap-1.5 transition-colors"
+            title="Reset semua filter pencarian"
+          >
+            <X className="h-3.5 w-3.5" />
+            <span>Reset</span>
+          </button>
+        )}
       </div>
 
       {isLoading ? (
@@ -244,29 +294,40 @@ export function Projects() {
           <p className="text-dark-400">Tidak ada proyek yang sesuai dengan kriteria pencarian.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" role="list" aria-label="Koleksi proyek portfolio">
           {filteredProjects.map((project) => (
-            <Card key={project.id} className="project-grid-card card-hover overflow-hidden flex flex-col border border-dark-800/90 bg-dark-900/60 hover:border-emerald-500/50 hover:shadow-[0_12px_28px_-6px_rgba(16,185,129,0.18)] transition-all duration-300 group">
+            <Card key={project.id} role="listitem" className="project-grid-card card-hover overflow-hidden flex flex-col rounded-2xl border border-dark-800/90 bg-dark-900/60 backdrop-blur-xl hover:border-amber-400/50 hover:shadow-[0_12px_30px_-6px_rgba(245,158,11,0.2)] transition-all duration-300 group">
               {project.image ? (
                 <div 
-                  className="w-full h-44 bg-dark-950 overflow-hidden cursor-pointer relative border-b border-dark-800"
+                  className="w-full h-44 bg-dark-950 overflow-hidden cursor-pointer relative border-b border-dark-800 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                   onClick={() => setSelectedProject(project)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setSelectedProject(project);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Buka detail proyek: ${project.title}`}
                 >
                   <img 
                     src={project.image} 
                     alt={project.title} 
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-dark-950/80 via-transparent to-transparent" />
                   <div className="absolute top-3 right-3 flex items-center gap-1.5">
                     {project.featured && (
-                      <span className="p-1.5 bg-yellow-500/20 backdrop-blur-md rounded-lg border border-yellow-500/30 text-yellow-400">
-                        <Star className="h-3.5 w-3.5 fill-yellow-400" />
+                      <span className="p-1.5 bg-amber-500/20 backdrop-blur-md rounded-lg border border-amber-500/30 text-amber-400">
+                        <Star className="h-3.5 w-3.5 fill-amber-400" />
                       </span>
                     )}
                   </div>
                   <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-xs text-dark-300">
-                    <span className="flex items-center gap-1 bg-dark-900/90 px-2 py-0.5 rounded border border-dark-700 font-mono text-2xs text-emerald-400">
+                    <span className="flex items-center gap-1 bg-dark-900/90 px-2 py-0.5 rounded-full border border-dark-700 font-mono text-2xs text-amber-400">
                       <Eye className="h-3 w-3" /> Klik Detail
                     </span>
                     <Badge variant={statusColors[project.status]} className="text-2xs capitalize">
@@ -276,8 +337,17 @@ export function Projects() {
                 </div>
               ) : (
                 <div 
-                  className="w-full h-24 bg-dark-950/60 border-b border-dark-800 flex items-center justify-center cursor-pointer"
+                  className="w-full h-24 bg-dark-950/60 border-b border-dark-800 flex items-center justify-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                   onClick={() => setSelectedProject(project)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setSelectedProject(project);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Buka detail proyek: ${project.title}`}
                 >
                   <Code2 className="h-8 w-8 text-dark-600" />
                 </div>
@@ -285,8 +355,17 @@ export function Projects() {
               <CardContent className="p-5 flex-1 flex flex-col justify-between">
                 <div>
                   <h3 
-                    className="font-semibold text-dark-100 mb-2 group-hover:text-emerald-400 transition-colors cursor-pointer text-base line-clamp-1 font-mono"
+                    className="font-semibold text-dark-100 mb-2 group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors cursor-pointer text-base line-clamp-1 font-mono focus:outline-none focus-visible:underline"
                     onClick={() => setSelectedProject(project)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSelectedProject(project);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Buka detail ${project.title}`}
                   >
                     {project.title}
                   </h3>
@@ -294,38 +373,48 @@ export function Projects() {
                   
                   <div className="flex flex-wrap gap-1.5 mb-4">
                     {project.technologies.slice(0, 4).map((tech) => (
-                      <span key={tech} className="text-2xs font-mono px-2 py-0.5 rounded bg-dark-850 text-dark-300 border border-dark-750/70">
+                      <span key={tech} className="text-2xs font-mono px-2 py-0.5 rounded-md bg-dark-800 text-dark-200 border border-dark-700/80 font-medium">
                         {tech}
                       </span>
                     ))}
                     {project.technologies.length > 4 && (
-                      <span className="text-2xs font-mono px-1.5 py-0.5 rounded bg-dark-850 text-dark-400 border border-dark-750/70">
+                      <span className="text-2xs font-mono px-1.5 py-0.5 rounded-md bg-dark-800 text-dark-300 border border-dark-700/80">
                         +{project.technologies.length - 4}
                       </span>
                     )}
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-dark-800/80 flex items-center justify-between gap-2">
+                <div className="pt-3 border-t border-dark-750/70 flex items-center justify-between gap-2">
                   <Button 
                     variant="ghost" 
                     size="sm" 
                     onClick={() => setSelectedProject(project)}
-                    className="text-xs text-dark-300 hover:text-white px-2.5 h-8"
+                    className="text-xs text-dark-300 hover:text-amber-500 dark:hover:text-amber-300 px-2.5 h-8"
                   >
-                    <Eye className="h-3.5 w-3.5 mr-1.5 text-emerald-400" /> Detail
+                    <Eye className="h-3.5 w-3.5 mr-1.5 text-amber-400" /> Detail
                   </Button>
                   <div className="flex items-center gap-1.5">
                     {project.demoUrl && (
-                      <a 
-                        href={project.demoUrl} 
-                        target={project.demoUrl.startsWith('http') ? '_blank' : undefined} 
-                        rel="noopener noreferrer" 
-                        className="btn-primary text-xs py-1.5 px-3 h-8 flex items-center gap-1.5 shadow-sm"
-                        aria-label="Akses Proyek"
-                      >
-                        Buka Akses <ExternalLink className="h-3.5 w-3.5" />
-                      </a>
+                      project.demoUrl.startsWith('/') ? (
+                        <Link
+                          to={project.demoUrl}
+                          className="btn-primary text-xs py-1.5 px-3 h-8 flex items-center gap-1.5 shadow-sm"
+                          aria-label={`Buka akses proyek ${project.title}`}
+                        >
+                          Buka Akses <ExternalLink className="h-3.5 w-3.5" />
+                        </Link>
+                      ) : (
+                        <a 
+                          href={project.demoUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="btn-primary text-xs py-1.5 px-3 h-8 flex items-center gap-1.5 shadow-sm"
+                          aria-label={`Buka akses proyek ${project.title}`}
+                        >
+                          Buka Akses <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                      )
                     )}
                     {project.repoUrl && (
                       <a 
@@ -355,6 +444,8 @@ export function Projects() {
                 <img 
                   src={selectedProject.image} 
                   alt={selectedProject.title} 
+                  loading="lazy"
+                  decoding="async"
                   className="max-w-full max-h-[50vh] object-contain mx-auto rounded-lg" 
                 />
               </div>
@@ -395,14 +486,24 @@ export function Projects() {
                 </a>
               )}
               {selectedProject.demoUrl && (
-                <a 
-                  href={selectedProject.demoUrl} 
-                  target={selectedProject.demoUrl.startsWith('http') ? '_blank' : undefined} 
-                  rel="noopener noreferrer"
-                  className="btn-primary text-sm py-2 px-5 flex items-center gap-2"
-                >
-                  Buka Proyek Sekarang <ExternalLink className="h-4 w-4" />
-                </a>
+                selectedProject.demoUrl.startsWith('/') ? (
+                  <Link
+                    to={selectedProject.demoUrl}
+                    onClick={() => setSelectedProject(null)}
+                    className="btn-primary text-sm py-2 px-5 flex items-center gap-2"
+                  >
+                    Buka Proyek Sekarang <ExternalLink className="h-4 w-4" />
+                  </Link>
+                ) : (
+                  <a 
+                    href={selectedProject.demoUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="btn-primary text-sm py-2 px-5 flex items-center gap-2"
+                  >
+                    Buka Proyek Sekarang <ExternalLink className="h-4 w-4" />
+                  </a>
+                )
               )}
             </div>
           </div>

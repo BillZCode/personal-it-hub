@@ -3,17 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CyberLab LKS - All-in-One Cybersecurity & CTF Analysis Workstation</title>
-  <link rel="stylesheet" href="./css/cyberlab.css?v=2.6.0">
+  <title>CyberLab - All-in-One Cybersecurity & CTF Analysis Workstation</title>
+  <link rel="stylesheet" href="./css/cyberlab.css?v=2.6.1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="light-mode">
 
   <!-- Top Navigation Bar -->
   <header class="app-header">
     <div class="brand-wrapper">
+      <button class="mobile-menu-btn" id="btn-cyberlab-menu" onclick="toggleCyberlabSidebar()" aria-label="Buka Menu Sidebar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
       <div class="brand-logo-badge">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
@@ -21,7 +28,7 @@
       </div>
       <div class="brand-text">
         <h1>
-          <span>CyberLab LKS</span>
+          <span>CyberLab</span>
           <span style="font-size:0.65rem;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);padding:2px 7px;border-radius:12px;color:var(--primary);font-family:var(--font-mono)">v2.5 CTF CORE</span>
         </h1>
         <p>Tactical Cybersecurity, Forensics & AI Copilot Workspace</p>
@@ -59,9 +66,10 @@
 
   <!-- App Body Layout -->
   <div class="app-container">
+    <div class="sidebar-backdrop" id="cyberlab-sidebar-backdrop" onclick="toggleCyberlabSidebar(false)"></div>
     
     <!-- Sidebar Navigation -->
-    <aside class="app-sidebar">
+    <aside class="app-sidebar" id="cyberlab-sidebar">
       <div class="sidebar-section-title">MAIN WORKSPACE</div>
       <a class="nav-item active" data-view="dashboard" onclick="switchView('dashboard')">
         <div class="nav-item-left">
@@ -169,8 +177,8 @@
       <section id="view-dashboard" class="view-container active">
         <div class="view-header">
           <div class="view-title-group">
-            <h1>🛡️ CyberLab LKS Workstation</h1>
-            <p>Unified cybersecurity toolkit and investigation environment untuk LKS Cyber Security & CTF.</p>
+            <h1>🛡️ CyberLab Workstation</h1>
+            <p>Unified cybersecurity toolkit and investigation environment untuk Cyber Security & CTF.</p>
           </div>
           <div style="display:flex;gap:8px;">
             <button class="btn-action" onclick="openAutoTriageModal()">⚡ Auto-Triage Berkas</button>
@@ -1007,6 +1015,23 @@
             <span>&rarr;</span>
           </button>
         </div>
+        <div style="margin-top:10px;padding:8px 12px;background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:6px;display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="display:flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--text-muted);">
+              <span id="cyberlab-key-indicator" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#22c55e;"></span>
+              <span id="cyberlab-key-status">Mode: Server Default (Aktif)</span>
+            </div>
+            <button type="button" class="btn-secondary" style="padding:2px 6px;font-size:0.65rem;" onclick="toggleCyberlabKeySettings()">⚙️ Kustomisasi API Key</button>
+          </div>
+          <div id="cyberlab-key-settings" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.06);">
+            <div style="font-size:0.68rem;color:var(--text-muted);margin-bottom:4px;">Masukkan API Key pribadi Anda (Google AI / OpenAI / OpenRouter / DeepSeek / Groq) atau kosongkan untuk menggunakan default server:</div>
+            <div style="display:flex;gap:6px;">
+              <input type="password" id="cyberlab-api-key-input" class="tool-textarea" style="height:30px;padding:4px 8px;font-size:0.75rem;flex:1;" placeholder="API Key (kosongkan untuk default server)...">
+              <button type="button" class="btn-secondary" style="padding:4px 8px;font-size:0.7rem;" onclick="saveCyberlabKey()">Simpan</button>
+            </div>
+          </div>
+        </div>
+
         <div id="ai-copilot-response" style="margin-top:14px;background:#030712;border:1px solid #1e293b;border-radius:8px;padding:14px;font-family:var(--font-mono);font-size:0.78rem;line-height:1.7;max-height:240px;overflow-y:auto;display:none;"></div>
       </div>
     </div>
@@ -1549,9 +1574,56 @@
       `;
     }
 
-    // AI Copilot Integration
+    // AI Copilot Integration & Dynamic API Key Management
+    function getCyberlabApiKey() {
+      return localStorage.getItem('omni_ai_api_key') || localStorage.getItem('cyberlab_api_key') || '';
+    }
+
+    function updateCyberlabKeyBadge() {
+      const key = getCyberlabApiKey();
+      const statusEl = document.getElementById('cyberlab-key-status');
+      const inputEl = document.getElementById('cyberlab-api-key-input');
+      if (statusEl) {
+        if (key) {
+          statusEl.textContent = `Mode: API Key Pribadi (${key.slice(0, 4)}••••${key.slice(-4)})`;
+          statusEl.style.color = '#38bdf8';
+        } else {
+          statusEl.textContent = 'Mode: Server Default (Aktif)';
+          statusEl.style.color = '#22c55e';
+        }
+      }
+      if (inputEl && !inputEl.value && key) {
+        inputEl.value = key;
+      }
+    }
+
+    function toggleCyberlabKeySettings() {
+      const box = document.getElementById('cyberlab-key-settings');
+      if (box) {
+        box.style.display = box.style.display === 'none' ? 'block' : 'none';
+        updateCyberlabKeyBadge();
+      }
+    }
+
+    function saveCyberlabKey() {
+      const val = document.getElementById('cyberlab-api-key-input').value.trim();
+      if (val) {
+        localStorage.setItem('omni_ai_api_key', val);
+        localStorage.setItem('cyberlab_api_key', val);
+        showToast('API Key pribadi disimpan', 'success');
+      } else {
+        localStorage.removeItem('omni_ai_api_key');
+        localStorage.removeItem('cyberlab_api_key');
+        showToast('Kembali ke mode Server Default', 'info');
+      }
+      updateCyberlabKeyBadge();
+      const box = document.getElementById('cyberlab-key-settings');
+      if (box) box.style.display = 'none';
+    }
+
     function openAICopilot(prefilledPrompt = '') {
       document.getElementById('modal-ai-copilot').classList.add('active');
+      updateCyberlabKeyBadge();
       if (prefilledPrompt) {
         document.getElementById('ai-copilot-input').value = prefilledPrompt;
       }
@@ -1568,26 +1640,52 @@
       respBox.style.display = 'block';
       respBox.innerHTML = '<span style="color:#22c55e;">🤖 Menghubungkan ke Engine Omni AI (Gemma 4 & Flash 3 Core)...</span>';
 
-      try {
-        const res = await fetch('http://localhost:3002/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'gemini-3-flash-preview',
-            messages: [
-              { role: 'system', content: 'Anda adalah asisten CTF CyberLab LKS. Bantu user menganalisis ciphers, stego, reverse engineering, exploit concepts, dan triage tanpa memberikan jawaban curang atau exploit berbahaya terhadap sistem nyata.' },
-              { role: 'user', content: input }
-            ]
-          })
-        });
+      const customKey = getCyberlabApiKey();
+      const headers = { 'Content-Type': 'application/json' };
+      if (customKey) {
+        headers['Authorization'] = `Bearer ${customKey}`;
+      } else {
+        headers['Authorization'] = 'Bearer __SERVER_DEFAULT__';
+      }
 
-        if (res.ok) {
+      // Support mobile and production domain proxy: relative /chatbot/v1/chat/completions first, then standalone fallback
+      const candidateEndpoints = [
+        '/chatbot/v1/chat/completions',
+        '/v1/chat/completions',
+        'http://localhost:3002/v1/chat/completions'
+      ];
+
+      let res = null;
+      let lastErr = null;
+
+      for (const endpoint of candidateEndpoints) {
+        try {
+          res = await fetch(endpoint, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({
+              model: 'gemini-3-flash-preview',
+              messages: [
+                { role: 'system', content: 'Anda adalah asisten CTF CyberLab LKS. Bantu user menganalisis ciphers, stego, reverse engineering, exploit concepts, dan triage tanpa memberikan jawaban curang atau exploit berbahaya terhadap sistem nyata.' },
+                { role: 'user', content: input }
+              ]
+            })
+          });
+          if (res.ok) break;
+        } catch (e) {
+          lastErr = e;
+        }
+      }
+
+      try {
+        if (res && res.ok) {
           const data = await res.json();
           const reply = data.choices?.[0]?.message?.content || 'Tidak ada respons.';
           respBox.innerHTML = `<div><b style="color:#22c55e;">Omni AI Analysis:</b></div><div style="white-space:pre-wrap;margin-top:6px;color:#f1f5f9;">${reply}</div>`;
         } else {
-          // Fallback heuristic explanation if offline
-          respBox.innerHTML = `<div><b style="color:#06b6d4;">AI Local Heuristic Helper:</b></div><div style="margin-top:6px;color:#f1f5f9;">Pertanyaan: "${input}"<br><br>💡 Rekomendasi CTF: Jika berkaitan dengan encoding periksa Base64/Hex/XOR. Jika berkas biner, periksa Magic Bytes 4-8 byte awal atau Strings regex flag pattern (misal: <code>flag{...}</code> atau <code>LKS{...}</code>). Anda juga dapat membuka tab penuh Omni AI di menu utama untuk streaming interaktif penuh!</div>`;
+          // Fallback heuristic explanation if offline or API error
+          const errDetail = res ? `HTTP ${res.status}` : (lastErr ? lastErr.message : 'Offline');
+          respBox.innerHTML = `<div><b style="color:#06b6d4;">AI Local Heuristic Helper:</b> <span style="font-size:0.7rem;color:#94a3b8;">(${errDetail})</span></div><div style="margin-top:6px;color:#f1f5f9;">Pertanyaan: "${input}"<br><br>💡 Rekomendasi CTF: Jika berkaitan dengan encoding periksa Base64/Hex/XOR. Jika berkas biner, periksa Magic Bytes 4-8 byte awal atau Strings regex flag pattern (misal: <code>flag{...}</code> atau <code>LKS{...}</code>). Anda juga dapat membuka tab penuh <b>Omni AI Assistant</b> di menu navigasi atas untuk berganti model & provider!</div>`;
         }
       } catch (err) {
         respBox.innerHTML = `<div><b style="color:#06b6d4;">AI Local Heuristic Helper:</b></div><div style="margin-top:6px;color:#f1f5f9;">Pertanyaan: "${input}"<br><br>💡 Rekomendasi CTF: Jika ciphertext memiliki frekuensi huruf dominan, gunakan modul Caesar/Vigenère pada tab Cryptography. Jika terdapat header misterius, gunakan hexdump di Digital Forensics. Anda juga dapat beralih ke tab <b>Omni AI Assistant</b> di website utama untuk berdiskusi real-time!</div>`;
@@ -1679,6 +1777,27 @@
       };
       exportDataAsFile('cyberlab-backup.json', JSON.stringify(data, null, 2), 'application/json');
     }
+
+    // Mobile Sidebar Drawer Toggle
+    function toggleCyberlabSidebar(forceState) {
+      const sidebar = document.getElementById('cyberlab-sidebar');
+      const backdrop = document.getElementById('cyberlab-sidebar-backdrop');
+      if (!sidebar) return;
+      const isOpen = forceState !== undefined ? forceState : !sidebar.classList.contains('open');
+      sidebar.classList.toggle('open', isOpen);
+      if (backdrop) backdrop.classList.toggle('active', isOpen);
+    }
+
+    // Auto-close sidebar on mobile after selecting a tool
+    const originalSwitchView = window.switchView;
+    window.switchView = function(viewId) {
+      if (typeof originalSwitchView === 'function') {
+        originalSwitchView(viewId);
+      }
+      if (window.innerWidth <= 840) {
+        toggleCyberlabSidebar(false);
+      }
+    };
   </script>
 </body>
 </html>

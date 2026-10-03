@@ -30,10 +30,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={cn(
-              'w-full px-4 py-2.5 bg-dark-900 border rounded-lg text-dark-100 placeholder-dark-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20',
+              'w-full px-4 py-2.5 bg-dark-900/80 border rounded-xl text-dark-100 placeholder-dark-500 backdrop-blur-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-400/20 focus:border-amber-400/80',
               leftIcon ? 'pl-10' : '',
               rightIcon ? 'pr-10' : '',
-              error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-dark-600 focus:border-primary-500',
+              error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-dark-700/80 hover:border-dark-600',
               props.disabled && 'opacity-50 cursor-not-allowed',
               className
             )}
@@ -85,8 +85,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           id={textareaId}
           className={cn(
-            'w-full px-4 py-2.5 bg-dark-900 border rounded-lg text-dark-100 placeholder-dark-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 resize-y min-h-[100px]',
-            error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-dark-600 focus:border-primary-500',
+            'w-full px-4 py-2.5 bg-dark-900/80 border rounded-xl text-dark-100 placeholder-dark-500 backdrop-blur-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-400/20 focus:border-amber-400/80 resize-y min-h-[100px]',
+            error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-dark-700/80 hover:border-dark-600',
             props.disabled && 'opacity-50 cursor-not-allowed',
             className
           )}
@@ -134,8 +134,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           id={selectId}
           className={cn(
-            'w-full px-4 py-2.5 bg-dark-900 border rounded-lg text-dark-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 appearance-none',
-            error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-dark-600 focus:border-primary-500',
+            'w-full px-4 py-2.5 bg-dark-900/80 border rounded-xl text-dark-100 backdrop-blur-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-400/20 focus:border-amber-400/80 appearance-none',
+            error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-dark-700/80 hover:border-dark-600',
             props.disabled && 'opacity-50 cursor-not-allowed',
             className
           )}

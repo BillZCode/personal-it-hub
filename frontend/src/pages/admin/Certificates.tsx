@@ -6,8 +6,10 @@ import { SkeletonCard } from '../../components/feedback/LoadingStates';
 import { Plus, Edit, Trash2, Search, Eye, Calendar } from 'lucide-react';
 import { cn, formatDate, formatRelativeTime } from '../../utils';
 import { Certificate } from '../../types';
+import { useDocumentTitle } from '../../hooks';
 
 export function AdminCertificates() {
+  useDocumentTitle('Manage Certificates - Admin');
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -65,18 +67,18 @@ export function AdminCertificates() {
         <Button onClick={() => { setEditingCert(null); setShowModal(true); }} leftIcon={<Plus className="h-4 w-4" />}>New Certificate</Button>
       </div>
 
-      <div className="card p-4"><Input placeholder="Search certificates..." value={search} onChange={(e) => setSearch(e.target.value)} leftIcon={<Search className="h-5 w-5" />} className="max-w-xs" /></div>
+      <div className="card p-4"><Input placeholder="Search certificates..." value={search} onChange={(e) => setSearch(e.target.value)} leftIcon={<Search className="h-5 w-5" />} aria-label="Search certificates" className="max-w-xs" /></div>
 
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">{Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}</div>
       ) : certificates.length === 0 ? (
         <div className="text-center py-12"><p className="text-dark-400">No certificates found.</p></div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="Certificates list">
           {certificates.map((cert) => (
-            <Card key={cert.id} className="p-4 card-hover">
+            <Card key={cert.id} role="listitem" className="p-4 card-hover">
               <div className="flex items-start justify-between gap-2 mb-3">
-                <div className="p-2 bg-primary-500/20 rounded-lg"><Calendar className="h-5 w-5 text-primary-500" /></div>
+                <div className="p-2 bg-primary-500/20 rounded-lg"><Calendar className="h-5 w-5 text-primary-500" aria-hidden="true" /></div>
                 {cert.expiryDate && new Date(cert.expiryDate) < new Date() && <Badge variant="danger" className="text-xs">Expired</Badge>}
               </div>
               <h3 className="font-semibold text-dark-100 mb-1">{cert.name}</h3>
@@ -86,8 +88,8 @@ export function AdminCertificates() {
                 {cert.expiryDate && <span>Expires: {formatDate(cert.expiryDate)}</span>}
               </div>
               <div className="flex gap-2">
-                <Button variant="ghost" size="sm" onClick={() => { setEditingCert(cert); setShowModal(true); }}><Edit className="h-4 w-4" /></Button>
-                <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm(cert)}><Trash2 className="h-4 w-4 text-red-400" /></Button>
+                <Button variant="ghost" size="sm" onClick={() => { setEditingCert(cert); setShowModal(true); }} aria-label={`Edit certificate ${cert.name}`}><Edit className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm(cert)} aria-label={`Delete certificate ${cert.name}`}><Trash2 className="h-4 w-4 text-red-400" /></Button>
               </div>
             </Card>
           ))}

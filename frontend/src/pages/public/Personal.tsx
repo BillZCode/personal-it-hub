@@ -1,6 +1,7 @@
 import { Card, Badge } from '../../components/ui';
 import { Gamepad2, Music, Film, Tv, Star, Calendar } from 'lucide-react';
 import { cn, formatRelativeTime } from '../../utils';
+import { useDocumentTitle } from '../../hooks';
 
 const currentlyPlaying = [
   { title: 'Strinova', platform: 'PC (Steam / Client)', status: 'Playing', lastPlayed: '2026-09-08', cover: '/images/personal/strinova.png', progress: 75, rating: 4.8 },
@@ -33,6 +34,7 @@ const statusBadgeVariant: Record<string, 'success' | 'info' | 'warning' | 'neutr
 };
 
 export function Personal() {
+  useDocumentTitle('Personal & Media');
   return (
     <div className="max-w-7xl mx-auto space-y-10 animate-in pb-16">
       <div className="border-b border-dark-800/80 pb-6">
@@ -41,20 +43,26 @@ export function Personal() {
       </div>
 
       {/* Currently Playing */}
-      <section className="space-y-4">
-        <h2 className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
-          <Gamepad2 className="h-5 w-5 text-emerald-400" />
+      <section className="space-y-4" aria-labelledby="playing-heading">
+        <h2 id="playing-heading" className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
+          <Gamepad2 className="h-5 w-5 text-amber-400" aria-hidden="true" />
           Currently Playing
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="Daftar game yang sedang dimainkan">
           {currentlyPlaying.map((game, i) => (
-            <Card key={i} className="p-4 card-hover bg-dark-900/60 border border-dark-800">
+            <Card key={i} role="listitem" className="p-4 card-hover bg-dark-900/60 border border-dark-800">
               <div className="flex items-start gap-4">
                 <div className="w-24 h-32 bg-dark-950 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center border border-dark-750 shadow-md">
                   {game.cover ? (
-                    <img src={game.cover} alt={game.title} className="w-full h-full object-cover" />
+                    <img 
+                      src={game.cover} 
+                      alt={game.title} 
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover" 
+                    />
                   ) : (
-                    <Gamepad2 className="h-10 w-10 text-dark-500" />
+                    <Gamepad2 className="h-10 w-10 text-dark-500" aria-hidden="true" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -68,9 +76,9 @@ export function Personal() {
                   </div>
                   {game.lastPlayed && <p className="text-2xs text-dark-500 mt-1 font-mono">Last played: {formatRelativeTime(game.lastPlayed)}</p>}
                   {game.rating > 0 && (
-                    <div className="flex items-center gap-1 mt-2">
+                    <div className="flex items-center gap-1 mt-2" aria-label={`Rating: ${game.rating} out of 5`}>
                       {Array.from({ length: 5 }).map((_, idx) => (
-                        <Star key={idx} className={cn('h-3.5 w-3.5', idx < Math.floor(game.rating) ? 'text-yellow-400 fill-current' : 'text-dark-600')} />
+                        <Star key={idx} aria-hidden="true" className={cn('h-3.5 w-3.5', idx < Math.floor(game.rating) ? 'text-amber-400 fill-current' : 'text-dark-600')} />
                       ))}
                     </div>
                   )}
@@ -82,22 +90,28 @@ export function Personal() {
       </section>
 
       {/* Currently Listening */}
-      <section className="space-y-4">
-        <h2 className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
-          <Music className="h-5 w-5 text-cyan-400" />
+      <section className="space-y-4" aria-labelledby="listening-heading">
+        <h2 id="listening-heading" className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
+          <Music className="h-5 w-5 text-cyan-400" aria-hidden="true" />
           Currently Listening
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4" role="list" aria-label="Daftar lagu yang sedang didengarkan">
           {currentlyListening.map((track, i) => (
-            <Card key={i} className="p-4 bg-dark-900/60 border border-dark-800 card-hover">
+            <Card key={i} role="listitem" className="p-4 bg-dark-900/60 border border-dark-800 card-hover">
               <div className="flex items-center gap-4">
                 {track.cover ? (
                   <div className="w-14 h-14 rounded-lg overflow-hidden border border-dark-750 bg-dark-950 flex-shrink-0 shadow-md">
-                    <img src={track.cover} alt={track.title} className="w-full h-full object-cover" />
+                    <img 
+                      src={track.cover} 
+                      alt={track.title} 
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover" 
+                    />
                   </div>
                 ) : (
                   <div className="w-14 h-14 bg-dark-850 rounded-lg flex items-center justify-center flex-shrink-0 border border-dark-750">
-                    <Music className="h-6 w-6 text-dark-500" />
+                    <Music className="h-6 w-6 text-dark-500" aria-hidden="true" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
@@ -116,22 +130,28 @@ export function Personal() {
       </section>
 
       {/* Anime / Movies */}
-      <section className="space-y-4">
-        <h2 className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
-          <Tv className="h-5 w-5 text-purple-400" />
+      <section className="space-y-4" aria-labelledby="anime-heading">
+        <h2 id="anime-heading" className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
+          <Tv className="h-5 w-5 text-purple-400" aria-hidden="true" />
           Anime / Movies
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4" role="list" aria-label="Daftar anime dan film">
           {animeMovies.map((item, i) => (
-            <Card key={i} className="p-4 card-hover bg-dark-900/60 border border-dark-800">
+            <Card key={i} role="listitem" className="p-4 card-hover bg-dark-900/60 border border-dark-800">
               <div className="flex items-start gap-4">
                 <div className="w-24 h-32 bg-dark-950 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center border border-dark-750 shadow-md">
                   {item.cover ? (
-                    <img src={item.cover} alt={item.title} className="w-full h-full object-cover" />
+                    <img 
+                      src={item.cover} 
+                      alt={item.title} 
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover" 
+                    />
                   ) : item.type === 'Anime' ? (
-                    <Tv className="h-10 w-10 text-dark-500" />
+                    <Tv className="h-10 w-10 text-dark-500" aria-hidden="true" />
                   ) : (
-                    <Film className="h-10 w-10 text-dark-500" />
+                    <Film className="h-10 w-10 text-dark-500" aria-hidden="true" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -146,9 +166,9 @@ export function Personal() {
                     {item.progress > 0 && <span className="text-2xs text-dark-400 font-mono">{item.progress}/{item.episodes || 1}</span>}
                   </div>
                   {item.rating > 0 && (
-                    <div className="flex items-center gap-1 mt-2">
+                    <div className="flex items-center gap-1 mt-2" aria-label={`Rating: ${item.rating} out of 5`}>
                       {Array.from({ length: 5 }).map((_, idx) => (
-                        <Star key={idx} className={cn('h-3.5 w-3.5', idx < Math.floor(item.rating) ? 'text-yellow-400 fill-current' : 'text-dark-600')} />
+                        <Star key={idx} aria-hidden="true" className={cn('h-3.5 w-3.5', idx < Math.floor(item.rating) ? 'text-amber-400 fill-current' : 'text-dark-600')} />
                       ))}
                     </div>
                   )}
@@ -160,15 +180,15 @@ export function Personal() {
       </section>
 
       {/* Linux Setup Reference */}
-      <section className="space-y-4">
-        <h2 className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-emerald-400" />
+      <section className="space-y-4" aria-labelledby="linux-overview-heading">
+        <h2 id="linux-overview-heading" className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-amber-400" aria-hidden="true" />
           Linux Setup Overview
         </h2>
         <Card className="p-6 bg-dark-900/60 border border-dark-800">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h3 className="font-semibold text-dark-100 mb-3 font-mono text-sm uppercase text-emerald-400">System Environment</h3>
+              <h3 className="font-semibold text-dark-100 mb-3 font-mono text-sm uppercase text-amber-400">System Environment</h3>
               <dl className="space-y-2 text-xs sm:text-sm">
                 <div className="grid grid-cols-2 gap-2 py-1 border-b border-dark-800">
                   <dt className="text-dark-400">Distribution</dt>
@@ -193,10 +213,10 @@ export function Personal() {
               </dl>
             </div>
             <div>
-              <h3 className="font-semibold text-dark-100 mb-3 font-mono text-sm uppercase text-emerald-400">Key Engineering CLI Tools</h3>
-              <div className="flex flex-wrap gap-2">
+              <h3 className="font-semibold text-dark-100 mb-3 font-mono text-sm uppercase text-amber-400">Key Engineering CLI Tools</h3>
+              <div className="flex flex-wrap gap-2" role="list" aria-label="Daftar tools CLI teknik">
                 {['btop', 'fzf', 'ripgrep', 'fd', 'eza', 'zoxide', 'lazygit', 'docker', 'kubectl', 'terraform', 'ansible', 'nvim'].map((tool) => (
-                  <span key={tool} className="text-xs font-mono px-2.5 py-1 rounded bg-dark-850 text-emerald-400 border border-dark-750">
+                  <span key={tool} role="listitem" className="text-xs font-mono px-2.5 py-1 rounded bg-dark-850 text-amber-400 border border-dark-750">
                     {tool}
                   </span>
                 ))}

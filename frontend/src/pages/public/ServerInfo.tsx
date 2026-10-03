@@ -6,6 +6,7 @@ import {
   TrendingUp, RefreshCw, Thermometer, Monitor, Zap
 } from 'lucide-react';
 import { cn, formatUptime } from '../../utils';
+import { useDocumentTitle } from '../../hooks';
 
 function formatBitsPerSecond(bits: number): string {
   if (bits < 1000) return `${bits.toFixed(0)} bps`;
@@ -26,7 +27,13 @@ function ProgressBar({ value, color }: { value: number; color: string }) {
   }[color] || 'from-emerald-500 to-emerald-400';
 
   return (
-    <div className="h-2 bg-dark-800 rounded-full overflow-hidden">
+    <div 
+      className="h-2 bg-dark-800 rounded-full overflow-hidden"
+      role="progressbar" 
+      aria-valuenow={Math.round(clampedValue)} 
+      aria-valuemin={0} 
+      aria-valuemax={100}
+    >
       <div
         className={`h-full bg-gradient-to-r ${colorClass} rounded-full transition-all duration-700 ease-out`}
         style={{ width: `${clampedValue}%` }}
@@ -40,11 +47,11 @@ function MetricCard({ label, value, icon: Icon, color, bg, progress }: {
   color: string; bg: string; progress?: number;
 }) {
   return (
-    <Card className="p-5 bg-dark-900/60 border border-dark-800 hover:border-emerald-500/30 transition-all">
+    <Card role="listitem" aria-label={`${label}: ${value}`} className="p-5 bg-dark-900/60 border border-dark-800 hover:border-amber-500/30 transition-all">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className={cn('p-2.5 rounded-xl border border-white/5', bg)}>
-            <Icon className={cn('h-5 w-5', color)} />
+            <Icon className={cn('h-5 w-5', color)} aria-hidden="true" />
           </div>
           <div>
             <p className="text-xs font-mono text-dark-400 uppercase tracking-wider">{label}</p>
@@ -63,6 +70,7 @@ function MetricCard({ label, value, icon: Icon, color, bg, progress }: {
 }
 
 export function ServerInfo() {
+  useDocumentTitle('Server Information');
   const [autoRefresh, setAutoRefresh] = useState(true);
   const refreshInterval = 3000;
 
@@ -103,10 +111,20 @@ export function ServerInfo() {
         <div className="flex items-center gap-3">
           <label className="flex items-center gap-2 text-xs font-mono text-dark-300 cursor-pointer">
             <div
+              role="switch"
+              tabIndex={0}
+              aria-checked={autoRefresh}
+              aria-label="Toggle pembaruan otomatis metrik server"
               onClick={() => setAutoRefresh(!autoRefresh)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setAutoRefresh(!autoRefresh);
+                }
+              }}
               className={cn(
-                'relative w-10 h-5 rounded-full transition-colors cursor-pointer',
-                autoRefresh ? 'bg-emerald-500' : 'bg-dark-700'
+                'relative w-10 h-5 rounded-full transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-500/50',
+                autoRefresh ? 'bg-amber-500' : 'bg-dark-700'
               )}
             >
               <div className={cn(
@@ -114,12 +132,12 @@ export function ServerInfo() {
                 autoRefresh ? 'left-5.5 translate-x-0.5' : 'left-0.5'
               )} />
             </div>
-            <span className={autoRefresh ? 'text-emerald-400' : 'text-dark-500'}>
+            <span className={autoRefresh ? 'text-amber-400 font-semibold' : 'text-dark-500'}>
               {autoRefresh ? `Live (${refreshInterval/1000}s)` : 'Paused'}
             </span>
           </label>
-          <Button variant="secondary" size="sm" onClick={() => refetch()} className="text-xs font-mono">
-            <RefreshCw className="h-3.5 w-3.5 mr-1" />
+          <Button variant="secondary" size="sm" onClick={() => refetch()} className="text-xs font-mono" aria-label="Segarkan metrik server sekarang">
+            <RefreshCw className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
             Refresh
           </Button>
         </div>
@@ -127,28 +145,30 @@ export function ServerInfo() {
 
       {/* Live indicator */}
       <div className="flex items-center gap-2 text-2xs font-mono text-dark-500">
-        <div className={cn('w-2 h-2 rounded-full', autoRefresh ? 'bg-emerald-400 animate-pulse' : 'bg-dark-600')} />
+        <div className={cn('w-2 h-2 rounded-full', autoRefresh ? 'bg-amber-400 animate-pulse' : 'bg-dark-600')} aria-hidden="true" />
         {lastUpdate ? `Last updated: ${lastUpdate.toLocaleTimeString()}` : 'Connecting...'}
       </div>
 
       {/* Live Metrics */}
-      <section>
-        <h2 className="text-xs font-mono font-bold text-dark-400 uppercase tracking-wider mb-4">LIVE METRICS TELEMETRY</h2>
+      <section aria-labelledby="live-metrics-heading">
+        <h2 id="live-metrics-heading" className="text-xs font-mono font-bold text-dark-400 uppercase tracking-wider mb-4">
+          LIVE METRICS TELEMETRY
+        </h2>
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="Memuat metrik server">
             {[...Array(6)].map((_, i) => (
-              <Card key={i} className="p-5 animate-pulse bg-dark-900/60 border border-dark-800">
+              <Card key={i} role="listitem" className="p-5 animate-pulse bg-dark-900/60 border border-dark-800">
                 <div className="h-12 bg-dark-800 rounded" />
               </Card>
             ))}
           </div>
         ) : error ? (
-          <Card className="p-6 text-center bg-dark-900/60 border border-dark-800">
-            <p className="text-rose-400 mb-4 text-sm">Failed to load live metrics</p>
-            <Button onClick={() => refetch()}>Retry</Button>
+          <Card className="p-6 text-center bg-dark-900/60 border border-dark-800" role="alert">
+            <p className="text-rose-400 mb-4 text-sm font-mono">Gagal memuat telemetri live server</p>
+            <Button onClick={() => refetch()} aria-label="Coba ambil data kembali">Coba Lagi</Button>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="Daftar metrik telemetri server">
             {metrics.map((m) => (
               <MetricCard key={m.label} {...m} />
             ))}
@@ -158,8 +178,10 @@ export function ServerInfo() {
 
       {/* Resource Usage Summary */}
       {data && (
-        <section>
-          <h2 className="text-xs font-mono font-bold text-dark-400 uppercase tracking-wider mb-4">RESOURCE UTILIZATION</h2>
+        <section aria-labelledby="resource-utilization-heading">
+          <h2 id="resource-utilization-heading" className="text-xs font-mono font-bold text-dark-400 uppercase tracking-wider mb-4">
+            RESOURCE UTILIZATION
+          </h2>
           <Card className="p-6 bg-dark-900/60 border border-dark-800">
             <div className="space-y-5">
               {[
@@ -181,13 +203,15 @@ export function ServerInfo() {
       )}
 
       {/* System Details */}
-      <section>
-        <h2 className="text-xs font-mono font-bold text-dark-400 uppercase tracking-wider mb-4">SYSTEM ENVIRONMENT</h2>
+      <section aria-labelledby="system-env-heading">
+        <h2 id="system-env-heading" className="text-xs font-mono font-bold text-dark-400 uppercase tracking-wider mb-4">
+          SYSTEM ENVIRONMENT
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* OS & Runtime */}
           <Card className="p-5 bg-dark-900/60 border border-dark-800">
             <h3 className="font-semibold mb-4 flex items-center gap-2 text-dark-100 font-mono text-sm">
-              <Server className="h-4 w-4 text-emerald-400" /> Host System
+              <Server className="h-4 w-4 text-emerald-400" aria-hidden="true" /> Host System
             </h3>
             <div className="space-y-3 text-xs">
               {[
@@ -209,12 +233,12 @@ export function ServerInfo() {
           {/* Network */}
           <Card className="p-5 bg-dark-900/60 border border-dark-800">
             <h3 className="font-semibold mb-4 flex items-center gap-2 text-dark-100 font-mono text-sm">
-              <TrendingUp className="h-4 w-4 text-cyan-400" /> Network Throughput (Live)
+              <TrendingUp className="h-4 w-4 text-cyan-400" aria-hidden="true" /> Network Throughput (Live)
             </h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <Wifi className="h-4 w-4 text-cyan-400" />
+                  <Wifi className="h-4 w-4 text-cyan-400" aria-hidden="true" />
                   <span className="text-xs font-mono text-dark-300">Download Rate</span>
                 </div>
                 <span className="font-mono text-base font-bold text-cyan-400">
@@ -223,7 +247,7 @@ export function ServerInfo() {
               </div>
               <div className="flex items-center justify-between p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-purple-400" />
+                  <Activity className="h-4 w-4 text-purple-400" aria-hidden="true" />
                   <span className="text-xs font-mono text-dark-300">Upload Rate</span>
                 </div>
                 <span className="font-mono text-base font-bold text-purple-400">
@@ -236,14 +260,16 @@ export function ServerInfo() {
       </section>
 
       {/* Hardware Specs - Actual Laptop */}
-      <section>
-        <h2 className="text-xs font-mono font-bold text-dark-400 uppercase tracking-wider mb-4">HARDWARE ARCHITECTURE</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <section aria-labelledby="hardware-arch-heading">
+        <h2 id="hardware-arch-heading" className="text-xs font-mono font-bold text-dark-400 uppercase tracking-wider mb-4">
+          HARDWARE ARCHITECTURE
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" role="list" aria-label="Daftar spesifikasi hardware">
           {/* CPU */}
-          <Card className="p-5 bg-dark-900/60 border border-dark-800">
+          <Card role="listitem" className="p-5 bg-dark-900/60 border border-dark-800">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20">
-                <Cpu className="h-5 w-5" />
+                <Cpu className="h-5 w-5" aria-hidden="true" />
               </div>
               <div>
                 <p className="text-2xs font-mono text-dark-500 uppercase tracking-wider">Processor</p>
@@ -268,10 +294,10 @@ export function ServerInfo() {
           </Card>
 
           {/* RAM */}
-          <Card className="p-5 bg-dark-900/60 border border-dark-800">
+          <Card role="listitem" className="p-5 bg-dark-900/60 border border-dark-800">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20">
-                <MemoryStick className="h-5 w-5" />
+              <div className="p-2.5 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20">
+                <MemoryStick className="h-5 w-5" aria-hidden="true" />
               </div>
               <div>
                 <p className="text-2xs font-mono text-dark-500 uppercase tracking-wider">Memory</p>
@@ -294,20 +320,20 @@ export function ServerInfo() {
               <div className="mt-3 pt-2 border-t border-dark-800">
                 <div className="flex justify-between text-2xs mb-1 font-mono">
                   <span className="text-dark-500">Active Usage</span>
-                  <span className="text-emerald-400">
+                  <span className="text-amber-400">
                     ~{((data?.ramUsage || 0) / 100 * 24).toFixed(1)} GB / 24 GB
                   </span>
                 </div>
-                <ProgressBar value={data?.ramUsage || 0} color="green" />
+                <ProgressBar value={data?.ramUsage || 0} color="orange" />
               </div>
             </div>
           </Card>
 
           {/* Storage */}
-          <Card className="p-5 bg-dark-900/60 border border-dark-800">
+          <Card role="listitem" className="p-5 bg-dark-900/60 border border-dark-800">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2.5 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20">
-                <HardDrive className="h-5 w-5" />
+                <HardDrive className="h-5 w-5" aria-hidden="true" />
               </div>
               <div>
                 <p className="text-2xs font-mono text-dark-500 uppercase tracking-wider">Storage</p>
@@ -316,7 +342,7 @@ export function ServerInfo() {
             </div>
             <div className="space-y-2.5 text-xs">
               <div className="p-2.5 bg-dark-950/60 rounded-lg border border-dark-800">
-                <p className="text-dark-300 font-medium mb-1 font-mono text-2xs text-emerald-400">Primary (NVMe)</p>
+                <p className="text-dark-300 font-medium mb-1 font-mono text-2xs text-amber-400">Primary (NVMe)</p>
                 {[
                   { label: 'Model', value: 'Intel SSD 512G' },
                   { label: 'Capacity', value: '476.9 GB' },
@@ -345,10 +371,10 @@ export function ServerInfo() {
           </Card>
 
           {/* GPU */}
-          <Card className="p-5 bg-dark-900/60 border border-dark-800">
+          <Card role="listitem" className="p-5 bg-dark-900/60 border border-dark-800">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2.5 bg-purple-500/10 rounded-xl text-purple-400 border border-purple-500/20">
-                <Monitor className="h-5 w-5" />
+                <Monitor className="h-5 w-5" aria-hidden="true" />
               </div>
               <div>
                 <p className="text-2xs font-mono text-dark-500 uppercase tracking-wider">Graphics</p>
@@ -373,10 +399,10 @@ export function ServerInfo() {
           </Card>
 
           {/* Laptop Info */}
-          <Card className="p-5 bg-dark-900/60 border border-dark-800">
+          <Card role="listitem" className="p-5 bg-dark-900/60 border border-dark-800">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20">
-                <Zap className="h-5 w-5" />
+              <div className="p-2.5 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20">
+                <Zap className="h-5 w-5" aria-hidden="true" />
               </div>
               <div>
                 <p className="text-2xs font-mono text-dark-500 uppercase tracking-wider">Device</p>
@@ -401,10 +427,10 @@ export function ServerInfo() {
           </Card>
 
           {/* Network Interfaces */}
-          <Card className="p-5 bg-dark-900/60 border border-dark-800">
+          <Card role="listitem" className="p-5 bg-dark-900/60 border border-dark-800">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2.5 bg-cyan-500/10 rounded-xl text-cyan-400 border border-cyan-500/20">
-                <Wifi className="h-5 w-5" />
+                <Wifi className="h-5 w-5" aria-hidden="true" />
               </div>
               <div>
                 <p className="text-2xs font-mono text-dark-500 uppercase tracking-wider">Connectivity</p>

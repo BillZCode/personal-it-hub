@@ -5,6 +5,7 @@ import { Card, CardContent, Badge, Button, Input, Textarea, Modal, ConfirmDialog
 import { Plus, Edit, Trash2, Calendar, Package, Bug, Wrench, Sparkles } from 'lucide-react';
 import { cn, formatDate, formatRelativeTime } from '../../utils';
 import { ChangelogEntry } from '../../types';
+import { useDocumentTitle } from '../../hooks';
 
 const typeConfig = {
   added: { label: 'Added', icon: Package, color: 'text-green-400', bg: 'bg-green-500/20' },
@@ -14,6 +15,7 @@ const typeConfig = {
 } as const;
 
 export function AdminChangelog() {
+  useDocumentTitle('Manage Changelog - Admin');
   const [showModal, setShowModal] = useState(false);
   const [editingEntry, setEditingEntry] = useState<ChangelogEntry | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<ChangelogEntry | null>(null);
@@ -79,7 +81,7 @@ export function AdminChangelog() {
       ) : entries.length === 0 ? (
         <div className="text-center py-12"><p className="text-dark-400">No changelog entries found.</p></div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4" role="feed" aria-label="Daftar rilis changelog">
           {entries.map((entry) => (
             <Card key={entry.id} className="p-4 card-hover">
               <div className="flex items-start justify-between gap-4 mb-3">
@@ -91,8 +93,8 @@ export function AdminChangelog() {
                   <p className="text-dark-400 text-sm">{formatDate(entry.date)}</p>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="ghost" size="sm" onClick={() => { setEditingEntry(entry); setShowModal(true); }}><Edit className="h-4 w-4" /></Button>
-                  <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm(entry)}><Trash2 className="h-4 w-4 text-red-400" /></Button>
+                  <Button variant="ghost" size="sm" onClick={() => { setEditingEntry(entry); setShowModal(true); }} aria-label={`Edit release ${entry.version}`}><Edit className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm(entry)} aria-label={`Delete release ${entry.version}`}><Trash2 className="h-4 w-4 text-red-400" /></Button>
                 </div>
               </div>
               <div className="space-y-3">

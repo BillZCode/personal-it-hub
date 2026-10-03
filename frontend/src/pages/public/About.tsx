@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
-import { Card } from '../../components/ui';
 import { User, Code2, Globe, Server, Terminal, Cpu, Gamepad2, BookOpen, Users, GitBranch, Sparkles } from 'lucide-react';
 import { animate, stagger } from 'animejs';
-import { cn } from '../../utils';
+import { useDocumentTitle } from '../../hooks';
 
 const skills = [
   { category: 'Networking', items: ['Cisco Packet Tracer', 'Inter-VLAN Routing', 'Multi-Area OSPF', 'Static Routing', 'NAT', 'DHCP Server', 'BIND9 DNS', 'Subnetting'], icon: Globe },
@@ -42,6 +41,8 @@ const interestsDetailed = [
 ];
 
 export function About() {
+  useDocumentTitle('About');
+
   // Staggered Anime.js entrance animations
   useEffect(() => {
     animate('.about-anim-card', {
@@ -66,8 +67,8 @@ export function About() {
       {/* Header with Cyberpunk Status Tag */}
       <div className="space-y-1 border-b border-dark-800/80 pb-6">
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-2xs font-mono font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_10px_rgba(52,211,153,0.15)]">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-2xs font-mono font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.15)]">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" aria-hidden="true" />
             BIOGRAFI & PROFIL
           </span>
           <span className="text-2xs font-mono text-dark-500">SABBIL / SMKN 1 DENPASAR / TKJ</span>
@@ -81,35 +82,35 @@ export function About() {
       </div>
 
       {/* Profil & Biografi Utama (Concentric Cyber Glassmorphic Card) */}
-      <section>
-        <div className="rounded-2xl bg-dark-900/40 p-1.5 border border-dark-800/80 shadow-2xl hover:border-emerald-500/30 transition-all duration-300">
+      <section aria-labelledby="bio-heading">
+        <div className="rounded-2xl bg-dark-900/40 p-1.5 border border-dark-800/80 shadow-2xl hover:border-amber-500/30 transition-all duration-300">
           <div className="rounded-xl bg-dark-950/80 p-6 sm:p-8 border border-dark-800/60 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-dark-800">
               <div className="flex items-center gap-4">
-                <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/25 rounded-2xl text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
-                  <User className="h-8 w-8" />
+                <div className="p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-2xl text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                  <User className="h-8 w-8" aria-hidden="true" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-dark-100 tracking-tight flex items-center gap-2">
+                  <h2 id="bio-heading" className="text-2xl font-bold text-dark-100 tracking-tight flex items-center gap-2">
                     <span>Sabbil Abdillah Ferdyansyah</span>
                   </h2>
-                  <p className="text-xs font-mono text-emerald-400 mt-0.5">SMKN 1 Denpasar • Teknik Komputer dan Jaringan (TKJ)</p>
+                  <p className="text-xs font-mono text-amber-400 mt-0.5">SMKN 1 Denpasar • Teknik Komputer dan Jaringan (TKJ)</p>
                 </div>
               </div>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-dark-900 border border-dark-750 text-2xs font-mono text-dark-300 shadow-inner">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" aria-hidden="true"></span>
                 <span>DENPASAR, BALI</span>
               </div>
             </div>
 
             <div className="space-y-6 text-dark-300 leading-relaxed text-sm sm:text-base">
               <p className="text-base sm:text-lg text-dark-200 font-medium leading-relaxed">
-                Sabbil Abdillah Ferdyansyah adalah seorang pelajar dan praktisi muda di bidang teknologi informasi asal Denpasar, Bali. Saat ini, ia menempuh pendidikan di <span className="text-emerald-400 font-semibold">SMKN 1 Denpasar</span> pada jurusan <span className="text-emerald-400 font-semibold">Teknik Komputer dan Jaringan (TKJ)</span>.
+                Sabbil Abdillah Ferdyansyah adalah seorang pelajar dan praktisi muda di bidang teknologi informasi asal Denpasar, Bali. Saat ini, ia menempuh pendidikan di <span className="text-amber-400 font-semibold">SMKN 1 Denpasar</span> pada jurusan <span className="text-amber-400 font-semibold">Teknik Komputer dan Jaringan (TKJ)</span>.
               </p>
 
               <div className="bg-dark-900/60 p-5 rounded-xl border border-dark-800/90 space-y-4 hover:border-dark-700 transition-colors">
                 <h3 className="text-base font-semibold text-dark-100 flex items-center gap-2 font-mono">
-                  <Globe className="h-5 w-5 text-emerald-400" />
+                  <Globe className="h-5 w-5 text-amber-400" aria-hidden="true" />
                   Pendidikan dan Keahlian Teknis
                 </h3>
                 <p className="text-sm sm:text-base text-dark-300">
@@ -125,24 +126,25 @@ export function About() {
       </section>
 
       {/* Minat dan Aktivitas */}
-      <section className="space-y-4">
+      <section className="space-y-4" aria-labelledby="interests-heading">
         <div className="flex items-center gap-2 border-b border-dark-800/80 pb-3">
-          <Code2 className="h-5 w-5 text-emerald-400" />
-          <h2 className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide">
+          <Code2 className="h-5 w-5 text-amber-400" aria-hidden="true" />
+          <h2 id="interests-heading" className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide">
             Minat dan Aktivitas
           </h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4" role="list" aria-label="Daftar minat dan aktivitas">
           {interestsDetailed.map((item) => (
             <div
               key={item.title}
-              className="about-anim-card group p-5 rounded-xl bg-dark-900/40 border border-dark-800 hover:border-emerald-500/40 hover:bg-dark-900/70 hover:translate-y-[-2px] transition-all duration-200 flex gap-4 shadow-sm hover:shadow-[0_8px_20px_-6px_rgba(16,185,129,0.12)]"
+              role="listitem"
+              className="about-anim-card group p-5 rounded-xl bg-dark-900/40 border border-dark-800 hover:border-amber-500/40 hover:bg-dark-900/70 hover:translate-y-[-2px] transition-all duration-200 flex gap-4 shadow-sm hover:shadow-[0_8px_20px_-6px_rgba(245,158,11,0.12)]"
             >
-              <div className="p-3 bg-dark-850 border border-dark-750 rounded-xl text-emerald-400 h-fit flex-shrink-0 group-hover:scale-110 group-hover:border-emerald-500/30 transition-all">
-                <item.icon className="h-6 w-6" />
+              <div className="p-3 bg-dark-850 border border-dark-750 rounded-xl text-amber-400 h-fit flex-shrink-0 group-hover:scale-110 group-hover:border-amber-500/30 transition-all">
+                <item.icon className="h-6 w-6" aria-hidden="true" />
               </div>
               <div className="space-y-1.5 min-w-0">
-                <h3 className="font-semibold text-dark-100 text-sm sm:text-base group-hover:text-emerald-300 transition-colors">
+                <h3 className="font-semibold text-dark-100 text-sm sm:text-base group-hover:text-amber-300 transition-colors">
                   {item.title}
                 </h3>
                 <p className="text-dark-400 text-xs sm:text-sm leading-relaxed">
@@ -155,22 +157,23 @@ export function About() {
       </section>
 
       {/* Keahlian & Bidang Kompetensi */}
-      <section className="space-y-4">
+      <section className="space-y-4" aria-labelledby="skills-heading">
         <div className="flex items-center gap-2 border-b border-dark-800/80 pb-3">
-          <Server className="h-5 w-5 text-emerald-400" />
-          <h2 className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide">
+          <Server className="h-5 w-5 text-amber-400" aria-hidden="true" />
+          <h2 id="skills-heading" className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide">
             Keahlian & Bidang Kompetensi
           </h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="Daftar bidang kompetensi">
           {skills.map((skill) => (
             <div
               key={skill.category}
-              className="about-anim-card p-4 rounded-xl bg-dark-900/40 border border-dark-800 hover:border-emerald-500/30 hover:bg-dark-900/70 transition-all space-y-3 shadow-sm"
+              role="listitem"
+              className="about-anim-card p-4 rounded-xl bg-dark-900/40 border border-dark-800 hover:border-amber-500/30 hover:bg-dark-900/70 transition-all space-y-3 shadow-sm"
             >
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-dark-850 border border-dark-750 text-emerald-400">
-                  <skill.icon className="h-4 w-4" />
+                <div className="p-2 rounded-lg bg-dark-850 border border-dark-750 text-amber-400">
+                  <skill.icon className="h-4 w-4" aria-hidden="true" />
                 </div>
                 <h3 className="font-mono text-xs font-bold text-dark-100 uppercase tracking-wider">
                   {skill.category}
@@ -180,7 +183,7 @@ export function About() {
                 {skill.items.map((item) => (
                   <span
                     key={item}
-                    className="text-2xs font-mono px-2 py-1 rounded-md bg-dark-850 text-dark-300 border border-dark-750/80 hover:text-emerald-300 hover:border-emerald-500/30 transition-colors"
+                    className="text-2xs font-mono px-2 py-1 rounded-md bg-dark-850 text-dark-300 border border-dark-750/80 hover:text-amber-300 hover:border-amber-500/30 transition-colors"
                   >
                     {item}
                   </span>
@@ -192,18 +195,19 @@ export function About() {
       </section>
 
       {/* Teknologi & Tools yang Dikuasai */}
-      <section className="space-y-4">
+      <section className="space-y-4" aria-labelledby="tech-heading">
         <div className="flex items-center gap-2 border-b border-dark-800/80 pb-3">
-          <Sparkles className="h-5 w-5 text-emerald-400" />
-          <h2 className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide">
+          <Sparkles className="h-5 w-5 text-amber-400" aria-hidden="true" />
+          <h2 id="tech-heading" className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide">
             Teknologi & Tools yang Dikuasai
           </h2>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2" role="list" aria-label="Daftar teknologi dan tools">
           {technologies.map((tech) => (
             <span
               key={tech}
-              className="about-tech-chip text-xs font-mono px-3.5 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hover:border-emerald-500/50 hover:bg-emerald-500/20 hover:scale-105 active:scale-95 transition-all shadow-sm cursor-default"
+              role="listitem"
+              className="about-tech-chip text-xs font-mono px-3.5 py-1.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium hover:border-amber-500/50 hover:bg-amber-500/20 hover:scale-105 active:scale-95 transition-all shadow-sm cursor-default"
             >
               {tech}
             </span>

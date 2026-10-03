@@ -19,6 +19,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/cyberlab/, ''),
       },
+      '/devkit': {
+        target: 'http://localhost:3004',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/devkit/, ''),
+      },
       '/chatbot': {
         target: 'http://localhost:3002',
         changeOrigin: true,
@@ -39,6 +44,11 @@ export default defineConfig({
         target: 'http://localhost:3003',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/cyberlab/, ''),
+      },
+      '/devkit': {
+        target: 'http://localhost:3004',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/devkit/, ''),
       },
       '/chatbot': {
         target: 'http://localhost:3002',

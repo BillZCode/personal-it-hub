@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, Badge, Button } from '../../components/ui';
 import { HomelabTopologyVisualizer } from '../../components/data-display';
-import { animate } from '../../hooks';
+import { animate, useDocumentTitle } from '../../hooks';
 import {
   FolderKanban, FileText, Award, Image, GitBranch, MessageSquare, BarChart3, Users, TrendingUp, Plus,
   Cpu, HardDrive, MemoryStick, Radio, RefreshCw, Wrench, Activity
@@ -28,6 +28,7 @@ const recentActivity = [
 ];
 
 export function AdminDashboard() {
+  useDocumentTitle('Admin Console');
   const [clientPing, setClientPing] = useState<number | null>(null);
   const [pinging, setPinging] = useState(false);
   const pingCounterRef = useRef<HTMLSpanElement>(null);
@@ -127,10 +128,11 @@ export function AdminDashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4" role="list" aria-label="Realtime node telemetry metrics">
           {serverStats.map((stat, idx) => (
             <div
               key={stat.label}
+              role="listitem"
               className={cn(
                 'p-5 rounded-2xl bg-dark-900/80 dark:bg-dark-900/60 backdrop-blur-md border border-dark-750/80 shadow-console flex flex-col justify-between group transition-all',
                 idx === 0 && 'hover:border-cyan-500/40 hover:shadow-card-hover',
@@ -180,9 +182,10 @@ export function AdminDashboard() {
           <button
             onClick={testLatency}
             disabled={pinging}
+            aria-label="Uji latensi koneksi client ke server"
             className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-2xs font-mono font-semibold bg-dark-800 dark:bg-dark-850 hover:bg-dark-700 dark:hover:bg-dark-800 text-dark-200 border border-dark-700 hover:border-emerald-500/40 transition-colors shadow-sm"
           >
-            <RefreshCw className={cn('h-3 w-3 text-emerald-500 dark:text-emerald-400', pinging && 'animate-spin')} />
+            <RefreshCw className={cn('h-3 w-3 text-emerald-500 dark:text-emerald-400', pinging && 'animate-spin')} aria-hidden="true" />
             {pinging ? 'Measuring...' : 'Test Client Ping'}
           </button>
           <div className="text-2xs font-mono text-dark-400 flex items-center gap-1.5">
@@ -195,9 +198,9 @@ export function AdminDashboard() {
       </div>
 
       {/* Portal Metrics Overview Cards */}
-      <section className="space-y-4">
+      <section className="space-y-4" aria-labelledby="portal-metrics-heading">
         <div className="flex items-center justify-between">
-          <h2 className="text-base sm:text-lg font-bold font-mono tracking-tight text-dark-100 uppercase">
+          <h2 id="portal-metrics-heading" className="text-base sm:text-lg font-bold font-mono tracking-tight text-dark-100 uppercase">
             PORTAL METRICS OVERVIEW
           </h2>
           {statsData?.isCloudflareConnected ? (
@@ -213,10 +216,11 @@ export function AdminDashboard() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4" role="list" aria-label="Portal metrics summary">
           {statCards.map((stat) => (
             <div
               key={stat.label}
+              role="listitem"
               className={cn(
                 'p-5 rounded-2xl bg-dark-900/80 dark:bg-dark-900/60 backdrop-blur-md border border-dark-750/80 shadow-console hover:shadow-card-hover flex flex-col justify-between group transition-all',
                 stat.glow
@@ -224,7 +228,7 @@ export function AdminDashboard() {
             >
               <div className="flex items-center justify-between mb-3">
                 <div className={cn('p-2.5 rounded-xl border border-dark-700/60 dark:border-white/5 group-hover:scale-105 transition-transform shadow-sm', stat.bg)}>
-                  <stat.icon className={cn('h-5 w-5', stat.color)} />
+                  <stat.icon className={cn('h-5 w-5', stat.color)} aria-hidden="true" />
                 </div>
                 <div className="w-1.5 h-1.5 rounded-full bg-dark-700 group-hover:bg-emerald-400 transition-colors" />
               </div>
@@ -241,15 +245,15 @@ export function AdminDashboard() {
         </div>
       </section>
 
-      <section>
-        <h2 className="text-xl font-semibold mb-4">CONTENT OVERVIEW</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <section aria-labelledby="content-overview-heading">
+        <h2 id="content-overview-heading" className="text-xl font-semibold mb-4">CONTENT OVERVIEW</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4" role="list" aria-label="Content categories overview">
           {adminStats.map((stat) => (
-            <Link key={stat.label} to={stat.href} className="card-hover block">
+            <Link key={stat.label} to={stat.href} role="listitem" className="card-hover block">
               <Card className="p-5">
                 <div className="flex items-center gap-3">
                   <div className={cn('p-3 rounded-xl', stat.bg)}>
-                    <stat.icon className={cn('h-6 w-6', stat.color)} />
+                    <stat.icon className={cn('h-6 w-6', stat.color)} aria-hidden="true" />
                   </div>
                   <div>
                     <p className="font-mono text-2xl font-bold text-dark-100">{stat.value}</p>
@@ -263,52 +267,52 @@ export function AdminDashboard() {
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <section>
+        <section aria-labelledby="quick-actions-heading">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">QUICK ACTIONS</h2>
+            <h2 id="quick-actions-heading" className="text-xl font-semibold">QUICK ACTIONS</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Link to="/tools" className="card-hover p-4 flex items-center gap-3">
-              <div className="p-2 bg-emerald-500/20 rounded-lg"><Plus className="h-5 w-5 text-emerald-400" /></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="list" aria-label="Quick management actions">
+            <Link to="/tools" role="listitem" className="card-hover p-4 flex items-center gap-3">
+              <div className="p-2 bg-emerald-500/20 rounded-lg"><Plus className="h-5 w-5 text-emerald-400" aria-hidden="true" /></div>
               <div>
                 <span className="font-medium text-dark-100 block">Tools & Downloader</span>
                 <span className="text-2xs text-dark-500 font-mono">TikTok, Hash, Base64, QR</span>
               </div>
             </Link>
-            <Link to="/network" className="card-hover p-4 flex items-center gap-3">
-              <div className="p-2 bg-cyan-500/20 rounded-lg"><Plus className="h-5 w-5 text-cyan-400" /></div>
+            <Link to="/network" role="listitem" className="card-hover p-4 flex items-center gap-3">
+              <div className="p-2 bg-cyan-500/20 rounded-lg"><Plus className="h-5 w-5 text-cyan-400" aria-hidden="true" /></div>
               <div>
                 <span className="font-medium text-dark-100 block">Network Tools</span>
                 <span className="text-2xs text-dark-500 font-mono">Ping, DNS, Port Checker</span>
               </div>
             </Link>
-            <Link to="/server" className="card-hover p-4 flex items-center gap-3">
-              <div className="p-2 bg-purple-500/20 rounded-lg"><Plus className="h-5 w-5 text-purple-400" /></div>
+            <Link to="/server" role="listitem" className="card-hover p-4 flex items-center gap-3">
+              <div className="p-2 bg-purple-500/20 rounded-lg"><Plus className="h-5 w-5 text-purple-400" aria-hidden="true" /></div>
               <div>
                 <span className="font-medium text-dark-100 block">Server & System Info</span>
                 <span className="text-2xs text-dark-500 font-mono">Linux Debian Kernel Telemetry</span>
               </div>
             </Link>
-            <Link to="/admin/projects/new" className="card-hover p-4 flex items-center gap-3">
-              <div className="p-2 bg-green-500/20 rounded-lg"><Plus className="h-5 w-5 text-green-400" /></div>
+            <Link to="/admin/projects/new" role="listitem" className="card-hover p-4 flex items-center gap-3">
+              <div className="p-2 bg-green-500/20 rounded-lg"><Plus className="h-5 w-5 text-green-400" aria-hidden="true" /></div>
               <span className="font-medium text-dark-100">New Project</span>
             </Link>
-            <Link to="/admin/notes/new" className="card-hover p-4 flex items-center gap-3">
-              <div className="p-2 bg-blue-500/20 rounded-lg"><Plus className="h-5 w-5 text-blue-400" /></div>
+            <Link to="/admin/notes/new" role="listitem" className="card-hover p-4 flex items-center gap-3">
+              <div className="p-2 bg-blue-500/20 rounded-lg"><Plus className="h-5 w-5 text-blue-400" aria-hidden="true" /></div>
               <span className="font-medium text-dark-100">New Note</span>
             </Link>
-            <Link to="/admin/guestbook" className="card-hover p-4 flex items-center gap-3">
-              <div className="p-2 bg-pink-500/20 rounded-lg"><MessageSquare className="h-5 w-5 text-pink-400" /></div>
+            <Link to="/admin/guestbook" role="listitem" className="card-hover p-4 flex items-center gap-3">
+              <div className="p-2 bg-pink-500/20 rounded-lg"><MessageSquare className="h-5 w-5 text-pink-400" aria-hidden="true" /></div>
               <span className="font-medium text-dark-100">Moderate Guestbook</span>
             </Link>
           </div>
         </section>
 
-        <section>
-          <h2 className="text-xl font-semibold mb-4">RECENT ACTIVITY</h2>
-          <div className="space-y-3">
+        <section aria-labelledby="recent-activity-heading">
+          <h2 id="recent-activity-heading" className="text-xl font-semibold mb-4">RECENT ACTIVITY</h2>
+          <div className="space-y-3" role="list" aria-label="Recent activity list">
             {recentActivity.map((activity, i) => (
-              <Card key={i} className="p-4">
+              <Card key={i} role="listitem" className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className={cn('p-2 rounded-lg',
@@ -317,10 +321,10 @@ export function AdminDashboard() {
                       activity.type === 'approve' && 'bg-yellow-500/20',
                       activity.type === 'update' && 'bg-purple-500/20',
                     )}>
-                      {activity.type === 'create' && <Plus className="h-4 w-4 text-green-400" />}
-                      {activity.type === 'publish' && <FileText className="h-4 w-4 text-blue-400" />}
-                      {activity.type === 'approve' && <MessageSquare className="h-4 w-4 text-yellow-400" />}
-                      {activity.type === 'update' && <GitBranch className="h-4 w-4 text-purple-400" />}
+                      {activity.type === 'create' && <Plus className="h-4 w-4 text-green-400" aria-hidden="true" />}
+                      {activity.type === 'publish' && <FileText className="h-4 w-4 text-blue-400" aria-hidden="true" />}
+                      {activity.type === 'approve' && <MessageSquare className="h-4 w-4 text-yellow-400" aria-hidden="true" />}
+                      {activity.type === 'update' && <GitBranch className="h-4 w-4 text-purple-400" aria-hidden="true" />}
                     </div>
                     <div>
                       <p className="font-medium text-dark-100">{activity.action}</p>

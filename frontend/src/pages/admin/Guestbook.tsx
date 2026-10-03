@@ -6,9 +6,10 @@ import { SkeletonCard } from '../../components/feedback/LoadingStates';
 import { Search, CheckCircle2, XCircle, MessageSquare, Mail, User } from 'lucide-react';
 import { cn, formatDate, formatRelativeTime, getInitials } from '../../utils';
 import { GuestbookEntry } from '../../types';
-import { useToast } from '../../hooks';
+import { useToast, useDocumentTitle } from '../../hooks';
 
 export function AdminGuestbook() {
+  useDocumentTitle('Manage Guestbook - Admin');
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [approvedFilter, setApprovedFilter] = useState<'all' | 'approved' | 'pending'>('all');
@@ -60,12 +61,12 @@ export function AdminGuestbook() {
       ) : entries.length === 0 ? (
         <div className="text-center py-12"><MessageSquare className="h-12 w-12 text-dark-600 mx-auto mb-4" /><p className="text-dark-400">No entries found.</p></div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4" role="list" aria-label="Daftar pesan guestbook">
           {entries.map((entry) => (
-            <Card key={entry.id} className="p-4">
+            <Card key={entry.id} role="listitem" className="p-4">
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-primary-500/20 flex items-center justify-center flex-shrink-0">
-                  <span className="font-medium text-primary-500">{getInitials(entry.name)}</span>
+                <div className="w-10 h-10 rounded-full bg-amber-500/15 border border-amber-500/25 flex items-center justify-center flex-shrink-0" aria-hidden="true">
+                  <span className="font-medium text-amber-400">{getInitials(entry.name)}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
@@ -81,9 +82,9 @@ export function AdminGuestbook() {
                 </div>
                 <div className="flex flex-col gap-2">
                   {!entry.approved && (
-                    <Button size="sm" onClick={() => approveMutation.mutate(entry.id)} loading={approveMutation.isPending} leftIcon={<CheckCircle2 className="h-3 w-3" />}>Approve</Button>
+                    <Button size="sm" onClick={() => approveMutation.mutate(entry.id)} loading={approveMutation.isPending} leftIcon={<CheckCircle2 className="h-3 w-3" />} aria-label={`Setujui pesan dari ${entry.name}`}>Approve</Button>
                   )}
-                  <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm(entry)} className="text-red-400 hover:text-red-300"><XCircle className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm(entry)} aria-label={`Hapus pesan dari ${entry.name}`} className="text-red-400 hover:text-red-300"><XCircle className="h-4 w-4" /></Button>
                 </div>
               </div>
             </Card>

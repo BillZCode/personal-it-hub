@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { ErrorBoundary } from './components/feedback/ErrorBoundary';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { AdminLayout } from './layouts/AdminLayout';
@@ -26,6 +26,9 @@ const Changelog = React.lazy(() => import('./pages/public/Changelog').then(m => 
 const Contact = React.lazy(() => import('./pages/public/Contact').then(m => ({ default: m.Contact })));
 const Chatbot = React.lazy(() => import('./pages/public/Chatbot').then(m => ({ default: m.Chatbot })));
 const CyberLab = React.lazy(() => import('./pages/public/CyberLab').then(m => ({ default: m.CyberLab })));
+const DevKit = React.lazy(() => import('./pages/public/DevKit').then(m => ({ default: m.DevKit })));
+const NotFound = React.lazy(() => import('./pages/public/NotFound').then(m => ({ default: m.NotFound })));
+
 
 // Private Cloud Drive pages
 const DriveLayout = React.lazy(() => import('./layouts/DriveLayout').then(m => ({ default: m.DriveLayout })));
@@ -74,6 +77,8 @@ function App() {
             <Route path="ai" element={<Chatbot />} />
             <Route path="chatbot" element={<Chatbot />} />
             <Route path="cyberlab" element={<CyberLab />} />
+            <Route path="devkit" element={<DevKit />} />
+            <Route path="*" element={<NotFound />} />
           </Route>
 
           {/* Private Cloud Drive routes */}
@@ -97,9 +102,6 @@ function App() {
             <Route path="guestbook" element={<AdminGuestbook />} />
             <Route path="statistics" element={<AdminStatistics />} />
           </Route>
-
-          {/* Redirect unknown routes */}
-          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
     </ErrorBoundary>

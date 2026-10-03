@@ -340,11 +340,25 @@ export const driveApi = {
   createFolder: (name: string, parentId?: string | null) =>
     api.post<DriveItem>('/drive/folders', { name, parentId }),
 
-  upload: (file: File, parentId?: string | null) => {
+  upload: (
+    file: File,
+    parentId?: string | null,
+    onProgress?: (percent: number) => void
+  ) => {
     const formData = new FormData();
     formData.append('file', file);
-    if (parentId) formData.append('parentId', parentId);
-    return api.post<DriveItem>('/drive/upload', formData);
+    if (parentId && parentId !== 'null' && parentId !== 'undefined' && parentId.trim() !== '') {
+      formData.append('parentId', parentId.trim());
+    }
+    return api.post<DriveItem>('/drive/upload', formData, {
+      timeout: 0, // No timeout limit for files/videos upload
+      onUploadProgress: (progressEvent) => {
+        if (progressEvent.total) {
+          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          onProgress?.(percent);
+        }
+      },
+    });
   },
 
   rename: (id: string, name: string) =>

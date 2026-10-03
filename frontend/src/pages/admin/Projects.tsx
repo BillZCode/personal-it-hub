@@ -6,12 +6,14 @@ import { SkeletonCard } from '../../components/feedback/LoadingStates';
 import { Plus, Edit, Trash2, Search, Eye, Github, ExternalLink } from 'lucide-react';
 import { cn, formatDate, formatRelativeTime } from '../../utils';
 import { Project, ProjectStatus } from '../../types';
+import { useDocumentTitle } from '../../hooks';
 
 const statusColors: Record<ProjectStatus, 'warning' | 'info' | 'success' | 'neutral'> = {
   PLANNING: 'warning', IN_PROGRESS: 'info', COMPLETED: 'success', ARCHIVED: 'neutral',
 };
 
 export function AdminProjects() {
+  useDocumentTitle('Manage Projects - Admin');
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -83,7 +85,7 @@ export function AdminProjects() {
       </div>
 
       <div className="card p-4 flex flex-col sm:flex-row gap-4">
-        <Input placeholder="Search projects..." value={search} onChange={(e) => setSearch(e.target.value)} leftIcon={<Search className="h-5 w-5" />} className="flex-1 max-w-xs" />
+        <Input placeholder="Search projects..." value={search} onChange={(e) => setSearch(e.target.value)} leftIcon={<Search className="h-5 w-5" />} aria-label="Search projects" className="flex-1 max-w-xs" />
       </div>
 
       {isLoading ? (
@@ -96,7 +98,7 @@ export function AdminProjects() {
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full" aria-label="Projects management table">
             <thead>
               <tr className="border-b border-dark-700 text-left text-dark-400 text-sm">
                 <th className="pb-3 pr-4">Title</th>
@@ -125,8 +127,8 @@ export function AdminProjects() {
                   <td className="py-4 pr-4 text-sm text-dark-400 font-mono">{formatRelativeTime(project.updatedAt)}</td>
                   <td className="py-4">
                     <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => { setEditingProject(project); setShowModal(true); }}><Edit className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm(project)}><Trash2 className="h-4 w-4 text-red-400" /></Button>
+                      <Button variant="ghost" size="sm" onClick={() => { setEditingProject(project); setShowModal(true); }} aria-label={`Edit project ${project.title}`}><Edit className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm(project)} aria-label={`Delete project ${project.title}`}><Trash2 className="h-4 w-4 text-red-400" /></Button>
                     </div>
                   </td>
                 </tr>

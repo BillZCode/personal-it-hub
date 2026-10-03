@@ -10,17 +10,81 @@ if (!fs.existsSync(STORAGE_ROOT)) {
   fs.mkdirSync(STORAGE_ROOT, { recursive: true, mode: 0o700 });
 }
 
-// Security: Prevent Directory Traversal
+// Security: Prevent Directory Traversal & decode UTF-8 filenames
 export function sanitizeFileName(name: string): string {
+  let decoded = name;
+  try {
+    decoded = Buffer.from(name, 'latin1').toString('utf8');
+  } catch {
+    decoded = name;
+  }
   // Strip null bytes, slashes, and traversal sequences
-  return path.basename(name).replace(/[<>:"/\\|?*\x00-\x1F]/g, '_').trim() || 'unnamed_file';
+  // eslint-disable-next-line no-control-regex
+  return path.basename(decoded).replace(/[<>:"/\\|?*\x00-\x1F]/g, '_').trim() || 'unnamed_file';
+}
+
+// Infer MIME type if multer/browser provides generic octet-stream
+export function inferMimeType(fileName: string, currentMime?: string | null): string {
+  if (currentMime && currentMime !== 'application/octet-stream') {
+    return currentMime;
+  }
+  const ext = path.extname(fileName).toLowerCase();
+  const mimeMap: Record<string, string> = {
+    // Images
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif',
+    '.webp': 'image/webp',
+    '.svg': 'image/svg+xml',
+    '.bmp': 'image/bmp',
+    '.ico': 'image/x-icon',
+    // Videos
+    '.mp4': 'video/mp4',
+    '.webm': 'video/webm',
+    '.mkv': 'video/x-matroska',
+    '.mov': 'video/quicktime',
+    '.avi': 'video/x-msvideo',
+    '.flv': 'video/x-flv',
+    '.wmv': 'video/x-ms-wmv',
+    '.m4v': 'video/mp4',
+    // Audio
+    '.mp3': 'audio/mpeg',
+    '.wav': 'audio/wav',
+    '.ogg': 'audio/ogg',
+    '.m4a': 'audio/mp4',
+    '.flac': 'audio/flac',
+    // Documents
+    '.pdf': 'application/pdf',
+    '.txt': 'text/plain',
+    '.csv': 'text/csv',
+    '.json': 'application/json',
+    '.zip': 'application/zip',
+    '.tar': 'application/x-tar',
+    '.gz': 'application/gzip',
+  };
+  return mimeMap[ext] || currentMime || 'application/octet-stream';
 }
 
 export function assertSafeStoragePath(targetPath: string) {
   const resolved = path.resolve(targetPath);
-  if (!resolved.startsWith(STORAGE_ROOT)) {
+  const legacyRoot = path.resolve('/home/sabbil/Dokumen/TKJ/personal-it-hub-run/storage/personal-drive');
+  if (!resolved.startsWith(STORAGE_ROOT) && !resolved.startsWith(legacyRoot)) {
     throw new AppError('Access denied: directory traversal detected', 403, 'FORBIDDEN');
   }
+}
+
+export function resolveSafePath(targetPath: string): string {
+  const fileName = path.basename(targetPath);
+  const preferred = path.join(STORAGE_ROOT, fileName);
+  if (fs.existsSync(preferred)) {
+    return preferred;
+  }
+  const legacyPath = path.join('/home/sabbil/Dokumen/TKJ/personal-it-hub-run/storage/personal-drive', fileName);
+  if (fs.existsSync(legacyPath)) {
+    return legacyPath;
+  }
+  return preferred;
 }
 
 export const driveService = {
@@ -96,7 +160,7 @@ export const driveService = {
     // Move or write file to secure destination
     if (file.path) {
       fs.copyFileSync(file.path, destinationPath);
-      try { fs.unlinkSync(file.path); } catch (e) {}
+      try { fs.unlinkSync(file.path); } catch { /* ignore cleanup error */ }
     } else if (file.buffer) {
       fs.writeFileSync(destinationPath, file.buffer);
     }
@@ -105,7 +169,7 @@ export const driveService = {
       data: {
         name: cleanName,
         type: 'FILE',
-        mimeType: file.mimetype || 'application/octet-stream',
+        mimeType: inferMimeType(cleanName, file.mimetype),
         size: BigInt(file.size),
         storagePath: destinationPath,
         userId,
@@ -173,19 +237,40 @@ export const driveService = {
       }
     }
 
-    // If folder, recursively delete child physical files
+    // If folder, recursively delete all descendant files and subfolders from disk and DB
     if (item.type === 'FOLDER') {
+      const getAllFolderIds = async (folderIds: string[]): Promise<string[]> => {
+        const subfolders = await prisma.driveItem.findMany({
+          where: { userId, parentId: { in: folderIds }, type: 'FOLDER' },
+          select: { id: true },
+        });
+        if (subfolders.length === 0) return folderIds;
+        const subIds = subfolders.map((s) => s.id);
+        const deeper = await getAllFolderIds(subIds);
+        return [...folderIds, ...deeper];
+      };
+
+      const allFolderIds = await getAllFolderIds([item.id]);
+
       const childFiles = await prisma.driveItem.findMany({
-        where: { userId, parentId: item.id, type: 'FILE' },
+        where: { userId, parentId: { in: allFolderIds }, type: 'FILE' },
       });
+
       for (const child of childFiles) {
         if (child.storagePath && fs.existsSync(child.storagePath)) {
           try {
             assertSafeStoragePath(child.storagePath);
             fs.unlinkSync(child.storagePath);
-          } catch {}
+          } catch {
+            // ignore unlink error
+          }
         }
       }
+
+      // Clean up all descendant items in database
+      await prisma.driveItem.deleteMany({
+        where: { userId, parentId: { in: allFolderIds } },
+      });
     }
 
     return prisma.driveItem.delete({
@@ -198,13 +283,50 @@ export const driveService = {
       where: { userId, isTrash: true },
     });
 
-    for (const item of trashItems) {
-      if (item.type === 'FILE' && item.storagePath && fs.existsSync(item.storagePath)) {
+    const trashedFolderIds = trashItems.filter((i) => i.type === 'FOLDER').map((f) => f.id);
+
+    // Recursively collect all descendant folder IDs of trashed folders
+    const getAllFolderIds = async (folderIds: string[]): Promise<string[]> => {
+      if (folderIds.length === 0) return [];
+      const subfolders = await prisma.driveItem.findMany({
+        where: { userId, parentId: { in: folderIds }, type: 'FOLDER' },
+        select: { id: true },
+      });
+      if (subfolders.length === 0) return folderIds;
+      const subIds = subfolders.map((s) => s.id);
+      const deeper = await getAllFolderIds(subIds);
+      return [...folderIds, ...deeper];
+    };
+
+    const allTrashedFolderIds = await getAllFolderIds(trashedFolderIds);
+
+    // Physical files directly in trash or inside trashed folders
+    const filesToDelete = await prisma.driveItem.findMany({
+      where: {
+        userId,
+        OR: [
+          { isTrash: true, type: 'FILE' },
+          { parentId: { in: allTrashedFolderIds }, type: 'FILE' },
+        ],
+      },
+    });
+
+    for (const file of filesToDelete) {
+      if (file.storagePath && fs.existsSync(file.storagePath)) {
         try {
-          assertSafeStoragePath(item.storagePath);
-          fs.unlinkSync(item.storagePath);
-        } catch {}
+          assertSafeStoragePath(file.storagePath);
+          fs.unlinkSync(file.storagePath);
+        } catch {
+          // ignore unlink error
+        }
       }
+    }
+
+    // Delete descendants inside trashed folders
+    if (allTrashedFolderIds.length > 0) {
+      await prisma.driveItem.deleteMany({
+        where: { userId, parentId: { in: allTrashedFolderIds } },
+      });
     }
 
     return prisma.driveItem.deleteMany({
@@ -221,7 +343,7 @@ export const driveService = {
     let totalActiveBytes = BigInt(0);
     let totalTrashBytes = BigInt(0);
     let fileCount = 0;
-    let folderCount = await prisma.driveItem.count({ where: { userId, type: 'FOLDER', isTrash: false } });
+    const folderCount = await prisma.driveItem.count({ where: { userId, type: 'FOLDER', isTrash: false } });
 
     files.forEach((f: { isTrash: boolean; size: bigint }) => {
       if (f.isTrash) {

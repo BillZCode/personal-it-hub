@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { Card, Badge, Button } from '../../components/ui';
-import { Terminal, Monitor, Keyboard, Cpu, HardDrive, MemoryStick, Wifi, Copy, Check } from 'lucide-react';
+import { Terminal, Monitor, Keyboard, Cpu, HardDrive, Copy, Check } from 'lucide-react';
 import { animate, stagger } from 'animejs';
-import { useCopyToClipboard } from '../../hooks';
+import { useCopyToClipboard, useDocumentTitle } from '../../hooks';
 
 const distros = [
   { name: 'Arch Linux', version: 'Rolling', status: 'Daily Driver', icon: Terminal },
@@ -63,7 +63,8 @@ const dotfiles = [
 ];
 
 export function LinuxSetup() {
-  const { copied, copy } = useCopyToClipboard();
+  useDocumentTitle('Linux Setup');
+  const { copiedText, copy } = useCopyToClipboard();
 
   // Anime.js staggered card entrance
   useEffect(() => {
@@ -84,17 +85,17 @@ export function LinuxSetup() {
       </div>
 
       {/* Distributions */}
-      <section className="space-y-4">
-        <h2 className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
-          <Terminal className="h-5 w-5 text-emerald-400" />
+      <section className="space-y-4" aria-labelledby="distros-heading">
+        <h2 id="distros-heading" className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
+          <Terminal className="h-5 w-5 text-amber-400" aria-hidden="true" />
           Distributions
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4" role="list" aria-label="Daftar distribusi Linux">
           {distros.map((distro, i) => (
-            <Card key={i} className="linux-setup-card p-4 bg-dark-900/60 border border-dark-800/90 hover:border-emerald-500/40 hover:shadow-[0_8px_20px_-6px_rgba(16,185,129,0.15)] transition-all duration-200 group">
+            <Card key={i} role="listitem" className="linux-setup-card p-4 bg-dark-900/60 border border-dark-800/90 hover:border-amber-500/40 hover:shadow-[0_8px_20px_-6px_rgba(245,158,11,0.15)] transition-all duration-200 group">
               <div className="flex items-start gap-3">
-                <div className="p-2.5 bg-emerald-500/10 rounded-lg text-emerald-400 border border-emerald-500/20">
-                  <distro.icon className="h-5 w-5" />
+                <div className="p-2.5 bg-amber-500/10 rounded-lg text-amber-400 border border-amber-500/20">
+                  <distro.icon className="h-5 w-5" aria-hidden="true" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-dark-100 text-base">{distro.name}</h3>
@@ -108,17 +109,17 @@ export function LinuxSetup() {
       </section>
 
       {/* Desktop Environment / Window Manager */}
-      <section className="space-y-4">
-        <h2 className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
-          <Monitor className="h-5 w-5 text-cyan-400" />
+      <section className="space-y-4" aria-labelledby="de-heading">
+        <h2 id="de-heading" className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
+          <Monitor className="h-5 w-5 text-cyan-400" aria-hidden="true" />
           Desktop Environment / Window Manager
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4" role="list" aria-label="Daftar desktop environment">
           {desktopEnvs.map((de, i) => (
-            <Card key={i} className="linux-setup-card p-4 bg-dark-900/60 border border-dark-800/90 hover:border-cyan-500/40 hover:shadow-[0_8px_20px_-6px_rgba(6,182,212,0.15)] transition-all duration-200 group">
+            <Card key={i} role="listitem" className="linux-setup-card p-4 bg-dark-900/60 border border-dark-800/90 hover:border-cyan-500/40 hover:shadow-[0_8px_20px_-6px_rgba(6,182,212,0.15)] transition-all duration-200 group">
               <div className="flex items-start gap-3">
                 <div className="p-2.5 bg-cyan-500/10 rounded-lg text-cyan-400 border border-cyan-500/20">
-                  <de.icon className="h-5 w-5" />
+                  <de.icon className="h-5 w-5" aria-hidden="true" />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-dark-100 text-base">{de.name}</h3>
@@ -133,14 +134,14 @@ export function LinuxSetup() {
 
       {/* Terminals & Shells */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
-            <Terminal className="h-5 w-5 text-emerald-400" />
+        <div className="space-y-4" aria-labelledby="terminals-heading">
+          <h2 id="terminals-heading" className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
+            <Terminal className="h-5 w-5 text-amber-400" aria-hidden="true" />
             Terminals
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-3" role="list" aria-label="Daftar emulator terminal">
             {terminals.map((term, i) => (
-              <Card key={i} className="p-4 bg-dark-900/60 border border-dark-800">
+              <Card key={i} role="listitem" className="p-4 bg-dark-900/60 border border-dark-800">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h3 className="font-semibold text-dark-100 text-sm font-mono">{term.name}</h3>
@@ -153,14 +154,14 @@ export function LinuxSetup() {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
-            <Terminal className="h-5 w-5 text-purple-400" />
+        <div className="space-y-4" aria-labelledby="shells-heading">
+          <h2 id="shells-heading" className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
+            <Terminal className="h-5 w-5 text-purple-400" aria-hidden="true" />
             Shells
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-3" role="list" aria-label="Daftar shell">
             {shells.map((shell, i) => (
-              <Card key={i} className="p-4 bg-dark-900/60 border border-dark-800">
+              <Card key={i} role="listitem" className="p-4 bg-dark-900/60 border border-dark-800">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h3 className="font-semibold text-dark-100 text-sm font-mono">{shell.name}</h3>
@@ -182,17 +183,17 @@ export function LinuxSetup() {
       </section>
 
       {/* Editors */}
-      <section className="space-y-4">
-        <h2 className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
-          <Keyboard className="h-5 w-5 text-amber-400" />
+      <section className="space-y-4" aria-labelledby="editors-heading">
+        <h2 id="editors-heading" className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
+          <Keyboard className="h-5 w-5 text-amber-400" aria-hidden="true" />
           Editors
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4" role="list" aria-label="Daftar code editor">
           {editors.map((editor, i) => (
-            <Card key={i} className="p-4 bg-dark-900/60 border border-dark-800">
+            <Card key={i} role="listitem" className="p-4 bg-dark-900/60 border border-dark-800">
               <div className="flex items-start gap-3">
                 <div className="p-2.5 bg-amber-500/10 rounded-lg text-amber-400 border border-amber-500/20">
-                  <editor.icon className="h-5 w-5" />
+                  <editor.icon className="h-5 w-5" aria-hidden="true" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
@@ -208,15 +209,15 @@ export function LinuxSetup() {
       </section>
 
       {/* Real Hardware */}
-      <section className="space-y-4">
-        <h2 className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
-          <Cpu className="h-5 w-5 text-emerald-400" />
+      <section className="space-y-4" aria-labelledby="hardware-heading">
+        <h2 id="hardware-heading" className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
+          <Cpu className="h-5 w-5 text-amber-400" aria-hidden="true" />
           Hardware Specifications
         </h2>
         <Card className="p-6 bg-dark-900/60 border border-dark-800">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
-              <h3 className="font-semibold text-dark-100 mb-3 font-mono text-xs uppercase text-emerald-400">Core Rig</h3>
+              <h3 className="font-semibold text-dark-100 mb-3 font-mono text-xs uppercase text-amber-400">Core Rig</h3>
               <dl className="space-y-2 text-xs">
                 <div className="py-1 border-b border-dark-800">
                   <dt className="text-dark-400">Processor (CPU)</dt>
@@ -228,7 +229,7 @@ export function LinuxSetup() {
                 </div>
                 <div className="py-1 border-b border-dark-800">
                   <dt className="text-dark-400">Memory (RAM)</dt>
-                  <dd className="font-mono text-emerald-400 font-semibold">{hardware.ram}</dd>
+                  <dd className="font-mono text-amber-400 font-semibold">{hardware.ram}</dd>
                 </div>
                 <div className="py-1">
                   <dt className="text-dark-400">Graphics (GPU)</dt>
@@ -238,11 +239,11 @@ export function LinuxSetup() {
             </div>
 
             <div>
-              <h3 className="font-semibold text-dark-100 mb-3 font-mono text-xs uppercase text-emerald-400">Storage Drives</h3>
-              <ul className="space-y-2 text-xs font-mono">
+              <h3 className="font-semibold text-dark-100 mb-3 font-mono text-xs uppercase text-amber-400">Storage Drives</h3>
+              <ul className="space-y-2 text-xs font-mono" role="list" aria-label="Daftar media penyimpanan">
                 {hardware.storage.map((s, i) => (
-                  <li key={i} className="p-2 rounded bg-dark-950/60 border border-dark-800 flex items-center gap-2 text-dark-200">
-                    <HardDrive className="h-4 w-4 text-emerald-400 flex-shrink-0" />
+                  <li key={i} role="listitem" className="p-2 rounded bg-dark-950/60 border border-dark-800 flex items-center gap-2 text-dark-200">
+                    <HardDrive className="h-4 w-4 text-amber-400 flex-shrink-0" aria-hidden="true" />
                     <span>{s}</span>
                   </li>
                 ))}
@@ -250,7 +251,7 @@ export function LinuxSetup() {
             </div>
 
             <div>
-              <h3 className="font-semibold text-dark-100 mb-3 font-mono text-xs uppercase text-emerald-400">Network & Peripherals</h3>
+              <h3 className="font-semibold text-dark-100 mb-3 font-mono text-xs uppercase text-amber-400">Network & Peripherals</h3>
               <dl className="space-y-2 text-xs">
                 <div className="py-1 border-b border-dark-800">
                   <dt className="text-dark-400">Network Adapter</dt>
@@ -271,15 +272,15 @@ export function LinuxSetup() {
       </section>
 
       {/* Important Tools */}
-      <section className="space-y-4">
-        <h2 className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
-          <Terminal className="h-5 w-5 text-emerald-400" />
+      <section className="space-y-4" aria-labelledby="tools-heading">
+        <h2 id="tools-heading" className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
+          <Terminal className="h-5 w-5 text-amber-400" aria-hidden="true" />
           Important CLI & Sysadmin Tools
         </h2>
         <Card className="p-5 bg-dark-900/60 border border-dark-800">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" role="list" aria-label="Daftar CLI tools penting">
             {tools.map((tool) => (
-              <span key={tool} className="text-xs font-mono px-2.5 py-1 rounded bg-dark-850 text-emerald-400 border border-dark-750">
+              <span key={tool} role="listitem" className="text-xs font-mono px-2.5 py-1 rounded bg-dark-850 text-amber-400 border border-dark-750">
                 {tool}
               </span>
             ))}
@@ -288,17 +289,17 @@ export function LinuxSetup() {
       </section>
 
       {/* Dotfiles */}
-      <section className="space-y-4">
-        <h2 className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
-          <Terminal className="h-5 w-5 text-emerald-400" />
+      <section className="space-y-4" aria-labelledby="dotfiles-heading">
+        <h2 id="dotfiles-heading" className="text-lg font-bold font-mono text-dark-100 uppercase tracking-wide flex items-center gap-2">
+          <Terminal className="h-5 w-5 text-amber-400" aria-hidden="true" />
           Dotfiles & Configurations
         </h2>
         <Card className="p-5 bg-dark-900/60 border border-dark-800">
-          <div className="space-y-2.5">
+          <div className="space-y-2.5" role="list" aria-label="Daftar konfigurasi dotfiles">
             {dotfiles.map((dotfile, i) => (
-              <div key={i} className="flex items-center justify-between p-3 bg-dark-950/60 rounded-lg border border-dark-800 hover:border-emerald-500/30 transition-colors">
+              <div key={i} role="listitem" className="flex items-center justify-between p-3 bg-dark-950/60 rounded-lg border border-dark-800 hover:border-amber-500/30 transition-colors">
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs text-emerald-400 font-semibold">{dotfile.name}</span>
+                  <span className="font-mono text-xs text-amber-400 font-semibold">{dotfile.name}</span>
                   <span className="text-dark-400 text-xs hidden sm:inline">{dotfile.description}</span>
                 </div>
                 <Button
@@ -306,9 +307,19 @@ export function LinuxSetup() {
                   size="sm"
                   onClick={() => copy(`cat ~/${dotfile.name}`)}
                   className="text-2xs font-mono h-7 px-2 text-dark-400 hover:text-white"
+                  aria-label={`Salin perintah untuk ${dotfile.name}`}
                 >
-                  {copied ? <Check className="h-3.5 w-3.5 text-emerald-400 mr-1" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
-                  Copy Path
+                  {copiedText === `cat ~/${dotfile.name}` ? (
+                    <>
+                      <Check className="h-3.5 w-3.5 text-amber-400 mr-1" aria-hidden="true" />
+                      <span className="text-amber-400">Tersalin</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
+                      <span>Copy Path</span>
+                    </>
+                  )}
                 </Button>
               </div>
             ))}

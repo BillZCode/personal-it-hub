@@ -97,6 +97,9 @@ ns1     IN      A       $CURRENT_IP
 @       IN      A       $CURRENT_IP
 www     IN      A       $CURRENT_IP
 api     IN      A       $CURRENT_IP
+cybertool IN    A       $CURRENT_IP
+ai      IN      A       $CURRENT_IP
+drive   IN      A       $CURRENT_IP
 INNER_EOF
 
 cat << INNER_EOF > /etc/bind/db.hub.lokal
@@ -143,12 +146,16 @@ sed -i '/br-d0cfcb410df2/d' /etc/hosts
 sed -i '/hub\.lokal/d' /etc/hosts
 sed -i '/web\.lokal/d' /etc/hosts
 sed -i '/cybertool/d' /etc/hosts
+sed -i '/sabbilferdyansyah\.my\.id/d' /etc/hosts
 
 cat << INNER_EOF >> /etc/hosts
-$CURRENT_IP sabbilaf.network www.sabbilaf.network api.sabbilaf.network cybertool.sabbilaf.network
+$CURRENT_IP sabbilaf.network www.sabbilaf.network api.sabbilaf.network cybertool.sabbilaf.network ai.sabbilaf.network drive.sabbilaf.network
 $CURRENT_IP hub.lokal www.hub.lokal api.hub.lokal
 $CURRENT_IP web.lokal www.web.lokal
+$CURRENT_IP sabbilferdyansyah.my.id www.sabbilferdyansyah.my.id
 $CURRENT_IP cybertool-sabbilferdyansyah.my.id
+$CURRENT_IP ai.sabbilferdyansyah.my.id
+$CURRENT_IP drive.sabbilferdyansyah.my.id
 INNER_EOF
 
 # 6. Perbaiki /etc/resolv.conf
@@ -160,12 +167,12 @@ nameserver 1.1.1.1
 nameserver 8.8.8.8
 INNER_EOF
 
-# 7. Konfigurasi Apache VirtualHost untuk SabbilAF.Network & CyberTool
-echo "[5/6] Mengonfigurasi VirtualHost Apache untuk sabbilaf.network & cybertool..."
+# 7. Konfigurasi Apache VirtualHost untuk SabbilAF.Network, Subdomain & Workstations
+echo "[5/6] Mengonfigurasi VirtualHost Apache untuk sabbilaf.network & subdomain..."
 cat << 'INNER_EOF' > /etc/apache2/sites-available/sabbilaf.network.conf
 <VirtualHost *:80>
     ServerName sabbilaf.network
-    ServerAlias SabbilAF.Network www.sabbilaf.network www.SabbilAF.Network
+    ServerAlias SabbilAF.Network www.sabbilaf.network www.SabbilAF.Network sabbilferdyansyah.my.id www.sabbilferdyansyah.my.id
 
     ProxyPreserveHost On
 
@@ -177,6 +184,10 @@ cat << 'INNER_EOF' > /etc/apache2/sites-available/sabbilaf.network.conf
     ProxyPass /cyberlab http://127.0.0.1:3003
     ProxyPassReverse /cyberlab http://127.0.0.1:3003
 
+    # Rute Omni AI ke port 3002
+    ProxyPass /chatbot http://127.0.0.1:3002
+    ProxyPassReverse /chatbot http://127.0.0.1:3002
+
     # Rute Frontend Website ke port 3000
     ProxyPass / http://127.0.0.1:3000/
     ProxyPassReverse / http://127.0.0.1:3000/
@@ -185,18 +196,43 @@ cat << 'INNER_EOF' > /etc/apache2/sites-available/sabbilaf.network.conf
     CustomLog ${APACHE_LOG_DIR}/sabbilaf_network_access.log combined
 </VirtualHost>
 
-# VirtualHost Khusus Subdomain cybertool-sabbilferdyansyah.my.id & cybertool.sabbilaf.network
+# VirtualHost Khusus Subdomain CyberLab: cybertool-sabbilferdyansyah.my.id & cybertool.sabbilaf.network
 <VirtualHost *:80>
     ServerName cybertool-sabbilferdyansyah.my.id
     ServerAlias cybertool.sabbilaf.network
 
     ProxyPreserveHost On
-
     ProxyPass / http://127.0.0.1:3003/
     ProxyPassReverse / http://127.0.0.1:3003/
 
     ErrorLog ${APACHE_LOG_DIR}/cyberlab_error.log
     CustomLog ${APACHE_LOG_DIR}/cyberlab_access.log combined
+</VirtualHost>
+
+# VirtualHost Khusus Subdomain Omni AI: ai.sabbilferdyansyah.my.id & ai.sabbilaf.network
+<VirtualHost *:80>
+    ServerName ai.sabbilferdyansyah.my.id
+    ServerAlias ai.sabbilaf.network
+
+    ProxyPreserveHost On
+    ProxyPass / http://127.0.0.1:3002/
+    ProxyPassReverse / http://127.0.0.1:3002/
+
+    ErrorLog ${APACHE_LOG_DIR}/omni_ai_error.log
+    CustomLog ${APACHE_LOG_DIR}/omni_ai_access.log combined
+</VirtualHost>
+
+# VirtualHost Khusus Subdomain Private Cloud Drive: drive.sabbilferdyansyah.my.id & drive.sabbilaf.network
+<VirtualHost *:80>
+    ServerName drive.sabbilferdyansyah.my.id
+    ServerAlias drive.sabbilaf.network
+
+    ProxyPreserveHost On
+    ProxyPass / http://127.0.0.1:3000/drive/
+    ProxyPassReverse / http://127.0.0.1:3000/drive/
+
+    ErrorLog ${APACHE_LOG_DIR}/drive_error.log
+    CustomLog ${APACHE_LOG_DIR}/drive_access.log combined
 </VirtualHost>
 INNER_EOF
 

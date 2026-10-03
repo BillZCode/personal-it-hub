@@ -21,6 +21,9 @@ import { logger } from './utils/logger';
 
 const app = express();
 
+// Trust reverse proxy (Nginx, Cloudflare) for accurate client IP in rate limiting & logs
+app.set('trust proxy', 1);
+
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {

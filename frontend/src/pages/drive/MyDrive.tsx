@@ -1,514 +1,493 @@
-import { useState, useRef } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { driveApi, DriveItem } from '../../services/api';
-import { Card, Button, Input } from '../../components/ui';
-import { useToast } from '../../hooks';
+import { Card, Button, Input, ConfirmDialog } from '../../components/ui';
 import {
-  Folder,
   FolderPlus,
   UploadCloud,
-  FileText,
-  FileCode,
-  FileArchive,
-  Image,
-  Video,
-  File,
-  Download,
-  Eye,
+  HardDrive,
   Trash2,
-  Edit2,
-  RefreshCw,
-  ChevronRight,
-  Home,
-  Check,
-  X,
+  Search,
   AlertCircle,
-  Clock,
-  HardDrive
+  RefreshCw,
 } from 'lucide-react';
-import { formatRelativeTime } from '../../utils';
+import {
+  DriveToolbar,
+  DriveItemCard,
+  FilePreviewModal,
+  SortField,
+  SortOrder,
+} from '../../components/drive';
+import { useDriveOperations, useDocumentTitle } from '../../hooks';
+import { validateFileName } from '../../utils/fileTypes';
+
+const fileNameCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+
+
+interface ConfirmState {
+  isOpen: boolean;
+  type: 'delete' | 'emptyTrash';
+  id?: string;
+  name?: string;
+  title: string;
+  description: string;
+}
 
 export function MyDrive({ isTrash = false }: { isTrash?: boolean }) {
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [sortField, setSortField] = useState<SortField>('createdAt');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+
   const [newFolderName, setNewFolderName] = useState('');
-  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
-  const [renamingItemId, setRenamingItemId] = useState<string | null>(null);
-  const [renameValue, setRenameValue] = useState('');
+  const [newFolderError, setNewFolderError] = useState<string | null>(null);
+  const [isCreatingFolderInline, setIsCreatingFolderInline] = useState(false);
   const [previewItem, setPreviewItem] = useState<DriveItem | null>(null);
 
+  // Modern Confirmation Modal State
+  const [confirmDialog, setConfirmDialog] = useState<ConfirmState>({
+    isOpen: false,
+    type: 'delete',
+    title: '',
+    description: '',
+  });
+
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { showToast } = useToast();
-  const queryClient = useQueryClient();
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Dynamic document title
+  useDocumentTitle(isTrash ? 'Tempat Sampah (Trash) — Secure Drive' : 'My Drive — Secure Storage');
+
 
   // Query files/folders
-  const { data, isLoading, refetch } = useQuery({
+  const {
+    data,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['drive', 'items', currentFolderId, isTrash],
     queryFn: () => driveApi.list(currentFolderId, isTrash),
   });
 
-  // Create folder mutation
-  const createFolderMutation = useMutation({
-    mutationFn: (name: string) => driveApi.createFolder(name, currentFolderId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['drive'] });
-      setNewFolderName('');
-      setIsCreatingFolder(false);
-      showToast('Folder berhasil dibuat', 'success');
-    },
-    onError: (err: any) => {
-      showToast(err.message || 'Gagal membuat folder', 'error');
-    },
-  });
-
-  // Upload file mutation
-  const uploadMutation = useMutation({
-    mutationFn: (file: File) => driveApi.upload(file, currentFolderId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['drive'] });
-      showToast('File berhasil diupload ke secure server', 'success');
-    },
-    onError: (err: any) => {
-      showToast(err.message || 'Gagal mengupload file', 'error');
-    },
-  });
-
-  // Rename mutation
-  const renameMutation = useMutation({
-    mutationFn: ({ id, name }: { id: string; name: string }) => driveApi.rename(id, name),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['drive'] });
-      setRenamingItemId(null);
-      showToast('Item berhasil dinamai ulang', 'success');
-    },
-    onError: (err: any) => {
-      showToast(err.message || 'Gagal mengubah nama', 'error');
-    },
-  });
-
-  // Move to trash mutation
-  const trashMutation = useMutation({
-    mutationFn: (id: string) => driveApi.moveToTrash(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['drive'] });
-      showToast('Item dipindahkan ke sampah', 'info');
-    },
-    onError: (err: any) => {
-      showToast(err.message || 'Gagal menghapus item', 'error');
-    },
-  });
-
-  // Restore mutation
-  const restoreMutation = useMutation({
-    mutationFn: (id: string) => driveApi.restore(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['drive'] });
-      showToast('Item dipulihkan', 'success');
-    },
-  });
-
-  // Delete permanent mutation
-  const deletePermanentMutation = useMutation({
-    mutationFn: (id: string) => driveApi.deletePermanent(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['drive'] });
-      showToast('Item dihapus permanen dari server', 'success');
-    },
-  });
-
-  // Empty trash mutation
-  const emptyTrashMutation = useMutation({
-    mutationFn: () => driveApi.emptyTrash(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['drive'] });
-      showToast('Seluruh sampah dibersihkan permanen', 'success');
-    },
-  });
+  // Dedicated operations hook (clean architecture separation)
+  const {
+    isUploading,
+    uploadProgress,
+    uploadFiles,
+    createFolder,
+    isCreatingFolder,
+    renameItem,
+    moveToTrash,
+    restoreItem,
+    deletePermanent,
+    isDeletingPermanent,
+    emptyTrash,
+    isEmptyingTrash,
+  } = useDriveOperations(currentFolderId, isTrash);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      uploadMutation.mutate(e.target.files[0]);
+    if (e.target.files && e.target.files.length > 0) {
+      const files = Array.from(e.target.files);
+      uploadFiles(files);
       e.target.value = '';
     }
   };
 
-  const getFileIcon = (item: DriveItem) => {
-    if (item.type === 'FOLDER') {
-      return <Folder className="h-6 w-6 text-amber-400 fill-amber-400/20" />;
-    }
-    const mime = item.mimeType || '';
-    if (mime.startsWith('image/')) return <Image className="h-6 w-6 text-purple-400" />;
-    if (mime.startsWith('video/')) return <Video className="h-6 w-6 text-red-400" />;
-    if (mime.includes('zip') || mime.includes('tar') || mime.includes('compressed'))
-      return <FileArchive className="h-6 w-6 text-orange-400" />;
-    if (mime.includes('javascript') || mime.includes('json') || mime.includes('python') || mime.includes('text/html'))
-      return <FileCode className="h-6 w-6 text-cyan-400" />;
-    return <FileText className="h-6 w-6 text-blue-400" />;
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isTrash) setIsDragging(true);
   };
 
-  const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (isTrash) return;
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const files = Array.from(e.dataTransfer.files);
+      uploadFiles(files);
+    }
+  };
+
+  const handleCreateFolderSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const validation = validateFileName(newFolderName);
+    if (!validation.valid) {
+      setNewFolderError(validation.error || 'Nama folder tidak valid');
+      return;
+    }
+    createFolder(newFolderName.trim(), {
+      onSuccess: () => {
+        setNewFolderName('');
+        setNewFolderError(null);
+        setIsCreatingFolderInline(false);
+      },
+    });
+  };
+
+  // Memoized filtered & sorted items
+  const processedItems = useMemo(() => {
+    if (!data?.items) return [];
+
+    let items = [...data.items];
+
+    // 1. Search Filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      items = items.filter((item) => item.name.toLowerCase().includes(q));
+    }
+
+    // 2. Sort (folders always first, then apply selected field)
+    items.sort((a, b) => {
+      if (a.type !== b.type) {
+        return a.type === 'FOLDER' ? -1 : 1;
+      }
+
+      let cmp = 0;
+      if (sortField === 'name') {
+        cmp = fileNameCollator.compare(a.name, b.name);
+      } else if (sortField === 'createdAt') {
+        cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      } else if (sortField === 'size') {
+        cmp = (a.size || 0) - (b.size || 0);
+      }
+
+      return sortOrder === 'asc' ? cmp : -cmp;
+    });
+
+    return items;
+  }, [data?.items, searchQuery, sortField, sortOrder]);
+
+  const handleOpenFolder = useCallback((folderId: string) => {
+    setCurrentFolderId(folderId);
+    setSearchQuery('');
+  }, []);
+
+  const handleSortChange = useCallback((field: SortField, order: SortOrder) => {
+    setSortField(field);
+    setSortOrder(order);
+  }, []);
+
+  // Confirmation modal triggers
+  const promptDeletePermanent = useCallback((id: string, name: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      type: 'delete',
+      id,
+      name,
+      title: 'Hapus Berkas Permanen?',
+      description: `Apakah Anda yakin ingin menghapus "${name}" secara permanen? Tindakan ini tidak dapat dibatalkan dan berkas fisik di server akan dimusnahkan.`,
+    });
+  }, []);
+
+  const promptEmptyTrash = useCallback(() => {
+    setConfirmDialog({
+      isOpen: true,
+      type: 'emptyTrash',
+      title: 'Kosongkan Tempat Sampah?',
+      description:
+        'Seluruh berkas dan folder di dalam tempat sampah akan dihapus secara permanen dari server penyimpanan.',
+    });
+  }, []);
+
+  const handleConfirmAction = () => {
+    if (confirmDialog.type === 'delete' && confirmDialog.id) {
+      deletePermanent(confirmDialog.id, {
+        onSettled: () => setConfirmDialog((prev) => ({ ...prev, isOpen: false })),
+      });
+    } else if (confirmDialog.type === 'emptyTrash') {
+      emptyTrash(undefined, {
+        onSettled: () => setConfirmDialog((prev) => ({ ...prev, isOpen: false })),
+      });
+    }
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto animate-in">
-      {/* Hidden File Input for Upload */}
+    <section
+      role="region"
+      aria-label="Drive Storage Explorer"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className="space-y-6 max-w-7xl mx-auto animate-in relative pb-12"
+    >
+      {/* Drag & Drop Visual Backdrop Overlay */}
+      {isDragging && !isTrash && (
+        <div className="fixed inset-0 z-50 bg-black/85 border-2 border-dashed border-primary-400 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center pointer-events-none animate-in fade-in duration-200">
+          <div className="p-6 rounded-[2rem] bg-primary-500/15 text-primary-400 mb-4 animate-bounce border border-primary-500/40 shadow-2xl">
+            <UploadCloud className="h-16 w-16" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Lepaskan Berkas di Sini</h2>
+          <p className="text-sm text-primary-200 max-w-md leading-relaxed font-sans">
+            Upload file, gambar, dokumen PDF, berkas zip, atau video langsung ke private node drive
+          </p>
+        </div>
+      )}
+
+      {/* Hidden File Input for Native File Dialog */}
       <input
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
         className="hidden"
+        multiple
+        aria-hidden="true"
+        tabIndex={-1}
       />
 
-      {/* Top Action Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-dark-900/60 p-4 rounded-xl border border-dark-800">
-        {/* Breadcrumb Navigation */}
-        <div className="flex items-center gap-1.5 flex-wrap text-sm">
-          <button
-            onClick={() => setCurrentFolderId(null)}
-            className="flex items-center gap-1 text-dark-400 hover:text-primary-400 transition-colors"
-          >
-            <Home className="h-4 w-4" />
-            <span>Root</span>
-          </button>
+      {/* Upload Progress Bar Card */}
+      {uploadProgress && (
+        <Card
+          role="status"
+          aria-live="polite"
+          className="p-4 border-primary-500/40 bg-primary-500/10 shadow-xl animate-in fade-in duration-200"
+        >
+          <div className="flex items-center justify-between text-xs mb-2">
+            <span className="font-medium text-primary-300 flex items-center gap-2 truncate max-w-md">
+              <UploadCloud className="h-4 w-4 animate-bounce text-primary-400 flex-shrink-0" />
+              Mengupload ({uploadProgress.current}/{uploadProgress.total}):{' '}
+              <span className="font-semibold text-white truncate">{uploadProgress.fileName}</span>
+            </span>
+            <span className="font-mono text-primary-400 font-bold">{uploadProgress.percent}%</span>
+          </div>
+          <div className="w-full bg-dark-800 h-2 rounded-full overflow-hidden">
+            <div
+              className="bg-primary-500 h-full rounded-full transition-all duration-200 shadow-sm"
+              style={{ width: `${Math.max(2, uploadProgress.percent)}%` }}
+            />
+          </div>
+        </Card>
+      )}
 
-          {!isTrash && data?.breadcrumbs?.map((crumb) => (
-            <div key={crumb.id} className="flex items-center gap-1.5">
-              <ChevronRight className="h-3.5 w-3.5 text-dark-600" />
-              <button
-                onClick={() => setCurrentFolderId(crumb.id)}
-                className="text-dark-300 hover:text-primary-400 transition-colors"
+      {/* Toolbar: Breadcrumbs, Search, View Mode, Controls */}
+      <DriveToolbar
+        isTrash={isTrash}
+        breadcrumbs={data?.breadcrumbs || []}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        sortField={sortField}
+        sortOrder={sortOrder}
+        onSortChange={handleSortChange}
+        onNavigateRoot={() => setCurrentFolderId(null)}
+        onNavigateFolder={handleOpenFolder}
+        onOpenCreateFolder={() => setIsCreatingFolderInline(true)}
+        onTriggerUpload={() => fileInputRef.current?.click()}
+        onEmptyTrash={promptEmptyTrash}
+        onRefresh={() => refetch()}
+        isUploading={isUploading}
+        isRefreshing={isFetching}
+      />
+
+      {/* Inline Folder Creation Form */}
+      {isCreatingFolderInline && (
+        <Card className="p-4 border-primary-500/40 bg-primary-500/10 shadow-lg animate-in slide-in-from-top-2 duration-200">
+          <form onSubmit={handleCreateFolderSubmit} className="space-y-2">
+            <div className="flex items-center gap-3">
+              <FolderPlus className="h-5 w-5 text-primary-400 flex-shrink-0" />
+              <Input
+                value={newFolderName}
+                onChange={(e) => {
+                  setNewFolderName(e.target.value);
+                  if (newFolderError) setNewFolderError(null);
+                }}
+                placeholder="Nama folder baru..."
+                className="flex-1 h-9 text-sm bg-dark-950/80 border-dark-700"
+                autoFocus
+                aria-label="Nama folder baru"
+              />
+              <Button
+                type="submit"
+                size="sm"
+                loading={isCreatingFolder}
+                disabled={!newFolderName.trim()}
+                className="text-xs"
               >
-                {crumb.name}
-              </button>
+                Simpan
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setIsCreatingFolderInline(false);
+                  setNewFolderName('');
+                  setNewFolderError(null);
+                }}
+                className="text-xs"
+              >
+                Batal
+              </Button>
             </div>
-          ))}
+            {newFolderError && (
+              <p className="text-xs text-rose-400 font-medium pl-8 flex items-center gap-1.5">
+                <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                {newFolderError}
+              </p>
+            )}
+          </form>
+        </Card>
+      )}
 
-          {isTrash && (
-            <div className="flex items-center gap-1.5">
-              <ChevronRight className="h-3.5 w-3.5 text-dark-600" />
-              <span className="text-amber-400 font-medium">Tempat Sampah / Trash</span>
-            </div>
-          )}
+      {/* Error State Fallback */}
+      {isError && (
+        <div className="p-6 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-center space-y-3">
+          <AlertCircle className="h-8 w-8 text-rose-400 mx-auto" />
+          <h3 className="text-sm font-semibold text-rose-200">Gagal mengambil data dari server drive</h3>
+          <p className="text-xs text-rose-300 max-w-md mx-auto">
+            {(error as any)?.message || 'Terjadi kesalahan saat berkomunikasi dengan server penyimpanan.'}
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            className="text-xs border-rose-500/40 text-rose-300 hover:bg-rose-500/20"
+            leftIcon={<RefreshCw className="h-3.5 w-3.5" />}
+          >
+            Coba Lagi
+          </Button>
         </div>
+      )}
 
-        {/* Buttons Controls */}
-        <div className="flex items-center gap-2">
-          {!isTrash ? (
-            <>
+      {/* Files & Folders List / Grid Area */}
+      {isLoading ? (
+        <div className="py-24 flex flex-col justify-center items-center gap-3">
+          <div className="animate-spin rounded-full h-9 w-9 border-b-2 border-primary-500" />
+          <span className="text-xs text-dark-400 font-mono">Memuat berkas drive...</span>
+        </div>
+      ) : processedItems.length === 0 ? (
+        /* Contextual Empty State */
+        <div className="py-20 text-center border-2 border-dashed border-dark-800 rounded-3xl p-8 bg-dark-900/40">
+          <div className="mx-auto w-14 h-14 rounded-2xl bg-dark-800/80 border border-dark-700/50 flex items-center justify-center text-dark-400 mb-4 shadow-inner">
+            {searchQuery ? (
+              <Search className="h-7 w-7 text-dark-400" />
+            ) : isTrash ? (
+              <Trash2 className="h-7 w-7 text-dark-400" />
+            ) : (
+              <HardDrive className="h-7 w-7 text-dark-400" />
+            )}
+          </div>
+          <h3 className="text-base font-semibold text-dark-200 tracking-tight">
+            {searchQuery
+              ? `Tidak ada hasil untuk "${searchQuery}"`
+              : isTrash
+              ? 'Tempat sampah kosong'
+              : 'Folder ini masih kosong'}
+          </h3>
+          <p className="text-xs text-dark-400 max-w-sm mx-auto mt-1.5 leading-relaxed font-sans">
+            {searchQuery
+              ? 'Periksa ejaan kata kunci atau coba gunakan istilah pencarian yang berbeda.'
+              : isTrash
+              ? 'File atau folder yang dihapus akan disimpan di sini sebelum dimusnahkan secara permanen.'
+              : 'Klik tombol "Upload Berkas", seret & lepas file ke sini, atau buat folder baru.'}
+          </p>
+
+          {!isTrash && !searchQuery && (
+            <div className="mt-5 flex items-center justify-center gap-2">
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => setIsCreatingFolder(true)}
+                onClick={() => setIsCreatingFolderInline(true)}
                 leftIcon={<FolderPlus className="h-4 w-4" />}
+                className="text-xs"
               >
-                Folder Baru
+                Buat Folder
               </Button>
               <Button
                 variant="primary"
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
-                loading={uploadMutation.isPending}
                 leftIcon={<UploadCloud className="h-4 w-4" />}
+                className="text-xs shadow-md shadow-primary-500/20"
               >
-                Upload File
+                Upload Berkas
               </Button>
-            </>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                if (confirm('Kosongkan seluruh tempat sampah secara permanen?')) {
-                  emptyTrashMutation.mutate();
-                }
-              }}
-              className="text-red-400 border-red-500/30 hover:bg-red-500/10"
-              leftIcon={<Trash2 className="h-4 w-4" />}
-            >
-              Kosongkan Sampah
-            </Button>
+            </div>
           )}
-
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => refetch()}
-            title="Refresh"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </Button>
         </div>
-      </div>
-
-      {/* Inline Folder Creation Form */}
-      {isCreatingFolder && (
-        <Card className="p-4 border-primary-500/40 bg-primary-500/5 animate-in">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (newFolderName.trim()) createFolderMutation.mutate(newFolderName.trim());
-            }}
-            className="flex items-center gap-3"
-          >
-            <FolderPlus className="h-5 w-5 text-primary-400 flex-shrink-0" />
-            <Input
-              value={newFolderName}
-              onChange={(e) => setNewFolderName(e.target.value)}
-              placeholder="Nama folder baru..."
-              className="flex-1"
-              autoFocus
-            />
-            <Button type="submit" size="sm" loading={createFolderMutation.isPending}>
-              Simpan
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsCreatingFolder(false)}
-            >
-              Batal
-            </Button>
-          </form>
-        </Card>
-      )}
-
-      {/* Files & Folders List */}
-      {isLoading ? (
-        <div className="py-20 flex justify-center items-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500" />
-        </div>
-      ) : !data?.items || data.items.length === 0 ? (
-        <div className="py-20 text-center border-2 border-dashed border-dark-800 rounded-2xl p-8 bg-dark-900/30">
-          <div className="mx-auto w-12 h-12 rounded-xl bg-dark-800 flex items-center justify-center text-dark-500 mb-3">
-            {isTrash ? <Trash2 className="h-6 w-6" /> : <HardDrive className="h-6 w-6" />}
-          </div>
-          <h3 className="text-base font-medium text-dark-300">
-            {isTrash ? 'Tempat sampah kosong' : 'Folder ini masih kosong'}
-          </h3>
-          <p className="text-xs text-dark-500 max-w-sm mx-auto mt-1">
-            {isTrash
-              ? 'File atau folder yang dihapus akan disimpan di sini sebelum dihapus permanen.'
-              : 'Klik tombol "Upload File" atau "Folder Baru" untuk mulai menyimpan data Anda di server private.'}
-          </p>
+      ) : viewMode === 'grid' ? (
+        /* Grid Layout */
+        <div
+          role="list"
+          aria-label="Daftar Berkas Grid"
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+        >
+          {processedItems.map((item) => (
+            <div key={item.id} role="listitem">
+              <DriveItemCard
+                item={item}
+                viewMode="grid"
+                isTrash={isTrash}
+                onOpenFolder={handleOpenFolder}
+                onPreviewFile={setPreviewItem}
+                onRename={(id, name) => renameItem({ id, name })}
+                onTrash={(id) => moveToTrash(id)}
+                onRestore={(id) => restoreItem(id)}
+                onDeletePermanent={promptDeletePermanent}
+              />
+            </div>
+          ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {data.items.map((item) => (
-            <Card
-              key={item.id}
-              className="p-4 border-dark-800 hover:border-dark-700 bg-dark-900/80 transition-all group flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-start justify-between gap-2 mb-3">
-                  <div className="p-2.5 bg-dark-800/80 rounded-xl border border-dark-700/50">
-                    {getFileIcon(item)}
-                  </div>
-
-                  {/* Actions Dropdown / Buttons */}
-                  <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                    {!isTrash ? (
-                      <>
-                        {item.type === 'FILE' && (
-                          <>
-                            <a
-                              href={driveApi.getDownloadUrl(item.id)}
-                              download={item.name}
-                              className="p-1.5 rounded-lg text-dark-400 hover:text-primary-400 hover:bg-dark-800 transition-colors"
-                              title="Download File"
-                            >
-                              <Download className="h-3.5 w-3.5" />
-                            </a>
-                            <button
-                              onClick={() => setPreviewItem(item)}
-                              className="p-1.5 rounded-lg text-dark-400 hover:text-primary-400 hover:bg-dark-800 transition-colors"
-                              title="Preview"
-                            >
-                              <Eye className="h-3.5 w-3.5" />
-                            </button>
-                          </>
-                        )}
-                        <button
-                          onClick={() => {
-                            setRenamingItemId(item.id);
-                            setRenameValue(item.name);
-                          }}
-                          className="p-1.5 rounded-lg text-dark-400 hover:text-amber-400 hover:bg-dark-800 transition-colors"
-                          title="Ganti Nama"
-                        >
-                          <Edit2 className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          onClick={() => trashMutation.mutate(item.id)}
-                          className="p-1.5 rounded-lg text-dark-400 hover:text-red-400 hover:bg-dark-800 transition-colors"
-                          title="Pindahkan ke Sampah"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => restoreMutation.mutate(item.id)}
-                          className="p-1.5 rounded-lg text-dark-400 hover:text-emerald-400 hover:bg-dark-800 transition-colors"
-                          title="Pulihkan Item"
-                        >
-                          <RefreshCw className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (confirm(`Hapus permanen "${item.name}"? File fisik akan dimusnahkan.`)) {
-                              deletePermanentMutation.mutate(item.id);
-                            }
-                          }}
-                          className="p-1.5 rounded-lg text-dark-400 hover:text-red-400 hover:bg-dark-800 transition-colors"
-                          title="Hapus Permanen"
-                        >
-                          <Trash2 className="h-3.5 w-3.5 text-red-400" />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* Name / Rename Input */}
-                {renamingItemId === item.id ? (
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      if (renameValue.trim()) {
-                        renameMutation.mutate({ id: item.id, name: renameValue.trim() });
-                      }
-                    }}
-                    className="flex items-center gap-1.5 my-1"
-                  >
-                    <Input
-                      value={renameValue}
-                      onChange={(e) => setRenameValue(e.target.value)}
-                      className="h-8 text-xs"
-                      autoFocus
-                    />
-                    <button
-                      type="submit"
-                      className="p-1.5 rounded bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
-                    >
-                      <Check className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setRenamingItemId(null)}
-                      className="p-1.5 rounded bg-dark-800 text-dark-400 hover:bg-dark-700"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </form>
-                ) : (
-                  <div
-                    onClick={() => {
-                      if (item.type === 'FOLDER' && !isTrash) {
-                        setCurrentFolderId(item.id);
-                      } else if (item.type === 'FILE' && !isTrash) {
-                        setPreviewItem(item);
-                      }
-                    }}
-                    className="cursor-pointer group-hover:text-primary-400 transition-colors"
-                  >
-                    <p className="font-medium text-sm text-dark-200 truncate" title={item.name}>
-                      {item.name}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Meta information */}
-              <div className="mt-4 pt-2.5 border-t border-dark-800 flex items-center justify-between text-[11px] text-dark-500 font-mono">
-                <span>{item.type === 'FOLDER' ? 'Folder' : formatBytes(item.size)}</span>
-                <span>{formatRelativeTime(item.createdAt)}</span>
-              </div>
-            </Card>
+        /* List Layout */
+        <div
+          role="list"
+          aria-label="Daftar Berkas List"
+          className="space-y-2"
+        >
+          {processedItems.map((item) => (
+            <div key={item.id} role="listitem">
+              <DriveItemCard
+                item={item}
+                viewMode="list"
+                isTrash={isTrash}
+                onOpenFolder={handleOpenFolder}
+                onPreviewFile={setPreviewItem}
+                onRename={(id, name) => renameItem({ id, name })}
+                onTrash={(id) => moveToTrash(id)}
+                onRestore={(id) => restoreItem(id)}
+                onDeletePermanent={promptDeletePermanent}
+              />
+            </div>
           ))}
         </div>
       )}
 
-      {/* Preview Modal */}
-      {previewItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-          <div className="bg-dark-900 border border-dark-700 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in">
-            {/* Modal Header */}
-            <div className="h-14 px-6 border-b border-dark-800 flex items-center justify-between bg-dark-950/50">
-              <div className="flex items-center gap-3 min-w-0 mr-4">
-                {getFileIcon(previewItem)}
-                <span className="font-semibold text-sm text-dark-100 truncate">
-                  {previewItem.name}
-                </span>
-                <span className="text-xs font-mono text-dark-500">
-                  ({formatBytes(previewItem.size)})
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <a
-                  href={driveApi.getDownloadUrl(previewItem.id)}
-                  download={previewItem.name}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-500/20 text-primary-400 text-xs font-medium hover:bg-primary-500/30 transition-colors"
-                >
-                  <Download className="h-3.5 w-3.5" />
-                  Download
-                </a>
-                <button
-                  onClick={() => setPreviewItem(null)}
-                  className="p-1.5 rounded-lg text-dark-400 hover:text-dark-100 hover:bg-dark-800"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
+      {/* Global File Preview Modal with Playlist Navigation */}
+      <FilePreviewModal
+        item={previewItem}
+        items={processedItems}
+        onClose={() => setPreviewItem(null)}
+        onNavigate={setPreviewItem}
+      />
 
-            {/* Modal Body: Inline streaming */}
-            <div className="flex-1 overflow-auto p-4 flex items-center justify-center bg-dark-950/80 min-h-[350px]">
-              {previewItem.mimeType?.startsWith('image/') ? (
-                <img
-                  src={driveApi.getPreviewUrl(previewItem.id)}
-                  alt={previewItem.name}
-                  className="max-h-[70vh] max-w-full rounded-lg object-contain"
-                />
-              ) : previewItem.mimeType === 'application/pdf' ? (
-                <iframe
-                  src={driveApi.getPreviewUrl(previewItem.id)}
-                  title={previewItem.name}
-                  className="w-full h-[70vh] rounded-lg border border-dark-800"
-                />
-              ) : previewItem.mimeType?.startsWith('video/') ? (
-                <video
-                  controls
-                  src={driveApi.getPreviewUrl(previewItem.id)}
-                  className="max-h-[70vh] max-w-full rounded-lg"
-                />
-              ) : (
-                <div className="text-center p-8">
-                  <div className="mx-auto w-12 h-12 rounded-xl bg-dark-800 flex items-center justify-center text-dark-400 mb-3">
-                    <FileText className="h-6 w-6" />
-                  </div>
-                  <p className="text-sm text-dark-300 font-medium">Pratinjau langsung tidak didukung untuk tipe file ini</p>
-                  <p className="text-xs text-dark-500 mt-1">Silakan unduh file untuk membukanya di aplikasi lokal Anda.</p>
-                  <a
-                    href={driveApi.getDownloadUrl(previewItem.id)}
-                    download={previewItem.name}
-                    className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-xs font-semibold"
-                  >
-                    <Download className="h-4 w-4" />
-                    Unduh Berkas Sekarang
-                  </a>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      {/* Accessible Confirmation Modal (Replaces browser window.confirm) */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog((prev) => ({ ...prev, isOpen: false }))}
+        onConfirm={handleConfirmAction}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        confirmText="Hapus Permanen"
+        cancelText="Batal"
+        variant="danger"
+        isLoading={isDeletingPermanent || isEmptyingTrash}
+      />
+    </section>
   );
 }
+
 export default MyDrive;

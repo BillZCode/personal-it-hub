@@ -7,7 +7,10 @@ const YTDLP_BIN = '/home/sabbil/.local/bin/yt-dlp';
 // Helper to extract media info with yt-dlp
 function extractWithYtDlp(url: string): Promise<{ title: string; thumbnail?: string; ext: string }> {
   return new Promise((resolve, reject) => {
-    const proc = spawn(YTDLP_BIN, ['-j', '--no-warnings', url]);
+    if (!url || !/^https?:\/\//i.test(url.trim())) {
+      return reject(new Error('URL must start with http:// or https://'));
+    }
+    const proc = spawn(YTDLP_BIN, ['-j', '--no-warnings', '--', url.trim()]);
     let stdout = '';
     let stderr = '';
 
@@ -36,8 +39,8 @@ export const downloaderController = {
   // Resolve media info and direct download URLs
   resolve: asyncHandler(async (req: Request, res: Response) => {
     const { url } = req.body;
-    if (!url || typeof url !== 'string') {
-      return res.status(400).json({ success: false, message: 'URL is required' });
+    if (!url || typeof url !== 'string' || !/^https?:\/\//i.test(url.trim())) {
+      return res.status(400).json({ success: false, message: 'Valid HTTP/HTTPS URL is required' });
     }
 
     const cleanUrl = url.trim();
@@ -159,12 +162,15 @@ export const downloaderController = {
 
   // Stream video directly via yt-dlp to output MP4 stream
   stream: asyncHandler(async (req: Request, res: Response) => {
-    const targetUrl = req.query.url as string;
-    let filename = (req.query.filename as string) || 'video.mp4';
+    const rawUrl = req.query.url as string;
+    let rawFilename = (req.query.filename as string) || 'video.mp4';
 
-    if (!targetUrl) {
-      return res.status(400).send('URL query parameter is required');
+    if (!rawUrl || typeof rawUrl !== 'string' || !/^https?:\/\//i.test(rawUrl.trim())) {
+      return res.status(400).send('Valid HTTP/HTTPS URL query parameter is required');
     }
+
+    const targetUrl = rawUrl.trim();
+    let filename = rawFilename.replace(/[\r\n"\\/]/g, '_').replace(/[^a-zA-Z0-9._-]/g, '_').substring(0, 100);
 
     if (!filename.endsWith('.mp4') && !filename.includes('.')) {
       filename += '.mp4';
@@ -173,11 +179,12 @@ export const downloaderController = {
     res.setHeader('Content-Type', 'video/mp4');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
 
-    // Stream from yt-dlp stdout directly to client
+    // Stream from yt-dlp stdout directly to client with explicit argument boundary
     const ytdl = spawn(YTDLP_BIN, [
       '-f', 'b/bv+ba/best',
       '-o', '-',
       '--no-warnings',
+      '--',
       targetUrl,
     ]);
 
@@ -194,15 +201,24 @@ export const downloaderController = {
 
   // Stream proxy endpoint to bypass CORS and force attachment download for raw file URLs
   proxy: asyncHandler(async (req: Request, res: Response) => {
-    const targetUrl = req.query.url as string;
-    let filename = (req.query.filename as string) || 'download';
+    const rawUrl = req.query.url as string;
+    let rawFilename = (req.query.filename as string) || 'download';
 
-    if (!targetUrl) {
-      return res.status(400).send('URL query parameter is required');
+    if (!rawUrl || typeof rawUrl !== 'string' || !/^https?:\/\//i.test(rawUrl.trim())) {
+      return res.status(400).send('Valid HTTP/HTTPS URL query parameter is required');
     }
+
+    const targetUrl = rawUrl.trim();
+    let filename = rawFilename.replace(/[\r\n"\\/]/g, '_').replace(/[^a-zA-Z0-9._-]/g, '_').substring(0, 100);
+
+    const abortController = new AbortController();
+    req.on('close', () => {
+      abortController.abort();
+    });
 
     try {
       const response = await fetch(targetUrl, {
+        signal: abortController.signal,
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
           'Referer': targetUrl.includes('tiktok') ? 'https://www.tiktok.com/' : 'https://www.google.com/',
@@ -242,6 +258,9 @@ export const downloaderController = {
         res.status(500).send('No response stream available');
       }
     } catch (err: any) {
+      if (err.name === 'AbortError') {
+        return;
+      }
       console.error('Downloader proxy error:', err);
       res.status(500).send('Downloader proxy error: ' + err.message);
     }

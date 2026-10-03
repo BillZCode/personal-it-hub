@@ -5,6 +5,7 @@ import { LoadingState } from '../../components/feedback/LoadingStates';
 import { GitBranch, Plus, Calendar, Package, ArrowUp, Bug, Wrench, Sparkles } from 'lucide-react';
 import { cn, formatDate, formatRelativeTime } from '../../utils';
 import { ChangelogEntry } from '../../types';
+import { useDocumentTitle } from '../../hooks';
 
 const sampleChangelog: ChangelogEntry[] = [
   {
@@ -105,6 +106,7 @@ const typeConfig = {
 } as const;
 
 export function Changelog() {
+  useDocumentTitle('Changelog');
   const { data, isLoading } = useQuery({
     queryKey: ['changelog'],
     queryFn: () => changelogApi.getAll(),
@@ -120,21 +122,21 @@ export function Changelog() {
         <p className="text-dark-400 mt-2">Version history and release notes</p>
       </div>
 
-      <div className="relative">
-        <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-dark-700" />
+      <div className="relative" role="feed" aria-label="Changelog version history">
+        <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-dark-700" aria-hidden="true" />
         {entries.map((entry, index) => (
-          <div key={entry.id} className="relative mb-10 pl-16 pb-6 last:pb-0">
+          <article key={entry.id} className="relative mb-10 pl-16 pb-6 last:pb-0" aria-labelledby={`version-${entry.id}`}>
             <div className="absolute left-0 top-1 w-16 text-right pr-4">
-              <span className="font-mono font-bold text-primary-500 text-lg">{entry.version}</span>
+              <span id={`version-${entry.id}`} className="font-mono font-bold text-amber-400 text-lg">{entry.version}</span>
               <p className="text-xs text-dark-500 mt-1">{formatDate(entry.date)}</p>
               <p className="text-xs text-dark-400">{formatRelativeTime(entry.date)}</p>
             </div>
-            <div className="absolute left-6 top-4 w-3 h-3 rounded-full bg-primary-500 border-2 border-dark-950 z-10" />
+            <div className="absolute left-6 top-4 w-3 h-3 rounded-full bg-amber-400 border-2 border-dark-950 z-10" aria-hidden="true" />
             {index < entries.length - 1 && (
-              <div className="absolute left-7 top-10 h-full w-0.5 bg-dark-700" />
+              <div className="absolute left-7 top-10 h-full w-0.5 bg-dark-700" aria-hidden="true" />
             )}
 
-            <Card className="p-5">
+            <Card className="p-5 border-dark-800 bg-dark-900/60">
               <div className="space-y-4">
                 {(['added', 'changed', 'fixed', 'improved'] as const).map((type) => {
                   const items = entry[type];
@@ -146,15 +148,15 @@ export function Changelog() {
                     <div key={type} className="space-y-2">
                       <div className="flex items-center gap-2 mb-2">
                         <div className={cn('p-1.5 rounded', config.bg)}>
-                          <Icon className={cn('h-4 w-4', config.color)} />
+                          <Icon className={cn('h-4 w-4', config.color)} aria-hidden="true" />
                         </div>
                         <h4 className={cn('font-semibold text-sm uppercase tracking-wide', config.color)}>
                           {config.label}
                         </h4>
                       </div>
-                      <ul className="ml-8 space-y-1.5 border-l border-dark-700 pl-4">
+                      <ul className="ml-8 space-y-1.5 border-l border-dark-700 pl-4" role="list" aria-label={`Daftar ${config.label} untuk versi ${entry.version}`}>
                         {items.map((item, i) => (
-                          <li key={i} className="text-dark-300 text-sm relative before:absolute before:left-[-10px] before:top-[6px] before:w-2 before:h-2 before:rounded-full before:bg-primary-500/50">
+                          <li key={i} role="listitem" className="text-dark-300 text-sm relative before:absolute before:left-[-10px] before:top-[6px] before:w-2 before:h-2 before:rounded-full before:bg-amber-400/50">
                             {item}
                           </li>
                         ))}
@@ -164,15 +166,22 @@ export function Changelog() {
                 })}
               </div>
             </Card>
-          </div>
+          </article>
         ))}
       </div>
 
       <div className="text-center pt-8 border-t border-dark-700">
         <p className="text-dark-400 mb-4">Showing {entries.length} releases</p>
-        <Button variant="outline" leftIcon={<GitBranch className="h-4 w-4" />}>
-          View on GitHub
-        </Button>
+        <a
+          href="https://github.com/BillZCode"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-dark-800 hover:bg-dark-700 text-dark-100 border border-dark-700 text-xs font-mono transition-colors shadow-sm"
+          aria-label="Lihat repositori di GitHub"
+        >
+          <GitBranch className="h-4 w-4 text-amber-400" aria-hidden="true" />
+          <span>View on GitHub</span>
+        </a>
       </div>
     </div>
   );

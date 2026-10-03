@@ -112,25 +112,33 @@ export function useIntersectionObserver(
 
 export type CopyToClipboardResult = [boolean, (text: string) => Promise<void>] & {
   copied: boolean;
+  copiedText: string | null;
   copy: (text: string) => Promise<void>;
 };
 
 export function useCopyToClipboard(): CopyToClipboardResult {
   const [copied, setCopied] = useState(false);
+  const [copiedText, setCopiedText] = useState<string | null>(null);
 
   const copy = useCallback(async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setCopiedText(text);
+      setTimeout(() => {
+        setCopied(false);
+        setCopiedText((prev) => (prev === text ? null : prev));
+      }, 2000);
     } catch (err) {
       console.error('Failed to copy:', err);
       setCopied(false);
+      setCopiedText(null);
     }
   }, []);
 
   const result = [copied, copy] as unknown as CopyToClipboardResult;
   result.copied = copied;
+  result.copiedText = copiedText;
   result.copy = copy;
   return result;
 }
@@ -205,3 +213,6 @@ export { useAnime, anime, animate, stagger } from './useAnime';
 export type { AnimationParams, JSAnimation, TargetsParam } from './useAnime';
 export { useTypewriter } from './useTypewriter';
 export { useGsapMagnetic, useGsapScrollReveal, gsap, ScrollTrigger, useGSAP } from './useGsap';
+export { useDriveOperations } from './useDriveOperations';
+export type { UploadProgressState } from './useDriveOperations';
+export { useDocumentTitle } from './useDocumentTitle';

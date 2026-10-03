@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
+import { Prisma } from '@prisma/client';
 import { config } from '../config';
 import { logger } from '../utils/logger';
 
@@ -38,9 +39,43 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
     });
   }
 
-  if (err.name === 'UnauthorizedError' || err.message.includes('jwt')) {
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    if (err.code === 'P2002') {
+      const target = (err.meta?.target as string[])?.join(', ') || 'field';
+      return res.status(409).json({
+        message: `Konflik data: Nilai unik untuk '${target}' sudah ada dalam sistem`,
+        code: 'CONFLICT',
+        statusCode: 409,
+      });
+    }
+    if (err.code === 'P2025') {
+      return res.status(404).json({
+        message: 'Data yang diminta tidak ditemukan atau telah dihapus',
+        code: 'NOT_FOUND',
+        statusCode: 404,
+      });
+    }
+    if (err.code === 'P2003') {
+      return res.status(400).json({
+        message: 'Operasi database gagal: Relasi data terkait tidak valid',
+        code: 'FOREIGN_KEY_VIOLATION',
+        statusCode: 400,
+      });
+    }
+  }
+
+  if (err.name === 'MulterError') {
+    const isLimit = err.message.toLowerCase().includes('limit') || err.message.toLowerCase().includes('large');
+    return res.status(400).json({
+      message: isLimit ? 'Ukuran file melebihi batas yang diizinkan (maksimal 5GB)' : `Upload gagal: ${err.message}`,
+      code: 'UPLOAD_ERROR',
+      statusCode: 400,
+    });
+  }
+
+  if (err.name === 'UnauthorizedError' || err.message?.toLowerCase().includes('jwt')) {
     return res.status(401).json({
-      message: 'Unauthorized',
+      message: 'Sesi kedaluwarsa atau tidak valid, silakan login kembali',
       code: 'UNAUTHORIZED',
       statusCode: 401,
     });
@@ -61,7 +96,7 @@ export function notFoundHandler(req: Request, res: Response) {
   });
 }
 
-export function asyncHandler(fn: Function) {
+export function asyncHandler(fn: (req: Request, res: Response, next: NextFunction) => unknown) {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };

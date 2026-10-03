@@ -16,10 +16,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark-dimmed.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   
-  <link rel="stylesheet" href="style.css?v=2.5.0">
+  <link rel="stylesheet" href="style.css?v=2.7.0">
 </head>
-<body>
+<body class="light-mode">
   <div class="app-layout">
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
@@ -57,7 +58,9 @@
           <select id="modelSelect" class="select-custom">
             <!-- Verified Active Models -->
             <optgroup label="High Performance & Fast (Rekomendasi)">
-              <option value="gemini-3-flash-preview" selected>Flash 3 Preview (Paling Cepat & Stabil)</option>
+              <option value="gemini-flash-latest" selected>Gemini Flash Latest (Paling Cepat & Stabil)</option>
+              <option value="gemini-flash-lite-latest">Flash Lite Latest (Paling Hemat Token)</option>
+              <option value="gemini-3-flash-preview">Flash 3 Preview</option>
             </optgroup>
             <optgroup label="Agentic & Robotics Intelligence">
               <option value="gemini-robotics-er-2-preview">Embodied Agentic ER-2 (Robotics & Reasoning)</option>
@@ -90,14 +93,30 @@
         </div>
 
         <div class="header-actions">
-          <button class="btn-icon" id="btnClearChat" title="Hapus pesan saat ini">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button class="btn-icon" id="btnThemeToggle" title="Ganti Mode Terang / Gelap" aria-label="Ganti Tema">
+            <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </button>
+          <button class="btn-icon" id="btnClearChat" title="Hapus pesan saat ini" aria-label="Hapus pesan saat ini">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <polyline points="3 6 5 6 21 6"></polyline>
               <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
             </svg>
           </button>
-          <button class="btn-icon" id="btnSettings" title="Pengaturan Model & Parameter">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button class="btn-icon" id="btnSettings" title="Pengaturan Model & Parameter" aria-label="Pengaturan Model & Parameter">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
@@ -110,7 +129,7 @@
         <!-- Welcome Screen shown when chat is empty -->
         <div class="welcome-screen" id="welcomeScreen">
           <div class="welcome-icon">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
               <polyline points="2 17 12 22 22 17"></polyline>
               <polyline points="2 12 12 17 22 12"></polyline>
@@ -119,20 +138,20 @@
           <h2>Omni AI Workspace</h2>
           <p>Asisten AI cerdas multi-model dengan dukungan Gemma open weights, arsitektur hemat token Flash Lite, dan streaming respons interaktif.</p>
           
-          <div class="prompt-suggestions">
-            <div class="suggestion-card" data-prompt="Jelaskan konsep arsitektur microservices vs monolith dan strategi transisinya dalam sistem berskala besar.">
+          <div class="prompt-suggestions" role="list" aria-label="Saran topik pertanyaan">
+            <div class="suggestion-card" role="button" tabindex="0" data-prompt="Jelaskan konsep arsitektur microservices vs monolith dan strategi transisinya dalam sistem berskala besar.">
               <div class="card-title">💡 Arsitektur Sistem</div>
               <div class="card-desc">Komparasi pola microservices vs modular monolith secara mendalam.</div>
             </div>
-            <div class="suggestion-card" data-prompt="Buatkan skrip bash Linux untuk memonitor utilitas CPU, memori RAM, dan disk space serta mengirim peringatan saat mencapai ambang batas 85%.">
+            <div class="suggestion-card" role="button" tabindex="0" data-prompt="Buatkan skrip bash Linux untuk memonitor utilitas CPU, memori RAM, dan disk space serta mengirim peringatan saat mencapai ambang batas 85%.">
               <div class="card-title">⚙️ Otomasi DevOps Linux</div>
               <div class="card-desc">Skrip pemantauan resource server Debian dengan peringatan ambang batas.</div>
             </div>
-            <div class="suggestion-card" data-prompt="Rancang arsitektur jaringan VLAN dan routing inter-VLAN pada Cisco Switch L3 beserta subnetting efisien /24 ke /27.">
+            <div class="suggestion-card" role="button" tabindex="0" data-prompt="Rancang arsitektur jaringan VLAN dan routing inter-VLAN pada Cisco Switch L3 beserta subnetting efisien /24 ke /27.">
               <div class="card-title">🌐 Topologi Jaringan</div>
               <div class="card-desc">Konfigurasi Inter-VLAN Routing & skema IP subnetting enterprise.</div>
             </div>
-            <div class="suggestion-card" data-prompt="Tuliskan analisis best practice pengamanan API RESTful menggunakan JWT, refresh token rotation, dan rate limiting.">
+            <div class="suggestion-card" role="button" tabindex="0" data-prompt="Tuliskan analisis best practice pengamanan API RESTful menggunakan JWT, refresh token rotation, dan rate limiting.">
               <div class="card-title">🔒 Keamanan API</div>
               <div class="card-desc">Strategi implementasi token auth dan mitigasi brute-force API.</div>
             </div>
@@ -176,8 +195,8 @@
                 <span>Gambar</span>
               </button>
 
-              <span class="tool-badge" id="activeModelBadge">Flash Lite Latest</span>
-              <span class="tool-badge" style="background: rgba(16, 185, 129, 0.12); color: #34d399; border-color: rgba(16, 185, 129, 0.3);">Stream Active</span>
+              <span class="tool-badge" id="activeModelBadge">Gemini Flash Latest</span>
+              <span class="tool-badge tool-badge-success">Stream Active</span>
             </div>
             <button id="btnSend" class="btn-send" aria-label="Kirim Pesan">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -194,48 +213,67 @@
     </main>
 
     <!-- Settings Modal -->
-    <div class="modal-overlay" id="settingsModal">
+    <div class="modal-overlay" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
       <div class="modal-card">
         <div class="modal-header">
           <div>
-            <h3>Pengaturan Model & API Provider</h3>
+            <h3 id="settingsModalTitle">Pengaturan Model & API Provider</h3>
             <p style="font-size: 0.74rem; color: var(--text-dim); margin-top: 2px;">Kelola API key, endpoint router, dan parameter respon sistem</p>
           </div>
-          <button class="modal-close-btn" id="btnCloseSettings" aria-label="Tutup">&times;</button>
+          <button class="modal-close-btn" id="btnCloseSettings" aria-label="Tutup pengaturan">&times;</button>
         </div>
         <form id="settingsForm">
           <div class="form-group">
-            <label for="providerSelect">API Provider & Gateway</label>
+            <label for="providerSelect">AI Provider & Agent Engine</label>
             <select id="providerSelect" class="form-input select-custom" style="padding: 8px 10px;">
-              <option value="google" selected>Google AI Studio (Direct Free Tier)</option>
+              <option value="server_default" selected>⚡ Server Default (Bawaan Sabbil - Siap Pakai Bebas Kuota)</option>
+              <option value="google">Google AI Studio (Gemini 2.5 / 3 / Flash / Gemma)</option>
+              <option value="openrouter">OpenRouter (Akses Semua Model: Claude 3.5, GPT-4o, DeepSeek, Llama 3)</option>
+              <option value="openai">OpenAI Official (GPT-4o, GPT-4o-mini, o1, o3)</option>
+              <option value="anthropic">Anthropic Claude (Claude 3.5 Sonnet / Haiku / Opus via Proxy)</option>
+              <option value="deepseek">DeepSeek Direct API (DeepSeek-V3, DeepSeek-R1)</option>
+              <option value="groq">Groq Cloud (Ultra-Fast Llama 3.3, Mixtral, Gemma)</option>
+              <option value="mistral">Mistral AI (Mistral Large, Codestral, Pixtral)</option>
               <option value="9router">9Router / Local AI Proxy (http://localhost:20128)</option>
-              <option value="openrouter">OpenRouter API (https://openrouter.ai/api/v1)</option>
-              <option value="custom">Custom OpenAI-Compatible Endpoint</option>
+              <option value="custom">Custom AI Agent / OpenAI-Compatible Endpoint</option>
             </select>
+            <span style="font-size: 0.7rem; color: var(--text-dim); display: block; margin-top: 4px;">Pilih <b>Server Default</b> jika Anda belum memiliki API key sendiri, atau pilih provider lain untuk menggunakan token pribadi Anda.</span>
+          </div>
+
+          <!-- Custom Model ID Override (for OpenRouter, Groq, DeepSeek, Custom, OpenAI) -->
+          <div class="form-group" id="customModelGroup" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label for="customModelInput" style="margin-bottom: 0;">Model Identifier / ID</label>
+              <span id="modelHintText" style="font-size: 0.68rem; color: var(--primary); font-family: var(--font-code);">Contoh: deepseek/deepseek-r1</span>
+            </div>
+            <input type="text" id="customModelInput" class="form-input" placeholder="e.g. gpt-4o, claude-3-5-sonnet, deepseek-chat...">
           </div>
 
           <div class="form-group" id="customEndpointGroup" style="display: none;">
             <label for="customEndpointInput">Custom Base URL Endpoint</label>
-            <input type="text" id="customEndpointInput" class="form-input" placeholder="Contoh: http://localhost:20128/v1">
-            <span style="font-size: 0.7rem; color: var(--text-dim); display: block; margin-top: 4px;">Gunakan untuk menghubungkan 9Router lokal atau LiteLLM proxy.</span>
+            <input type="text" id="customEndpointInput" class="form-input" placeholder="Contoh: http://localhost:20128/v1 atau https://api.openai.com/v1">
+            <span style="font-size: 0.7rem; color: var(--text-dim); display: block; margin-top: 4px;">URL root endpoint penyedia API OpenAI-compatible (format: https://.../v1).</span>
           </div>
 
-          <div class="form-group">
+          <div class="form-group" id="apiKeyFormGroup">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
               <label for="apiKeyInput" style="margin-bottom: 0;">API Key</label>
               <div style="display: flex; gap: 8px;">
                 <button type="button" id="btnToggleKeyVisibility" class="btn-subtle" title="Tampilkan/Sembunyikan Key">
                   <span id="keyVisibilityIcon">👁️ Lihat</span>
                 </button>
-                <button type="button" id="btnResetDefaultKey" class="btn-subtle" title="Kembalikan ke API Key Bawaan Server">
-                  <span>↺ Reset Default</span>
+                <button type="button" id="btnResetDefaultKey" class="btn-subtle" title="Gunakan Kunci Default Server">
+                  <span>⚡ Pakai Default Server</span>
                 </button>
               </div>
             </div>
             <div class="input-with-action">
-              <input type="password" id="apiKeyInput" class="form-input" placeholder="Masukkan API Key...">
+              <input type="password" id="apiKeyInput" class="form-input" placeholder="Masukkan API Key Anda (atau kosongkan untuk pakai default server)...">
             </div>
-            <span style="font-size: 0.7rem; color: var(--text-dim); display: block; margin-top: 4px;">Kunci disimpan aman hanya di browser lokal Anda (LocalStorage).</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+              <span id="apiKeyHelpText" style="font-size: 0.7rem; color: var(--text-dim);">Kunci pribadi Anda tersimpan aman secara offline di LocalStorage perangkat Anda.</span>
+              <a id="apiKeyGetLink" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" style="font-size: 0.7rem; color: var(--primary); text-decoration: none;">Dapatkan API Key Gratis &rarr;</a>
+            </div>
           </div>
 
           <div class="form-group">
@@ -260,6 +298,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=2.5.0"></script>
+  <script src="app.js?v=2.8.0"></script>
 </body>
 </html>

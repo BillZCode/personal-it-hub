@@ -6,6 +6,8 @@ import { AppError } from '../middleware';
 export const notesController = {
   getAll: asyncHandler(async (req: Request, res: Response) => {
     const { category, tag, search, published = true, page = 1, limit = 20 } = req.query;
+    const pageNum = Math.max(1, parseInt(String(page), 10) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(String(limit), 10) || 20));
     const where: any = {};
 
     if (published !== undefined && published !== '') {
@@ -25,13 +27,19 @@ export const notesController = {
       prisma.technicalNote.findMany({
         where,
         orderBy: { publishedAt: 'desc' },
-        skip: (Number(page) - 1) * Number(limit),
-        take: Number(limit),
+        skip: (pageNum - 1) * limitNum,
+        take: limitNum,
       }),
       prisma.technicalNote.count({ where }),
     ]);
 
-    res.json({ data: notes, total, page: Number(page), limit: Number(limit), totalPages: Math.ceil(total / Number(limit)) });
+    res.json({ 
+      data: notes, 
+      total, 
+      page: pageNum, 
+      limit: limitNum, 
+      totalPages: Math.ceil(total / limitNum) 
+    });
   }),
 
   getBySlug: asyncHandler(async (req: Request, res: Response) => {

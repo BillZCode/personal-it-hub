@@ -217,12 +217,19 @@ export async function tracerouteHost(host: string) {
 export async function httpHeaders(url: string) {
   const start = Date.now();
   try {
-    const response = await fetch(url, { method: 'HEAD', signal: AbortSignal.timeout(10000), redirect: 'follow' });
+    if (!url || !/^https?:\/\//i.test(url.trim())) {
+      return { success: false, error: 'URL must start with http:// or https://', executionTime: 0 };
+    }
+    const cleanUrl = url.trim();
+    let response = await fetch(cleanUrl, { method: 'HEAD', signal: AbortSignal.timeout(10000), redirect: 'follow' });
+    if (response.status === 405) {
+      response = await fetch(cleanUrl, { method: 'GET', signal: AbortSignal.timeout(10000), redirect: 'follow' });
+    }
     const headers: Record<string, string> = {};
     response.headers.forEach((value, key) => { headers[key] = value; });
-    return { success: true, data: { url, status: response.status, headers }, executionTime: Date.now() - start };
-  } catch (err) {
-    return { success: false, error: 'Failed to fetch headers', executionTime: Date.now() - start };
+    return { success: true, data: { url: cleanUrl, status: response.status, headers }, executionTime: Date.now() - start };
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch headers', executionTime: Date.now() - start };
   }
 }
 
@@ -230,10 +237,22 @@ export async function publicIp() {
   const start = Date.now();
   try {
     const response = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(5000) });
-    const data = (await response.json()) as { ip: string };
-    return { success: true, data: { ip: data.ip }, executionTime: Date.now() - start };
-  } catch (err) {
-    return { success: false, error: 'Failed to get public IP', executionTime: Date.now() - start };
+    if (response.ok) {
+      const data = (await response.json()) as { ip: string };
+      return { success: true, data: { ip: data.ip }, executionTime: Date.now() - start };
+    }
+    throw new Error('Primary IP service unreachable');
+  } catch {
+    try {
+      const fallback = await fetch('https://icanhazip.com', { signal: AbortSignal.timeout(5000) });
+      const text = (await fallback.text()).trim();
+      if (text) {
+        return { success: true, data: { ip: text }, executionTime: Date.now() - start };
+      }
+      throw new Error('Fallback IP service unreachable');
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to get public IP', executionTime: Date.now() - start };
+    }
   }
 }
 

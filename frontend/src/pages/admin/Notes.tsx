@@ -6,8 +6,10 @@ import { SkeletonCard } from '../../components/feedback/LoadingStates';
 import { Plus, Edit, Trash2, Search, Eye } from 'lucide-react';
 import { cn, formatDate, formatRelativeTime } from '../../utils';
 import { TechnicalNote } from '../../types';
+import { useDocumentTitle } from '../../hooks';
 
 export function AdminNotes() {
+  useDocumentTitle('Manage Notes - Admin');
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -77,7 +79,7 @@ export function AdminNotes() {
       </div>
 
       <div className="card p-4 flex flex-col sm:flex-row gap-4">
-        <Input placeholder="Search notes..." value={search} onChange={(e) => setSearch(e.target.value)} leftIcon={<Search className="h-5 w-5" />} className="flex-1 max-w-xs" />
+        <Input placeholder="Search notes..." value={search} onChange={(e) => setSearch(e.target.value)} leftIcon={<Search className="h-5 w-5" />} aria-label="Search notes" className="flex-1 max-w-xs" />
       </div>
 
       {isLoading ? (
@@ -88,7 +90,7 @@ export function AdminNotes() {
         <div className="text-center py-12"><p className="text-dark-400">No notes found.</p></div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full" aria-label="Notes management table">
             <thead>
               <tr className="border-b border-dark-700 text-left text-dark-400 text-sm">
                 <th className="pb-3 pr-4">Title</th>
@@ -117,8 +119,8 @@ export function AdminNotes() {
                   <td className="py-4 pr-4 text-sm text-dark-400 font-mono">{formatRelativeTime(note.updatedAt)}</td>
                   <td className="py-4">
                     <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => { setEditingNote(note); setShowModal(true); }}><Edit className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm(note)}><Trash2 className="h-4 w-4 text-red-400" /></Button>
+                      <Button variant="ghost" size="sm" onClick={() => { setEditingNote(note); setShowModal(true); }} aria-label={`Edit note ${note.title}`}><Edit className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm(note)} aria-label={`Delete note ${note.title}`}><Trash2 className="h-4 w-4 text-red-400" /></Button>
                     </div>
                   </td>
                 </tr>

@@ -6,8 +6,10 @@ import { SkeletonCard } from '../../components/feedback/LoadingStates';
 import { Plus, Edit, Trash2, Search, Image as ImageIcon } from 'lucide-react';
 import { cn, formatDate, formatRelativeTime } from '../../utils';
 import { GalleryItem } from '../../types';
+import { useDocumentTitle } from '../../hooks';
 
 export function AdminGallery() {
+  useDocumentTitle('Manage Gallery - Admin');
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -68,25 +70,25 @@ export function AdminGallery() {
         <Button onClick={() => { setEditingItem(null); setShowModal(true); }} leftIcon={<Plus className="h-4 w-4" />}>New Image</Button>
       </div>
 
-      <div className="card p-4"><Input placeholder="Search gallery..." value={search} onChange={(e) => setSearch(e.target.value)} leftIcon={<Search className="h-5 w-5" />} className="max-w-xs" /></div>
+      <div className="card p-4"><Input placeholder="Search gallery..." value={search} onChange={(e) => setSearch(e.target.value)} leftIcon={<Search className="h-5 w-5" />} aria-label="Search gallery" className="max-w-xs" /></div>
 
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">{Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}</div>
       ) : items.length === 0 ? (
         <div className="text-center py-12"><p className="text-dark-400">No images found.</p></div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="Gallery items list">
           {items.map((item) => (
-            <Card key={item.id} className="p-4 card-hover overflow-hidden">
-              <img src={item.thumbnailUrl || item.imageUrl} alt={item.title} className="w-full h-32 object-cover rounded mb-3" />
+            <Card key={item.id} role="listitem" className="p-4 card-hover overflow-hidden">
+              <img src={item.thumbnailUrl || item.imageUrl} alt={item.title} loading="lazy" decoding="async" className="w-full h-32 object-cover rounded mb-3" />
               <h3 className="font-semibold text-dark-100 mb-1 truncate">{item.title}</h3>
               <div className="flex items-center gap-2 mb-2">
                 <Badge variant="info" className="text-xs">{item.category}</Badge>
                 <span className="text-xs text-dark-400">{formatRelativeTime(item.createdAt)}</span>
               </div>
               <div className="flex gap-2">
-                <Button variant="ghost" size="sm" onClick={() => { setEditingItem(item); setShowModal(true); }}><Edit className="h-4 w-4" /></Button>
-                <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm(item)}><Trash2 className="h-4 w-4 text-red-400" /></Button>
+                <Button variant="ghost" size="sm" onClick={() => { setEditingItem(item); setShowModal(true); }} aria-label={`Edit ${item.title}`}><Edit className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm(item)} aria-label={`Delete ${item.title}`}><Trash2 className="h-4 w-4 text-red-400" /></Button>
               </div>
             </Card>
           ))}

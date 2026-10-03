@@ -17,14 +17,24 @@ import { validate } from '../middleware/validation';
 import { guestbookSchema, contactSchema, networkToolSchemas } from '../utils/validation';
 import { statisticsService } from '../services/statistics';
 import { asyncHandler } from '../middleware';
+import { logger } from '../utils/logger';
 
 const router = Router();
 
 router.use(generalRateLimit);
-router.use(asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-  await statisticsService.recordVisitor();
+
+const EXCLUDED_TRACKING_PREFIXES = ['/server/stats', '/status', '/health'];
+
+router.use((req: Request, _res: Response, next: NextFunction) => {
+  const isExcluded = EXCLUDED_TRACKING_PREFIXES.some((prefix) => req.path.startsWith(prefix));
+  if (!isExcluded && req.method === 'GET') {
+    // Asynchronous non-blocking visitor recording
+    statisticsService.recordVisitor().catch((err: any) => {
+      logger.warn('Failed to record visitor stat', { error: err?.message });
+    });
+  }
   next();
-}));
+});
 
 router.get('/status', statusController.getSystemStatus);
 router.get('/server/stats', serverController.getStats);

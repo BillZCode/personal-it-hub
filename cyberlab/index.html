@@ -4,12 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CyberLab - All-in-One Cybersecurity & CTF Analysis Workstation</title>
+  <script>
+    // Ensure trailing slash if accessed under /cyberlab path so relative ./css/ resolves accurately
+    if (window.location.pathname === '/cyberlab') {
+      window.location.replace('/cyberlab/' + window.location.search + window.location.hash);
+    }
+  </script>
   <link rel="stylesheet" href="./css/cyberlab.css?v=2.6.1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    // Fallback in case browser resolved ./css/cyberlab.css to root /css/cyberlab.css
+    (function() {
+      const link = document.querySelector('link[href*="cyberlab.css"]');
+      if (link && window.location.pathname.startsWith('/cyberlab') && !link.href.includes('/cyberlab/')) {
+        link.href = '/cyberlab/css/cyberlab.css?v=2.6.1';
+      }
+    })();
+  </script>
 </head>
-<body class="light-mode">
+<body>
 
   <!-- Top Navigation Bar -->
   <header class="app-header">
@@ -46,6 +61,10 @@
 
     <!-- Right Quick Actions -->
     <div class="header-actions">
+      <button class="quick-btn" id="cyberlab-theme-toggle" onclick="toggleCyberlabTheme()" title="Beralih Tema (Dark / Light)">
+        <span id="cyberlab-theme-icon">🌙</span>
+        <span id="cyberlab-theme-text">Dark</span>
+      </button>
       <button class="quick-btn" onclick="openAICopilot()" style="border-color:rgba(34,197,94,0.5);color:var(--primary);background:rgba(34,197,94,0.08);" title="Konsultasikan tantangan ke Omni AI">
         🤖 AI Copilot
       </button>
@@ -1787,6 +1806,39 @@
       sidebar.classList.toggle('open', isOpen);
       if (backdrop) backdrop.classList.toggle('active', isOpen);
     }
+
+    // Theme Toggle & State Management
+    function toggleCyberlabTheme() {
+      const isLight = document.body.classList.contains('light-mode');
+      const nextTheme = isLight ? 'dark' : 'light';
+      applyCyberlabTheme(nextTheme);
+      localStorage.setItem('cyberlab_theme', nextTheme);
+      showToast(`Mode tema diubah ke ${nextTheme.toUpperCase()}`, 'info');
+    }
+
+    function applyCyberlabTheme(theme) {
+      const icon = document.getElementById('cyberlab-theme-icon');
+      const text = document.getElementById('cyberlab-theme-text');
+      if (theme === 'light') {
+        document.body.classList.add('light-mode');
+        if (icon) icon.innerText = '🌙';
+        if (text) text.innerText = 'Dark';
+      } else {
+        document.body.classList.remove('light-mode');
+        if (icon) icon.innerText = '☀️';
+        if (text) text.innerText = 'Light';
+      }
+    }
+
+    // Initialize Theme: Default to dark for elite cybersecurity terminal feel, respect saved choice
+    (function initTheme() {
+      const saved = localStorage.getItem('cyberlab_theme');
+      if (saved) {
+        applyCyberlabTheme(saved);
+      } else {
+        applyCyberlabTheme('dark');
+      }
+    })();
 
     // Auto-close sidebar on mobile after selecting a tool
     const originalSwitchView = window.switchView;

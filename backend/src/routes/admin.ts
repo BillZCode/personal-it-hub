@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { adminController } from '../controllers/admin';
+import { agentController } from '../controllers/agent';
 import { authMiddleware, requireAdmin } from '../middleware/auth';
 import { generalRateLimit } from '../middleware/rateLimit';
 
@@ -8,6 +9,14 @@ const router = Router();
 router.use(generalRateLimit);
 router.use(authMiddleware);
 router.use(requireAdmin);
+
+// Antigravity Agent Remote Management Routes
+router.get('/agent/status', agentController.getStatus);
+router.post('/agent/prompt', agentController.executePrompt);
+router.post('/agent/command', agentController.executeCommand);
+router.get('/agent/history', agentController.getHistory);
+router.get('/agent/diagnostics', agentController.getHealthDiagnostics);
+router.get('/agent/models', agentController.getModelsQuota);
 
 router.get('/statistics', adminController.statistics.getDashboard);
 

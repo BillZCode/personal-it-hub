@@ -77,7 +77,22 @@ func Header(title string) {
 	if QuietMode || JSONMode {
 		return
 	}
-	fmt.Printf("\n%s\n%s\n", colorize(ColorBold+ColorWhite, strings.ToUpper(title)), colorize(ColorDim, strings.Repeat("─", len(title)+8)))
+	bar := strings.Repeat("━", len(title)+10)
+	fmt.Printf("\n%s %s\n%s\n", colorize(ColorBold+ColorYellow, "◆"), colorize(ColorBold+ColorWhite, strings.ToUpper(title)), colorize(ColorDim, bar))
+}
+
+func Banner() {
+	if QuietMode || JSONMode {
+		return
+	}
+	logo := `
+   ___           __ ___ __       ________   ____
+  / _ \___ _  __/ //_//_/ /_    / ___/ / /  /  _/
+ / // / -_) |/ / ,<  / / __/   / /__/ / /___/ /  
+/____/\__/|___/_/|_|/_/\__/    \___/_/____/___/  
+`
+	fmt.Printf("%s\n", colorize(ColorBold+ColorYellow, strings.TrimPrefix(logo, "\n")))
+	fmt.Printf(" %s  %s\n\n", colorize(ColorCyan, "⚡ DevKit Automation Suite"), colorize(ColorDim, "v1.0.0 CLI Core"))
 }
 
 func PrintJSON(data interface{}) error {
@@ -97,7 +112,7 @@ func Confirm(prompt string, defVal bool) bool {
 	if defVal {
 		choices = "[Y/n]"
 	}
-	fmt.Printf("%s %s: ", prompt, choices)
+	fmt.Printf("%s %s %s: ", colorize(ColorCyan, "?"), prompt, colorize(ColorDim, choices))
 	var response string
 	_, err := fmt.Scanln(&response)
 	if err != nil {
@@ -122,11 +137,22 @@ func PrintTable(w io.Writer, rows [][]string) {
 			}
 		}
 	}
-	for _, row := range rows {
+	for idx, row := range rows {
 		for i, col := range row {
 			pad := colWidths[i] - len(col) + 2
-			fmt.Fprintf(w, "%s%s", col, strings.Repeat(" ", pad))
+			if idx == 0 {
+				fmt.Fprintf(w, "%s%s", colorize(ColorBold+ColorWhite, col), strings.Repeat(" ", pad))
+			} else {
+				fmt.Fprintf(w, "%s%s", col, strings.Repeat(" ", pad))
+			}
 		}
 		fmt.Fprintln(w)
+		if idx == 0 {
+			var divParts []string
+			for _, w := range colWidths {
+				divParts = append(divParts, strings.Repeat("─", w))
+			}
+			fmt.Fprintf(w, "%s\n", colorize(ColorDim, strings.Join(divParts, "  ")))
+		}
 	}
 }

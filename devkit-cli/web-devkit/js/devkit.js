@@ -206,7 +206,8 @@ function loadCliSnippet(cmdName) {
   if (!terminal) return;
 
   const snippets = {
-    'devkit doctor': `$ devkit doctor\n\nDEVKIT DOCTOR - ENVIRONMENT DIAGNOSTIC\n──────────────────────────────────────────────\nOS: linux | Arch: amd64 | CPUs: 4 | Host Go: go1.22.7\n\n✓ Go             go version go1.22.7 linux/amd64\n✓ Git            git version 2.47.3\n✓ Docker         Docker version 29.7.2, build a7dcaa6\n✓ Node.js        v20.18.0\n✓ npm            10.8.2\n✓ Python         Python 3.13.5\n✓ SSH            OpenSSH_10.0p2 Debian\n✓ cURL           curl 8.14.1\n✓ Wget           GNU Wget 1.25.0\n\n✓ Your developer workstation is fully operational!`,
+    'devkit doctor': `$ devkit doctor\n\nDEVKIT DOCTOR - ENVIRONMENT DIAGNOSTIC\n──────────────────────────────────────────────\nOS: linux | Arch: amd64 | CPUs: 4 | Host Go: go1.22.7\n\n✓ Go             go version go1.22.7 linux/amd64\n✓ Git            git version 2.47.3\n✓ Docker         Docker version 29.8.2\n✓ Node.js        v20.18.0\n✓ npm            10.8.2\n✓ Python         Python 3.13.5\n✓ PHP            PHP 8.4.24 (cli)\n✓ Composer       Composer version 2.10.3\n✓ SSH            OpenSSH_10.0p2 Debian\n✓ cURL           curl 8.14.1\n✓ Wget           GNU Wget 1.25.0\n\n✓ Your developer workstation is fully operational!`,
+    'devkit project init php': `$ devkit init my-php-app -t php\n\nSCAFFOLDING NEW PROJECT\n───────────────────────────────\nℹ Project Name: my-php-app\nℹ Template: php\n✓ Project my-php-app successfully initialized with php template!\n\nNext steps:\n  cd my-php-app\n  composer run start`,
     'devkit project info .': `$ devkit project info .\n\nPROJECT INFORMATION\n───────────────────────────\nType:             Node.js Application\nLanguage:         TypeScript\nFramework:        Vite / React\nPackage Manager:  npm\nGit Repository:   true\nDirectories:      126\nFiles:            605\nTotal Size:       44.43 MB\n\nLargest files:\n  devkit-cli/bin/devkit                      11.03 MB\n  frontend/public/images/personal/bukiyou_senpai.png 1016.36 KB`,
     'devkit clean --dry-run': `$ devkit clean --dry-run\n\nWORKSPACE ARTIFACT SCANNER\n──────────────────────────────────\nPotential cleanup:\n  backend/dist                    265.00 KB  (Build output directory)\n  backend/node_modules              2.18 MB  (Node.js dependencies)\n  devkit-cli/dist                  67.02 KB  (Build output directory)\n  frontend/dist                    18.98 MB  (Build output directory)\n  frontend/node_modules            34.28 MB  (Node.js dependencies)\n  node_modules                    302.28 MB  (Node.js dependencies)\n\nTotal reclaimable: 358.04 MB\n\nℹ Dry-run active: no files were removed.`,
     'devkit markdown links README.md': `$ devkit markdown links README.md\n\nMARKDOWN LINK INTEGRITY AUDIT\n─────────────────────────────────────\nFiles checked: 1\nLinks checked: 3\nBroken links:  0\n\n✓ All links verified successfully!`
@@ -215,12 +216,104 @@ function loadCliSnippet(cmdName) {
   terminal.innerText = snippets[cmdName] || `$ ${cmdName}\nExecuting...`;
 }
 
+// Toast Notification Helper
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  let icon = 'ℹ️';
+  if (type === 'success') icon = '✅';
+  if (type === 'error') icon = '❌';
+  if (type === 'warning') icon = '⚠️';
+  toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(10px)';
+    toast.style.transition = 'all 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// Clipboard Helpers
+function copyToClipboard(text, msg = 'Tersalin ke clipboard!') {
+  if (!text || text.trim() === '-' || text.startsWith('//')) {
+    showToast('Tidak ada konten valid untuk disalin', 'warning');
+    return;
+  }
+  navigator.clipboard.writeText(text).then(() => {
+    showToast(msg, 'success');
+  }).catch(() => {
+    showToast('Gagal mengakses clipboard', 'error');
+  });
+}
+
+function copyBoxText(elementId) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  copyToClipboard(el.innerText);
+}
+
+function copyInputValue(elementId) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  copyToClipboard(el.value);
+}
+
+// Theme Management
+function toggleDevkitTheme() {
+  const isLight = document.body.classList.contains('light-mode');
+  const nextTheme = isLight ? 'dark' : 'light';
+  applyDevkitTheme(nextTheme);
+  localStorage.setItem('devkit_theme', nextTheme);
+  showToast(`Mode tema diubah ke ${nextTheme.toUpperCase()}`, 'info');
+}
+
+function applyDevkitTheme(theme) {
+  const icon = document.getElementById('devkit-theme-icon');
+  const text = document.getElementById('devkit-theme-text');
+  if (theme === 'light') {
+    document.body.classList.add('light-mode');
+    if (icon) icon.innerText = '🌙';
+    if (text) text.innerText = 'Dark';
+  } else {
+    document.body.classList.remove('light-mode');
+    if (icon) icon.innerText = '☀️';
+    if (text) text.innerText = 'Light';
+  }
+}
+
+// Mobile Sidebar Drawer Toggle
+function toggleDevkitSidebar(forceState) {
+  const sidebar = document.getElementById('devkit-sidebar');
+  const backdrop = document.getElementById('devkit-sidebar-backdrop');
+  if (!sidebar) return;
+  const isOpen = forceState !== undefined ? forceState : !sidebar.classList.contains('open');
+  sidebar.classList.toggle('open', isOpen);
+  if (backdrop) backdrop.classList.toggle('active', isOpen);
+}
+
+// Wrap switchTab to auto-close sidebar on mobile
+const origSwitchTab = switchTab;
+switchTab = function(tabId) {
+  origSwitchTab(tabId);
+  if (window.innerWidth <= 840) {
+    toggleDevkitSidebar(false);
+  }
+};
+
 setInterval(updateTimeClock, 1000);
 window.onload = () => {
+  // Theme initialization
+  const savedTheme = localStorage.getItem('devkit_theme') || 'dark';
+  applyDevkitTheme(savedTheme);
+
   updateTimeClock();
   runSubnetCalc();
   runGeneratePassword();
   runGenerateUUID();
   loadCliSnippet('devkit doctor');
 };
+
 

@@ -102,8 +102,8 @@ export const guestbookApi = {
   create: (data: { name: string; message: string }) =>
     api.post<GuestbookEntry>('/guestbook', data),
 
-  approve: (id: string) =>
-    api.put<GuestbookEntry>(`/admin/guestbook/${id}/approve`, {}),
+  approve: (id: string, approved: boolean = true) =>
+    api.put<GuestbookEntry>(`/admin/guestbook/${id}/approve`, { approved }),
 
   delete: (id: string) =>
     api.delete<void>(`/admin/guestbook/${id}`),
@@ -287,8 +287,8 @@ export const adminApi = {
     getAll: (params?: { page?: number; limit?: number; approved?: boolean; search?: string }) =>
       api.get<PaginatedResponse<GuestbookEntry>>('/admin/guestbook', params),
 
-    approve: (id: string) =>
-      api.put<GuestbookEntry>(`/admin/guestbook/${id}/approve`, {}),
+    approve: (id: string, approved: boolean = true) =>
+      api.put<GuestbookEntry>(`/admin/guestbook/${id}/approve`, { approved }),
 
     delete: (id: string) =>
       api.delete<void>(`/admin/guestbook/${id}`),
@@ -381,4 +381,13 @@ export const driveApi = {
 
   getDownloadUrl: (id: string) => '/api/drive/download/' + id,
   getPreviewUrl: (id: string) => '/api/drive/preview/' + id,
+};
+
+export const agentApi = {
+  getStatus: () => api.get<any>('/admin/agent/status'),
+  executePrompt: (prompt: string, mode?: string) => api.post<any>('/admin/agent/prompt', { prompt, mode }),
+  executeCommand: (command: string, cwd?: string) => api.post<any>('/admin/agent/command', { command, cwd }),
+  getHistory: () => api.get<any>('/admin/agent/history'),
+  getDiagnostics: () => api.get<any>('/admin/agent/diagnostics'),
+  getModelsQuota: () => api.get<any>('/admin/agent/models'),
 };

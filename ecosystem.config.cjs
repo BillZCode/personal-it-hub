@@ -24,6 +24,17 @@ module.exports = {
       },
     },
     {
+      name: 'omni-ai',
+      cwd: '/home/sabbil/Dokumen/TKJ/personal-it-hub',
+      script: 'node',
+      args: 'scripts/omni-server.mjs',
+      autorestart: true,
+      restart_delay: 3000,
+      env: {
+        PORT: 3002,
+      },
+    },
+    {
       name: 'cyberlab-lks',
       cwd: '/home/sabbil/Dokumen/TKJ/personal-it-hub',
       script: 'node',
@@ -32,6 +43,17 @@ module.exports = {
       restart_delay: 3000,
       env: {
         PORT: 3003,
+      },
+    },
+    {
+      name: 'devkit-toolkit',
+      cwd: '/home/sabbil/Dokumen/TKJ/personal-it-hub',
+      script: 'node',
+      args: 'scripts/devkit-server.mjs',
+      autorestart: true,
+      restart_delay: 3000,
+      env: {
+        PORT: 3004,
       },
     },
   ],

@@ -198,7 +198,7 @@ body.light-mode::before {
   font-size: 1.15rem;
   font-weight: 700;
   letter-spacing: -0.5px;
-  color: #fff;
+  color: var(--text-main);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -227,7 +227,7 @@ body.light-mode::before {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   padding: 8px 12px 8px 36px;
-  color: #fff;
+  color: var(--text-main);
   font-size: 0.8rem;
   font-family: var(--font-mono);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -269,7 +269,7 @@ body.light-mode::before {
 }
 
 .quick-btn {
-  background: rgba(15, 23, 42, 0.9);
+  background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   color: var(--text-muted);
@@ -544,7 +544,7 @@ body.light-mode::before {
 .card-title {
   font-size: 1.05rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-main);
   margin-bottom: 6px;
   letter-spacing: -0.3px;
 }
@@ -671,7 +671,7 @@ body.light-mode::before {
 .tool-panel-title {
   font-size: 0.88rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-main);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -691,7 +691,7 @@ body.light-mode::before {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   padding: 7px 11px;
-  color: #fff;
+  color: var(--text-main);
   font-family: var(--font-mono);
   font-size: 0.76rem;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -709,7 +709,7 @@ body.light-mode::before {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   padding: 12px;
-  color: #fff;
+  color: var(--text-main);
   font-family: var(--font-mono);
   font-size: 0.8rem;
   resize: vertical;

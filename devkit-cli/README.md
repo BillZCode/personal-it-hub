@@ -9,10 +9,10 @@
 ## ⚡ Key Features
 
 1. **Project Scaffolding (`devkit init`)**
-   - Interactive generator supporting Go, Node.js/TypeScript, Python, and generic templates.
+   - Interactive generator supporting Go, Node.js/TypeScript, Python, PHP 8+, and generic templates.
    - Creates clean, production-ready enterprise project structures.
 2. **Safe Workspace Cleaner (`devkit clean`)**
-   - Audits and calculates disk space consumed by `node_modules`, `dist`, `build`, `target`, `.cache`, and logs.
+   - Audits and calculates disk space consumed by `node_modules`, `vendor`, `dist`, `build`, `target`, `.cache`, and logs.
    - Built-in dry-run mode and interactive user confirmation safeguards.
 3. **Docker Hygiene (`devkit docker clean`)**
    - Discovers stopped containers, dangling images, build caches, and unused volumes.
@@ -20,7 +20,7 @@
 4. **Markdown Link Integrity (`devkit markdown links`)**
    - Concurrently validates internal relative links, anchors, and external HTTP/HTTPS URLs.
 5. **Project Analyzer (`devkit project info`)**
-   - Identifies project type, language, framework, git status, file metrics, and top largest files.
+   - Identifies project type, language (Go, TypeScript, JavaScript, Python, PHP, Rust), framework (Laravel, Express, React, etc.), git status, file metrics, and top largest files.
 6. **Git Automation (`devkit git summary`, `devkit git cleanup`)**
    - Instant repository overview and safe batch deletion of stale merged local branches.
 7. **Smart Code Find (`devkit find`, `devkit find large`)**
@@ -28,7 +28,7 @@
 8. **Automated Backups (`devkit backup`)**
    - Creates compressed `.tar.gz` or `.zip` snapshots while automatically ignoring bulky dependencies.
 9. **Environment Diagnostic (`devkit doctor`)**
-   - Comprehensive audit of developer tools (Go, Git, Docker, Node.js, Python, Rust, SSH, cURL).
+   - Comprehensive audit of developer tools (Go, Git, Docker, Node.js, PHP, Composer, Python, Rust, SSH, cURL).
 10. **Batch Automation (`devkit batch run`)**
     - Orchestrates declarative workflow pipelines defined in YAML.
 11. **DevKit Web Studio**

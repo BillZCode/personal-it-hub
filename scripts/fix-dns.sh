@@ -176,6 +176,24 @@ cat << 'INNER_EOF' > /etc/apache2/sites-available/sabbilaf.network.conf
 
     ProxyPreserveHost On
 
+    # Mitigasi Slowloris & KeepAlive DoS
+    Timeout 30
+    KeepAlive On
+    KeepAliveTimeout 15
+    MaxKeepAliveRequests 100
+
+    # Batasi HTTP method di root/frontend SPA
+    <Location "/">
+        <LimitExcept GET HEAD OPTIONS>
+            Require all denied
+        </LimitExcept>
+    </Location>
+
+    # Buka seluruh method yang valid untuk API backend
+    <Location "/api">
+        Require all granted
+    </Location>
+
     # Rute API Backend ke port 3001
     ProxyPass /api http://127.0.0.1:3001/api
     ProxyPassReverse /api http://127.0.0.1:3001/api

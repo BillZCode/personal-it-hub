@@ -2,6 +2,7 @@
 const DEFAULT_API_KEY = "";
 
 const validModels = [
+  'antigravity-agent',
   'gemini-flash-latest',
   'gemini-3-flash-preview',
   'gemini-flash-lite-latest',
@@ -10,6 +11,7 @@ const validModels = [
 ];
 
 const modelDisplayNames = {
+  'antigravity-agent': 'Antigravity Server Agent',
   'gemini-flash-latest': 'Gemini Flash Latest',
   'gemini-3-flash-preview': 'Flash 3 Preview',
   'gemini-flash-lite-latest': 'Flash Lite Latest',

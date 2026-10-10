@@ -57,6 +57,9 @@
           <label for="modelSelect">Model Engine</label>
           <select id="modelSelect" class="select-custom">
             <!-- Verified Active Models -->
+            <optgroup label="Autonomous Server Execution & Agent">
+              <option value="antigravity-agent">🚀 Antigravity Autonomous Agent (Remote Server Execution)</option>
+            </optgroup>
             <optgroup label="High Performance & Fast (Rekomendasi)">
               <option value="gemini-flash-latest" selected>Gemini Flash Latest (Paling Cepat & Stabil)</option>
               <option value="gemini-flash-lite-latest">Flash Lite Latest (Paling Hemat Token)</option>
@@ -139,17 +142,17 @@
           <p>Asisten AI cerdas multi-model dengan dukungan Gemma open weights, arsitektur hemat token Flash Lite, dan streaming respons interaktif.</p>
           
           <div class="prompt-suggestions" role="list" aria-label="Saran topik pertanyaan">
+            <div class="suggestion-card" role="button" tabindex="0" data-prompt="Cek status pm2, ruang disk, dan memori RAM server lalu buatkan laporannya.">
+              <div class="card-title">🛰️ Cek Status Server</div>
+              <div class="card-desc">Eksekusi perintah terminal live untuk cek PM2, disk, dan RAM server.</div>
+            </div>
+            <div class="suggestion-card" role="button" tabindex="0" data-prompt="Periksa commit git terakhir dan status repositori git pada server.">
+              <div class="card-title">🌿 Git Status & Repo</div>
+              <div class="card-desc">Jalankan inspeksi branch dan log git langsung di host server.</div>
+            </div>
             <div class="suggestion-card" role="button" tabindex="0" data-prompt="Jelaskan konsep arsitektur microservices vs monolith dan strategi transisinya dalam sistem berskala besar.">
               <div class="card-title">💡 Arsitektur Sistem</div>
               <div class="card-desc">Komparasi pola microservices vs modular monolith secara mendalam.</div>
-            </div>
-            <div class="suggestion-card" role="button" tabindex="0" data-prompt="Buatkan skrip bash Linux untuk memonitor utilitas CPU, memori RAM, dan disk space serta mengirim peringatan saat mencapai ambang batas 85%.">
-              <div class="card-title">⚙️ Otomasi DevOps Linux</div>
-              <div class="card-desc">Skrip pemantauan resource server Debian dengan peringatan ambang batas.</div>
-            </div>
-            <div class="suggestion-card" role="button" tabindex="0" data-prompt="Rancang arsitektur jaringan VLAN dan routing inter-VLAN pada Cisco Switch L3 beserta subnetting efisien /24 ke /27.">
-              <div class="card-title">🌐 Topologi Jaringan</div>
-              <div class="card-desc">Konfigurasi Inter-VLAN Routing & skema IP subnetting enterprise.</div>
             </div>
             <div class="suggestion-card" role="button" tabindex="0" data-prompt="Tuliskan analisis best practice pengamanan API RESTful menggunakan JWT, refresh token rotation, dan rate limiting.">
               <div class="card-title">🔒 Keamanan API</div>

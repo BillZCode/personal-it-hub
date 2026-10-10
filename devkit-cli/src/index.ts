@@ -616,7 +616,8 @@ export function createProgram(): Command {
   projCmd
     .command('init [name]')
     .description('Initialize a new modular project scaffold')
-    .action(async (nameArg) => {
+    .option('-t, --template <type>', 'Project template (typescript, express, node, php, react, empty)', 'typescript')
+    .action(async (nameArg, opts) => {
       let projectName = nameArg;
       if (!projectName) {
         projectName = await askText('Project name', 'my-devkit-app');
@@ -631,7 +632,7 @@ export function createProgram(): Command {
         const res = initProject(
           {
             name: projectName,
-            template: 'typescript',
+            template: (opts.template as any) || 'typescript',
             packageManager: 'npm'
           },
           process.cwd()
@@ -640,7 +641,12 @@ export function createProgram(): Command {
         res.filesCreated.forEach((f) => console.log(`  ${chalk.dim('+')} ${f}`));
         console.log(`\nNext steps:`);
         console.log(`  cd ${projectName}`);
-        console.log(`  npm install\n`);
+        if (opts.template === 'php') {
+          console.log(`  composer install`);
+          console.log(`  composer run start\n`);
+        } else {
+          console.log(`  npm install\n`);
+        }
       } catch (e: unknown) {
         formatError('Failed to create project', e instanceof Error ? e.message : String(e));
       }

@@ -137,11 +137,20 @@ export const adminController = {
       res.json({ data: entries, total, page: Number(page), limit: Number(limit), totalPages: Math.ceil(total / Number(limit)) });
     }),
     approve: asyncHandler(async (req: Request, res: Response) => {
-      const entry = await prisma.guestbookEntry.update({ where: { id: req.params.id }, data: { approved: true } });
+      const { id } = req.params;
+      if (!id) {
+        throw new AppError('Entry ID is required', 400);
+      }
+      const approved = req.body && typeof req.body.approved === 'boolean' ? req.body.approved : true;
+      const entry = await prisma.guestbookEntry.update({ where: { id }, data: { approved } });
       res.json(entry);
     }),
     delete: asyncHandler(async (req: Request, res: Response) => {
-      await prisma.guestbookEntry.delete({ where: { id: req.params.id } });
+      const { id } = req.params;
+      if (!id) {
+        throw new AppError('Entry ID is required', 400);
+      }
+      await prisma.guestbookEntry.deleteMany({ where: { id } });
       res.status(204).send();
     }),
   },

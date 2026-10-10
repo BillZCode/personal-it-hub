@@ -83,13 +83,16 @@ export const contactSchema = z.object({
   }),
 });
 
+const safeHostRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+const safeDomainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+
 export const networkToolSchemas = {
-  dns: z.object({ body: z.object({ domain: z.string().min(1).max(253) }) }),
-  whois: z.object({ body: z.object({ domain: z.string().min(1).max(253) }) }),
-  ping: z.object({ body: z.object({ host: z.string().min(1).max(253) }) }),
-  checkPort: z.object({ body: z.object({ host: z.string().min(1).max(253), port: z.union([z.number().int().min(1).max(65535), z.string().regex(/^\d+$/)]) }) }),
-  traceroute: z.object({ body: z.object({ host: z.string().min(1).max(253) }) }),
-  httpHeaders: z.object({ body: z.object({ url: z.string().url() }) }),
+  dns: z.object({ body: z.object({ domain: z.string().min(1).max(253).regex(safeDomainRegex, 'Format domain tidak valid') }) }),
+  whois: z.object({ body: z.object({ domain: z.string().min(1).max(253).regex(safeDomainRegex, 'Format domain tidak valid') }) }),
+  ping: z.object({ body: z.object({ host: z.string().min(1).max(253).regex(safeHostRegex, 'Format host atau IP tidak valid') }) }),
+  checkPort: z.object({ body: z.object({ host: z.string().min(1).max(253).regex(safeHostRegex, 'Format host atau IP tidak valid'), port: z.union([z.number().int().min(1).max(65535), z.string().regex(/^\d+$/)]) }) }),
+  traceroute: z.object({ body: z.object({ host: z.string().min(1).max(253).regex(safeHostRegex, 'Format host atau IP tidak valid') }) }),
+  httpHeaders: z.object({ body: z.object({ url: z.string().url().refine((u) => !/^(http:\/\/|https:\/\/)(127\.|10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|localhost|0\.0\.0\.0)/i.test(u), 'Akses ke IP privat/lokal dilarang demi keamanan') }) }),
   ipCalculator: z.object({ body: z.object({ ip: z.string().ip(), cidr: z.number().int().min(0).max(32) }) }),
   subnetCalculator: z.object({ body: z.object({ ip: z.string().ip(), cidr: z.number().int().min(0).max(30), subnets: z.number().int().min(1).max(256) }) }),
   cidrConverter: z.object({ body: z.object({ value: z.string(), type: z.enum(['cidr', 'mask']) }) }),

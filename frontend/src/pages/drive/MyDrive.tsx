@@ -134,6 +134,9 @@ export function MyDrive({ isTrash = false }: { isTrash?: boolean }) {
         setNewFolderError(null);
         setIsCreatingFolderInline(false);
       },
+      onError: (err: any) => {
+        setNewFolderError(err?.message || 'Gagal membuat folder');
+      },
     });
   };
 
@@ -348,7 +351,7 @@ export function MyDrive({ isTrash = false }: { isTrash?: boolean }) {
           <AlertCircle className="h-8 w-8 text-rose-400 mx-auto" />
           <h3 className="text-sm font-semibold text-rose-200">Gagal mengambil data dari server drive</h3>
           <p className="text-xs text-rose-300 max-w-md mx-auto">
-            {(error as any)?.message || 'Terjadi kesalahan saat berkomunikasi dengan server penyimpanan.'}
+            {error instanceof Error ? error.message : (error as { message?: string })?.message || 'Terjadi kesalahan saat berkomunikasi dengan server penyimpanan.'}
           </p>
           <Button
             variant="outline"

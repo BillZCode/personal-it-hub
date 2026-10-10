@@ -181,6 +181,7 @@ export function validateFileName(name: string): { valid: boolean; error?: string
     return { valid: false, error: 'Nama terlalu panjang (maksimal 255 karakter).' };
   }
   // Check for forbidden characters in Unix & Windows paths
+  // eslint-disable-next-line no-control-regex
   const invalidCharsRegex = /[<>:"/\\|?*\x00-\x1F]/g;
   if (invalidCharsRegex.test(trimmed)) {
     return { valid: false, error: 'Nama berisi karakter terlarang (/ \\ : * ? " < > |).' };

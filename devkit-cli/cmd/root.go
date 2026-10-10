@@ -21,7 +21,14 @@ var (
 	rootCmd = &cobra.Command{
 		Use:   "devkit",
 		Short: "devkit - Automate your everyday development workflow",
-		Long: `devkit-cli is a fast, cross-platform, modular developer automation CLI 
+		Long: `
+   ___           __ ___ __       ________   ____
+  / _ \___ _  __/ //_//_/ /_    / ___/ / /  /  _/
+ / // / -_) |/ / ,<  / / __/   / /__/ / /___/ /  
+/____/\__/|___/_/|_|/_/\__/    \___/_/____/___/  
+  ⚡ DevKit Automation Suite - Modern Developer CLI
+
+devkit-cli is a fast, cross-platform, modular developer automation CLI 
 built to automate tedious tasks across project scaffolding, directory cleaning, 
 docker hygiene, markdown link integrity, git workflows, backups, search, and diagnostics.`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {

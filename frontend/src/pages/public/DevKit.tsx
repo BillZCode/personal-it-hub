@@ -1,15 +1,23 @@
 import { useState, useEffect } from 'react';
 import { ExternalLink, RefreshCw, Terminal, Maximize2, Minimize2 } from 'lucide-react';
 import { Badge } from '../../components/ui';
+import { useDocumentTitle } from '../../hooks';
 
 export function DevKit() {
+  useDocumentTitle('DevKit CLI Studio & Developer Suite');
   const [iframeKey, setIframeKey] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
-    document.title = 'DevKit CLI Studio - Personal IT Hub';
-  }, []);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFullscreen]);
 
   const handleRefresh = () => {
     setIsLoading(true);

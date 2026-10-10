@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useUIStore } from '../../store/ui';
 import { cn } from '../../utils';
@@ -28,6 +28,7 @@ import {
   Shield,
   ExternalLink,
   Globe,
+  Compass,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -48,71 +49,41 @@ interface NavSection {
   items: NavItem[];
 }
 
-// Strictly curated Portfolio navigation (Recruiter & Client focused)
+// Curated Portfolio & IT-Hub Navigation
 const navigation: NavSection[] = [
   {
-    label: 'OVERVIEW',
+    label: 'MAIN HUB',
     items: [
-      { label: 'Dashboard', href: '/', icon: LayoutDashboard },
+      { label: 'Dashboard & Portfolio', href: '/dashboard', icon: LayoutDashboard, badge: 'CORE', badgeType: 'tech' },
+      { label: 'Navigation Portal', href: '/portal', icon: Compass },
     ],
   },
   {
-    label: 'PORTFOLIO & WORK',
+    label: 'PORTFOLIO & PROFILE',
     items: [
       { label: 'Featured Projects', href: '/projects', icon: FolderKanban, badge: 'WORKS', badgeType: 'tech' },
       { label: 'About & Profile', href: '/about', icon: UserIcon },
       { label: 'Certifications', href: '/certificates', icon: Award },
-      { label: 'Technical Notes', href: '/notes', icon: BookOpen },
-      { label: 'Visual Gallery', href: '/gallery', icon: Image },
-      { label: 'Linux Setup & Dotfiles', href: '/linux-setup', icon: Terminal, badge: 'CLI', badgeType: 'tech' },
+      { label: 'Technical Notes', href: '/notes', icon: BookOpen, badge: 'GUIDES', badgeType: 'subdomain' },
     ],
   },
   {
-    label: 'CONNECT & FEEDBACK',
+    label: 'TOOLS & WORKSTATIONS',
     items: [
-      { label: 'Contact & Hire', href: '/contact', icon: Mail },
+      { label: 'DevKit CLI Studio', href: '/devkit', icon: Wrench, badge: 'DEV', badgeType: 'tech' },
+      { label: 'CyberLab CTF', href: '/cyberlab', icon: Shield, badge: 'SECOPS', badgeType: 'live' },
+      { label: 'Omni AI Studio', href: '/ai', icon: Bot, badge: 'AI', badgeType: 'subdomain' },
+      { label: 'Tools & Network Probe', href: '/tools', icon: Activity, badge: 'DIAG', badgeType: 'tech' },
+      { label: 'System Infrastructure', href: '/system', icon: Server, badge: 'STATUS', badgeType: 'live' },
+    ],
+  },
+  {
+    label: 'CONNECT & MEDIA',
+    items: [
+      { label: 'Visual Gallery', href: '/gallery', icon: Image },
       { label: 'Guestbook', href: '/guestbook', icon: MessageSquare },
       { label: 'Changelog', href: '/changelog', icon: GitBranch },
-    ],
-  },
-  {
-    label: 'ECOSYSTEM & SUBDOMAINS',
-    items: [
-      {
-        label: 'DevKit Studio',
-        href: '/devkit',
-        icon: Wrench,
-        badge: 'DEV CLI',
-        badgeType: 'live',
-        external: false,
-      },
-      {
-        label: 'CyberLab',
-        href: '/cyberlab',
-        icon: Shield,
-        badge: 'SUBDOMAIN',
-        badgeType: 'subdomain',
-        external: true,
-        subdomainUrl: 'https://cybertool.sabbilferdyansyah.my.id',
-      },
-      {
-        label: 'Omni AI Studio',
-        href: '/ai',
-        icon: Bot,
-        badge: 'AI ENGINE',
-        badgeType: 'live',
-        external: true,
-        subdomainUrl: 'https://ai.sabbilferdyansyah.my.id',
-      },
-      {
-        label: 'Private Cloud Drive',
-        href: '/drive',
-        icon: HardDrive,
-        badge: 'STORAGE',
-        badgeType: 'cloud',
-        external: true,
-        subdomainUrl: 'http://drive.sabbilferdyansyah.my.id',
-      },
+      { label: 'Contact & Hire', href: '/contact', icon: Mail },
     ],
   },
 ];
@@ -122,17 +93,14 @@ const adminNavigation: NavSection[] = [
     label: 'ADMIN DASHBOARD',
     items: [
       { label: 'Dashboard Overview', href: '/admin', icon: LayoutDashboard, adminOnly: true },
+      { label: 'Antigravity Remote Agent', href: '/admin/agent', icon: Bot, badge: 'AGENT', badgeType: 'live', adminOnly: true },
       { label: 'Private Cloud Drive', href: '/drive', icon: HardDrive, badge: 'CLOUD', badgeType: 'cloud', adminOnly: true },
     ],
   },
   {
     label: 'SYSTEM & DIAGNOSTICS',
     items: [
-      { label: 'Tools & Diagnostics', href: '/tools', icon: Wrench, badge: 'DIAG', badgeType: 'neutral', adminOnly: true },
-      { label: 'Network Tools', href: '/network', icon: Network, badge: 'PING', badgeType: 'neutral', adminOnly: true },
-      { label: 'Server Info', href: '/server', icon: Server, adminOnly: true },
-      { label: 'System Status', href: '/status', icon: Activity, badge: 'LIVE', badgeType: 'live', adminOnly: true },
-      { label: 'Statistics', href: '/statistics', icon: BarChart3, adminOnly: true },
+      { label: 'Tools & Network Diagnostics', href: '/tools', icon: Wrench, badge: 'DIAG', badgeType: 'neutral', adminOnly: true },
     ],
   },
   {
@@ -312,10 +280,28 @@ function NavLinkItem({
   );
 }
 
-export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
+export function Sidebar({ isAdmin = false, isAdminPage }: { isAdmin?: boolean; isAdminPage?: boolean }) {
   const { sidebarCollapsed, toggleSidebarCollapse, sidebarOpen, setSidebarOpen } = useUIStore();
   const location = useLocation();
   const navContainerRef = useRef<HTMLDivElement>(null);
+
+  const isCurrentAdminPage = isAdminPage !== undefined ? isAdminPage : location.pathname.startsWith('/admin');
+
+  // Filter navigation: on admin pages, remove OVERVIEW, PORTFOLIO & WORK, and CONNECT & FEEDBACK (Guestbook, Changelog, Contact).
+  // On public/user pages, keep all navigation items intact.
+  const displayedNavigation = useMemo(() => {
+    if (!isCurrentAdminPage) {
+      return navigation;
+    }
+
+    return navigation
+      .filter((section) => 
+        section.label !== 'MAIN HUB' && 
+        section.label !== 'PORTFOLIO & PROFILE' && 
+        section.label !== 'CONNECT & MEDIA'
+      )
+      .filter((section) => section.items.length > 0);
+  }, [isCurrentAdminPage]);
 
   // Staggered smooth entrance animation via Anime.js v4
   useEffect(() => {
@@ -370,42 +356,8 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
 
         {/* Floating Icons Strip */}
         <nav className="flex flex-col items-center space-y-2 max-h-[60vh] overflow-y-auto scrollbar-hide py-1">
-          {navigation.map((section) => (
-            <div key={section.label} className="flex flex-col items-center space-y-1.5">
-              {section.items.map((item) => {
-                const isActive = location.pathname === item.href || (item.href !== '/' && location.pathname.startsWith(item.href + '/'));
-                return (
-                  <div key={item.href} className="relative group">
-                    <NavLink
-                      to={item.href}
-                      className={cn(
-                        'flex items-center justify-center w-10 h-10 rounded-2xl transition-all duration-200 relative group-hover:scale-110',
-                        isActive
-                          ? 'bg-gradient-to-tr from-amber-500/30 to-amber-500/10 text-amber-300 border border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.3)]'
-                          : 'text-dark-400 hover:text-white hover:bg-white/[0.06] border border-transparent'
-                      )}
-                      aria-label={item.label}
-                    >
-                      <item.icon className="h-4 w-4 transition-transform group-hover:scale-110" aria-hidden="true" />
-                      {isActive && (
-                        <span className="absolute -right-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,1)]" />
-                      )}
-                    </NavLink>
-
-                    {/* Floating Pill Tooltip */}
-                    <div className="nav-tooltip absolute left-full ml-3.5 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-dark-950/95 border border-white/[0.1] group-hover:border-amber-500/40 rounded-xl shadow-2xl backdrop-blur-xl z-50 whitespace-nowrap flex items-center gap-2">
-                      <span className="text-xs font-mono font-medium text-white">{item.label}</span>
-                      {item.badge && <RenderBadge badge={item.badge} type={item.badgeType} />}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ))}
-
-          {isAdmin && (
+          {isCurrentAdminPage ? (
             <>
-              <div className="w-5 h-px bg-white/[0.1] my-1.5" />
               {adminNavigation.map((section) => (
                 <div key={section.label} className="flex flex-col items-center space-y-1.5">
                   {section.items.map((item) => {
@@ -417,12 +369,15 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
                           className={cn(
                             'flex items-center justify-center w-10 h-10 rounded-2xl transition-all duration-200 relative group-hover:scale-110',
                             isActive
-                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50'
-                              : 'text-dark-400 hover:text-white hover:bg-white/[0.06]'
+                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.3)]'
+                              : 'text-dark-400 hover:text-white hover:bg-white/[0.06] border border-transparent'
                           )}
                           aria-label={item.label}
                         >
-                          <item.icon className="h-4 w-4" aria-hidden="true" />
+                          <item.icon className="h-4 w-4 transition-transform group-hover:scale-110" aria-hidden="true" />
+                          {isActive && (
+                            <span className="absolute -right-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,1)]" />
+                          )}
                         </NavLink>
                         <div className="nav-tooltip absolute left-full ml-3.5 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-dark-950/95 border border-white/[0.1] rounded-xl shadow-2xl backdrop-blur-xl z-50 whitespace-nowrap">
                           <span className="text-xs font-mono font-medium text-white">{item.label}</span>
@@ -432,6 +387,107 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
                   })}
                 </div>
               ))}
+
+              {displayedNavigation.length > 0 && (
+                <>
+                  <div className="w-5 h-px bg-white/[0.1] my-1.5" />
+                  {displayedNavigation.map((section) => (
+                    <div key={section.label} className="flex flex-col items-center space-y-1.5">
+                      {section.items.map((item) => {
+                        const isActive = location.pathname === item.href || (item.href !== '/' && location.pathname.startsWith(item.href + '/'));
+                        return (
+                          <div key={item.href} className="relative group">
+                            <NavLink
+                              to={item.href}
+                              className={cn(
+                                'flex items-center justify-center w-10 h-10 rounded-2xl transition-all duration-200 relative group-hover:scale-110',
+                                isActive
+                                  ? 'bg-gradient-to-tr from-amber-500/30 to-amber-500/10 text-amber-300 border border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.3)]'
+                                  : 'text-dark-400 hover:text-white hover:bg-white/[0.06] border border-transparent'
+                              )}
+                              aria-label={item.label}
+                            >
+                              <item.icon className="h-4 w-4 transition-transform group-hover:scale-110" aria-hidden="true" />
+                              {isActive && (
+                                <span className="absolute -right-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,1)]" />
+                              )}
+                            </NavLink>
+                            <div className="nav-tooltip absolute left-full ml-3.5 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-dark-950/95 border border-white/[0.1] group-hover:border-amber-500/40 rounded-xl shadow-2xl backdrop-blur-xl z-50 whitespace-nowrap flex items-center gap-2">
+                              <span className="text-xs font-mono font-medium text-white">{item.label}</span>
+                              {item.badge && <RenderBadge badge={item.badge} type={item.badgeType} />}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              {displayedNavigation.map((section) => (
+                <div key={section.label} className="flex flex-col items-center space-y-1.5">
+                  {section.items.map((item) => {
+                    const isActive = location.pathname === item.href || (item.href !== '/' && location.pathname.startsWith(item.href + '/'));
+                    return (
+                      <div key={item.href} className="relative group">
+                        <NavLink
+                          to={item.href}
+                          className={cn(
+                            'flex items-center justify-center w-10 h-10 rounded-2xl transition-all duration-200 relative group-hover:scale-110',
+                            isActive
+                              ? 'bg-gradient-to-tr from-amber-500/30 to-amber-500/10 text-amber-300 border border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.3)]'
+                              : 'text-dark-400 hover:text-white hover:bg-white/[0.06] border border-transparent'
+                          )}
+                          aria-label={item.label}
+                        >
+                          <item.icon className="h-4 w-4 transition-transform group-hover:scale-110" aria-hidden="true" />
+                          {isActive && (
+                            <span className="absolute -right-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,1)]" />
+                          )}
+                        </NavLink>
+                        <div className="nav-tooltip absolute left-full ml-3.5 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-dark-950/95 border border-white/[0.1] group-hover:border-amber-500/40 rounded-xl shadow-2xl backdrop-blur-xl z-50 whitespace-nowrap flex items-center gap-2">
+                          <span className="text-xs font-mono font-medium text-white">{item.label}</span>
+                          {item.badge && <RenderBadge badge={item.badge} type={item.badgeType} />}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+
+              {isAdmin && (
+                <>
+                  <div className="w-5 h-px bg-white/[0.1] my-1.5" />
+                  {adminNavigation.map((section) => (
+                    <div key={section.label} className="flex flex-col items-center space-y-1.5">
+                      {section.items.map((item) => {
+                        const isActive = location.pathname === item.href || (item.href !== '/' && location.pathname.startsWith(item.href + '/'));
+                        return (
+                          <div key={item.href} className="relative group">
+                            <NavLink
+                              to={item.href}
+                              className={cn(
+                                'flex items-center justify-center w-10 h-10 rounded-2xl transition-all duration-200 relative group-hover:scale-110',
+                                isActive
+                                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50'
+                                  : 'text-dark-400 hover:text-white hover:bg-white/[0.06]'
+                              )}
+                              aria-label={item.label}
+                            >
+                              <item.icon className="h-4 w-4" aria-hidden="true" />
+                            </NavLink>
+                            <div className="nav-tooltip absolute left-full ml-3.5 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-dark-950/95 border border-white/[0.1] rounded-xl shadow-2xl backdrop-blur-xl z-50 whitespace-nowrap">
+                              <span className="text-xs font-mono font-medium text-white">{item.label}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </>
+              )}
             </>
           )}
         </nav>
@@ -515,30 +571,8 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
 
         {/* Navigation List */}
         <div ref={navContainerRef} className="flex-1 overflow-y-auto p-3.5 space-y-4" aria-label="Main navigation">
-          {navigation.map((section) => (
-            <div key={section.label} className="space-y-1">
-              {/* Category Header with Clean Minimalist Line */}
-              <div className="flex items-center gap-2 px-3 pt-2 pb-1 text-[10px] font-mono font-medium tracking-widest text-dark-400 uppercase">
-                <span className="text-amber-500/80 font-bold">//</span>
-                <span>{section.label}</span>
-                <span className="flex-1 h-px bg-white/[0.05]" />
-              </div>
-              <div className="space-y-0.5">
-                {section.items.map((item) => (
-                  <NavLinkItem
-                    key={item.href}
-                    item={item}
-                    isAdmin={isAdmin}
-                    onItemClick={() => setSidebarOpen(false)}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
-
-          {isAdmin && (
+          {isCurrentAdminPage ? (
             <>
-              <div className="border-t border-white/[0.06] my-2" />
               {adminNavigation.map((section) => (
                 <div key={section.label} className="space-y-1">
                   <div className="flex items-center gap-2 px-3 pt-2 pb-1 text-[10px] font-mono font-medium tracking-widest text-dark-400 uppercase">
@@ -558,6 +592,79 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
                   </div>
                 </div>
               ))}
+
+              {displayedNavigation.length > 0 && (
+                <>
+                  <div className="border-t border-white/[0.06] my-2" />
+                  {displayedNavigation.map((section) => (
+                    <div key={section.label} className="space-y-1">
+                      <div className="flex items-center gap-2 px-3 pt-2 pb-1 text-[10px] font-mono font-medium tracking-widest text-dark-400 uppercase">
+                        <span className="text-amber-500/80 font-bold">//</span>
+                        <span>{section.label}</span>
+                        <span className="flex-1 h-px bg-white/[0.05]" />
+                      </div>
+                      <div className="space-y-0.5">
+                        {section.items.map((item) => (
+                          <NavLinkItem
+                            key={item.href}
+                            item={item}
+                            isAdmin={isAdmin}
+                            onItemClick={() => setSidebarOpen(false)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              {displayedNavigation.map((section) => (
+                <div key={section.label} className="space-y-1">
+                  {/* Category Header with Clean Minimalist Line */}
+                  <div className="flex items-center gap-2 px-3 pt-2 pb-1 text-[10px] font-mono font-medium tracking-widest text-dark-400 uppercase">
+                    <span className="text-amber-500/80 font-bold">//</span>
+                    <span>{section.label}</span>
+                    <span className="flex-1 h-px bg-white/[0.05]" />
+                  </div>
+                  <div className="space-y-0.5">
+                    {section.items.map((item) => (
+                      <NavLinkItem
+                        key={item.href}
+                        item={item}
+                        isAdmin={isAdmin}
+                        onItemClick={() => setSidebarOpen(false)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              {isAdmin && (
+                <>
+                  <div className="border-t border-white/[0.06] my-2" />
+                  {adminNavigation.map((section) => (
+                    <div key={section.label} className="space-y-1">
+                      <div className="flex items-center gap-2 px-3 pt-2 pb-1 text-[10px] font-mono font-medium tracking-widest text-dark-400 uppercase">
+                        <span className="text-amber-500/80 font-bold">//</span>
+                        <span>{section.label}</span>
+                        <span className="flex-1 h-px bg-white/[0.05]" />
+                      </div>
+                      <div className="space-y-0.5">
+                        {section.items.map((item) => (
+                          <NavLinkItem
+                            key={item.href}
+                            item={item}
+                            isAdmin={isAdmin}
+                            onItemClick={() => setSidebarOpen(false)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
             </>
           )}
         </div>

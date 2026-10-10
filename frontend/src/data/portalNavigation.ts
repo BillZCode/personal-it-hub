@@ -1,0 +1,285 @@
+import type { LucideIcon } from 'lucide-react';
+import {
+  LayoutDashboard,
+  FolderKanban,
+  User,
+  Award,
+  BookOpen,
+  Wrench,
+  Network,
+  Activity,
+  Server,
+  BarChart3,
+  Image,
+  Terminal,
+  GitBranch,
+  MessageSquare,
+  Mail,
+  Shield,
+  Bot,
+  HardDrive,
+  Cpu,
+  Layers,
+  Sparkles,
+  Radio,
+  ExternalLink,
+} from 'lucide-react';
+
+export interface PortalCategory {
+  id: string;
+  label: string;
+  description: string;
+}
+
+export interface PortalItem {
+  id: string;
+  title: string;
+  description: string;
+  href: string;
+  category: 'core' | 'showcase' | 'ecosystem' | 'sysadmin' | 'connect';
+  icon: LucideIcon;
+  badge?: string;
+  badgeVariant?: 'violet' | 'cyan' | 'emerald' | 'amber' | 'rose' | 'neutral';
+  isExternal?: boolean;
+  subdomainUrl?: string;
+  stats?: string;
+  featured?: boolean;
+  hideFromAllPortals?: boolean;
+  tags?: string[];
+  commandHint?: string;
+}
+
+export const PORTAL_CATEGORIES: PortalCategory[] = [
+  { id: 'all', label: 'Semua Modul', description: 'Katalog menyeluruh seluruh layanan, tools, dan arsip hub' },
+  { id: 'core', label: 'Core & Portofolio', description: 'Telemetri sistem, showcase karya, kredensial, dan biografi' },
+  { id: 'sysadmin', label: 'Sysadmin & Jaringan', description: 'Infrastruktur Linux, pengujian koneksi, dan diagnostik IP' },
+  { id: 'showcase', label: 'Knowledge & Media', description: 'Dokumentasi teknis, konfigurasi server, dan galeri visual' },
+  { id: 'ecosystem', label: 'AI & Subdomain', description: 'Layanan terisolasi, Omni AI Studio, CyberLab, dan Cloud Drive' },
+];
+
+export const PORTAL_NAVIGATION_ITEMS: PortalItem[] = [
+  // Core Dashboard & Portfolio
+  {
+    id: 'dashboard',
+    title: 'Dashboard Overview & Telemetri',
+    description: 'Pusat komando terpadu untuk monitoring hardware real-time, ringkasan karya portofolio, sertifikasi, serta metrik layanan.',
+    href: '/dashboard',
+    category: 'core',
+    icon: LayoutDashboard,
+    badge: 'FLAGSHIP HUB',
+    badgeVariant: 'violet',
+    stats: 'Telemetry & Workstation',
+    featured: true,
+    tags: ['Live Hardware', 'Portofolio', 'Metrics', 'Quick Launch'],
+    commandHint: 'app:dashboard --telemetry',
+  },
+  {
+    id: 'projects',
+    title: 'Featured Projects Archive',
+    description: 'Koleksi implementasi rekayasa sistem: topologi Cisco Packet Tracer, devkit-cli, toolkit CyberLab, dan aplikasi fullstack.',
+    href: '/projects',
+    category: 'core',
+    icon: FolderKanban,
+    badge: 'PORTFOLIO',
+    badgeVariant: 'amber',
+    stats: '7+ Production Works',
+    featured: true,
+    tags: ['Cisco Routing', 'Linux Daemons', 'TypeScript', 'Docker'],
+    commandHint: 'git:repo --list-featured',
+  },
+  {
+    id: 'notes',
+    title: 'Technical Notes & Knowledgebase',
+    description: 'Dokumentasi mendalam panduan konfigurasi Linux Debian 12, Nginx reverse proxy, manajemen database, dan hardening firewall.',
+    href: '/notes',
+    category: 'showcase',
+    icon: BookOpen,
+    badge: 'KNOWLEDGE',
+    badgeVariant: 'cyan',
+    stats: 'Full Engineering Guides',
+    featured: true,
+    tags: ['Debian 12', 'Arch Linux', 'Nginx Conf', 'Firewall UFW'],
+    commandHint: 'man notes(1) --search',
+  },
+  {
+    id: 'certificates',
+    title: 'Industry Certifications & Kredensial',
+    description: 'Daftar sertifikasi resmi Cisco Networking Academy, KOMDIGI Digital Talent Scholarship (DTS), dan jalur pemrograman Mimo.',
+    href: '/certificates',
+    category: 'core',
+    icon: Award,
+    badge: 'VERIFIED',
+    badgeVariant: 'emerald',
+    stats: '7 Verified Credentials',
+    featured: true,
+    tags: ['Cisco NetAcad', 'KOMDIGI DTS', 'Python Cert', 'Networking'],
+    commandHint: 'verify:credentials --all',
+  },
+  {
+    id: 'omni-ai',
+    title: 'Omni AI Multimodal Studio',
+    description: 'Platform asistensi kecerdasan buatan berbasis Google Gemma 4 & Flash 3 dengan penalaran mendalam dan analisis multimedia.',
+    href: '/ai',
+    category: 'ecosystem',
+    icon: Bot,
+    badge: 'SUBDOMAIN AI',
+    badgeVariant: 'cyan',
+    isExternal: true,
+    subdomainUrl: 'https://ai.sabbilferdyansyah.my.id',
+    stats: 'Multimodal Neural Engine',
+    featured: true,
+    tags: ['Gemma 4', 'Gemini Flash', 'Realtime Inference', 'Vision'],
+    commandHint: 'curl https://ai.sabbilferdyansyah.my.id',
+  },
+  {
+    id: 'cyberlab',
+    title: 'CyberLab SecOps Station',
+    description: 'Laboratorium keamanan siber interaktif: audit port, subnet scanner, enkripsi data, dan simulasi penetration testing taktis.',
+    href: '/cyberlab',
+    category: 'ecosystem',
+    icon: Shield,
+    badge: 'SUBDOMAIN CTF',
+    badgeVariant: 'violet',
+    isExternal: true,
+    subdomainUrl: 'https://cybertool.sabbilferdyansyah.my.id',
+    stats: 'SecOps & CTF Station',
+    featured: true,
+    tags: ['Port Recon', 'Hash Tools', 'Network Scanner', 'CTF Labs'],
+    commandHint: 'secops:scanner --target-active',
+  },
+  {
+    id: 'system-overview',
+    title: 'System & Infrastructure Center',
+    description: 'Pusat terpadu telemetri server mandiri: utilisasi CPU/RAM/NVMe, konfigurasi Arch Hyprland dotfiles, dan status uptime node.',
+    href: '/system',
+    category: 'sysadmin',
+    icon: Activity,
+    badge: 'INFRASTRUCTURE',
+    badgeVariant: 'emerald',
+    stats: 'Debian 12 • 99.98% Uptime',
+    featured: true,
+    tags: ['Server Node', 'Hyprland Rice', 'Docker Daemon', 'Stats'],
+    commandHint: 'systemctl status host-cluster',
+  },
+  {
+    id: 'unified-tools',
+    title: 'Tools & Network Diagnostics',
+    description: 'Suite utilitas jaringan online: kalkulator subnetting VLSM/CIDR, uji ping latensi, resolusi DNS query, dan generator utilitas web.',
+    href: '/tools',
+    category: 'sysadmin',
+    icon: Wrench,
+    badge: 'DIAGNOSTICS',
+    badgeVariant: 'amber',
+    stats: '11 Diagnostic Modules',
+    featured: true,
+    tags: ['Subnet CIDR', 'Ping / ICMP', 'DNS Lookup', 'Formatters'],
+    commandHint: 'net:diag --run-suite',
+  },
+  {
+    id: 'about',
+    title: 'About Me & Background',
+    description: 'Biografi pribadi, latar belakang studi di SMKN 1 Denpasar (Teknik Komputer & Jaringan), keahlian arsitektur jaringan, dan visi karier.',
+    href: '/about',
+    category: 'core',
+    icon: User,
+    badge: 'BIOGRAPHY',
+    badgeVariant: 'cyan',
+    stats: 'SMKN 1 Denpasar • TKJ',
+    tags: ['Curriculum Vitae', 'TKJ Class', 'Network Engineer', 'Bali'],
+    commandHint: 'whoami --detailed',
+  },
+  {
+    id: 'gallery',
+    title: 'Visual Documentation & Rig Gallery',
+    description: 'Dokumentasi visual konfigurasi rig workstation Debian & Arch Linux, setup hardware jaringan fisik, dan kegiatan praktikum.',
+    href: '/gallery',
+    category: 'showcase',
+    icon: Image,
+    badge: 'VISUALS',
+    badgeVariant: 'neutral',
+    stats: 'Workstation & Lab Media',
+    tags: ['Battlestation', 'Linux Rice', 'Rack Server', 'Photography'],
+    commandHint: 'gallery:render --highres',
+  },
+  {
+    id: 'devkit',
+    title: 'DevKit Utility Studio',
+    description: 'Perangkat produktivitas pengembang: JSON/YAML validator, base64 encoder, regex tester, dan utilitas format baris perintah.',
+    href: '/devkit',
+    category: 'ecosystem',
+    icon: Wrench,
+    badge: 'DEV SUITE',
+    badgeVariant: 'amber',
+    stats: 'Developer Toolkit',
+    tags: ['JSON / YAML', 'Base64 Crypto', 'Regex Helper', 'CLI Scripts'],
+    commandHint: 'devkit --run-interactive',
+  },
+  {
+    id: 'contact',
+    title: 'Direct Inbox & Collaboration',
+    description: 'Kanal komunikasi resmi: hubungi via direct message Discord (enzbern_), email profesional, atau form kontak terenkripsi.',
+    href: '/contact',
+    category: 'core',
+    icon: Mail,
+    badge: 'DIRECT INBOX',
+    badgeVariant: 'rose',
+    stats: 'Ready for Collab',
+    tags: ['Discord enzbern_', 'Email Form', 'Fast Response', 'Networking'],
+    commandHint: 'mail:send --to sabbil',
+  },
+  {
+    id: 'personal',
+    title: 'Personal Tactical & Recreation',
+    description: 'Ruang rekreasi personal: konfigurasi game taktis (Strinova, Arknights Endfield), playlist audio ambient, dan anime media choices.',
+    href: '/personal',
+    category: 'showcase',
+    icon: Cpu,
+    badge: 'TACTICAL RECREATION',
+    badgeVariant: 'violet',
+    stats: 'Strinova / Arknights',
+    hideFromAllPortals: true,
+    tags: ['Gaming Rig', 'Tactical Shooter', 'OST Playlist', 'Media'],
+    commandHint: 'media:play --ambient',
+  },
+];
+
+export const PROFILE_INFO = {
+  name: 'Sabbil Abdillah Ferdyansyah',
+  handle: '@sabbil / BillZCode',
+  role: 'Network Engineer & Linux Infrastructure Specialist',
+  badge: 'TKJ • SMKN 1 DENPASAR',
+  institution: 'SMKN 1 Denpasar • Teknik Komputer & Jaringan (TKJ)',
+  location: 'Denpasar, Bali, Indonesia',
+  bio: 'Siswa SMK TKJ berdedikasi tinggi dengan spesialisasi pada arsitektur jaringan Cisco & Mikrotik, administrasi sistem Linux Debian 12 & Arch Hyprland, otomasi script, serta rekayasa layanan cloud mandiri.',
+  status: 'System Online & Operational',
+  links: [
+    { label: 'GitHub', href: 'https://github.com/BillZCode', isExternal: true },
+    { label: 'Dashboard', href: '/dashboard' },
+    { label: 'Projects', href: '/projects' },
+    { label: 'Notes', href: '/notes' },
+    { label: 'Certificates', href: '/certificates' },
+    { label: 'Contact', href: '/contact' },
+  ],
+  stats: [
+    { label: 'Primary Node', value: 'Debian 12 + Arch Hyprland' },
+    { label: 'Core Competency', value: 'Cisco Routing & Linux Sysadmin' },
+    { label: 'Cluster Uptime', value: '99.98% Monitored' },
+    { label: 'Base Location', value: 'Denpasar, Bali [WITA]' },
+  ],
+  infrastructureSpecs: [
+    {
+      domain: 'Routing & Switching',
+      items: ['Cisco Packet Tracer & Hardware', 'Mikrotik RouterOS', 'VLAN IEEE 802.1Q', 'OSPF & Static Routing', 'Subnetting VLSM / CIDR'],
+    },
+    {
+      domain: 'Linux Infrastructure',
+      items: ['Debian 12 GNU/Linux Host', 'Arch Linux Hyprland Workstation', 'Docker & Docker Compose', 'Nginx Reverse Proxy & SSL', 'Systemd & SSH Hardening'],
+    },
+    {
+      domain: 'Development & SecOps',
+      items: ['TypeScript & Modern React', 'Python Automation Scripts', 'Wireshark Packet Analysis', 'CyberLab CTF & Nmap Recon', 'Cloudflare DNS & DoH'],
+    },
+  ],
+  bannerAsset: '/images/portal/banner.jpg',
+  avatarAsset: '/images/portal/profile.jpg',
+};

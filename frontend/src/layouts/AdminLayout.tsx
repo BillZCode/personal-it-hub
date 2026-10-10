@@ -24,7 +24,7 @@ export function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-dark-950 flex flex-col">
-      <Sidebar isAdmin={true} />
+      <Sidebar isAdmin={true} isAdminPage={true} />
       <div className={cn(
         'flex-1 flex flex-col transition-all duration-300',
         !sidebarCollapsed ? 'lg:pl-64' : 'lg:pl-16'

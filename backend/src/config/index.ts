@@ -35,6 +35,7 @@ export const config = {
     user: process.env.SMTP_USER || '',
     pass: process.env.SMTP_PASS || '',
     from: process.env.EMAIL_FROM || 'noreply@example.com',
+    to: process.env.EMAIL_TO || '',
   },
 
   storage: {

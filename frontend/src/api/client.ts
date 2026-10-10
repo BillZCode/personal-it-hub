@@ -1,5 +1,6 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
 import { ApiError } from '../types';
+import { useAuthStore } from '../store/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -55,21 +56,20 @@ class ApiClient {
             return this.client(originalRequest);
           } catch {
             this.clearAuth();
-            if (!window.location.pathname.includes('/login')) {
-              if (window.location.pathname.startsWith('/drive')) {
-                window.location.href = '/drive/login';
-              } else {
-                window.location.href = '/admin/login';
-              }
+            const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+            if (currentPath.startsWith('/admin') && !currentPath.includes('/login')) {
+              window.location.href = '/admin/login';
+            } else if (currentPath.startsWith('/drive') && !currentPath.includes('/login')) {
+              window.location.href = '/drive/login';
             }
             return Promise.reject(error);
           }
         }
 
         const apiError: ApiError = {
-          message: error.response?.data?.message || error.message || 'An error occurred',
-          code: error.response?.data?.code,
-          statusCode: error.response?.status || 500,
+          message: error.response?.data?.message || (error.code === 'ECONNABORTED' ? 'Permintaan koneksi melebihi batas waktu (timeout)' : error.message) || 'Terjadi kesalahan koneksi',
+          code: error.response?.data?.code || error.code,
+          statusCode: error.response?.status || (error.code === 'ECONNABORTED' ? 408 : 500),
           details: error.response?.data?.details,
         };
 
@@ -83,6 +83,12 @@ class ApiClient {
   }
 
   private clearAuth(): void {
+    try {
+      useAuthStore.getState().logout();
+      localStorage.removeItem('auth-storage');
+    } catch {
+      // Ignore localStorage errors in restricted environments
+    }
   }
 
   public getClient(): AxiosInstance {

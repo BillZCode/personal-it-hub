@@ -46,6 +46,8 @@ func RunDoctor() *DoctorReport {
 		{"npm", "npm", []string{"--version"}, "Installed alongside Node.js"},
 		{"pnpm", "pnpm", []string{"--version"}, "Install pnpm via npm install -g pnpm"},
 		{"Python", "python3", []string{"--version"}, "Install Python from https://python.org"},
+		{"PHP", "php", []string{"-v"}, "Install PHP CLI (e.g. apt install php-cli)"},
+		{"Composer", "composer", []string{"--version"}, "Install Composer from https://getcomposer.org"},
 		{"Rust / Cargo", "cargo", []string{"--version"}, "Install Rust via https://rustup.rs"},
 		{"SSH", "ssh", []string{"-V"}, "Install OpenSSH client"},
 		{"cURL", "curl", []string{"--version"}, "Install cURL package"},

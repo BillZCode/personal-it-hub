@@ -13,7 +13,11 @@ export function DashboardLayout() {
 
   // Dynamic route to page title
   const getPageTitle = (pathname: string) => {
-    if (pathname === '/') return 'Dashboard';
+    if (pathname === '/' || pathname === '/portal') return 'Portal Navigasi';
+    if (pathname === '/dashboard') return 'Dashboard Telemetry';
+    if (pathname.startsWith('/system') || pathname.startsWith('/status') || pathname.startsWith('/server') || pathname.startsWith('/statistics') || pathname.startsWith('/linux-setup')) {
+      return 'System & Infrastructure Center';
+    }
     const segment = pathname.split('/')[1];
     if (segment === 'ai' || segment === 'chatbot') return 'Omni AI Assistant';
     if (segment === 'cyberlab') return 'CyberLab Workstation';
@@ -79,7 +83,7 @@ export function DashboardLayout() {
       </div>
 
       {/* Navigation Sidebar */}
-      <Sidebar isAdmin={isAuthenticated} />
+      <Sidebar isAdmin={isAuthenticated} isAdminPage={false} />
       
       {/* Main Content Viewport */}
       <div className={cn(

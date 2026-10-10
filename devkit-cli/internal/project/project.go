@@ -102,6 +102,27 @@ func AnalyzeProject(rootDir string) (*ProjectInfo, error) {
 		if _, err := os.Stat(filepath.Join(rootDir, "pyproject.toml")); err == nil {
 			info.PackageManager = "poetry / pip"
 		}
+	} else if _, err := os.Stat(filepath.Join(rootDir, "composer.json")); err == nil || hasFileSuffix(rootDir, ".php") {
+		info.Type = "PHP Application"
+		info.Language = "PHP"
+		info.PackageManager = "composer"
+		info.Framework = "Vanilla PHP"
+
+		if compData, err := os.ReadFile(filepath.Join(rootDir, "composer.json")); err == nil {
+			var compMap map[string]interface{}
+			if json.Unmarshal(compData, &compMap) == nil {
+				req, _ := compMap["require"].(map[string]interface{})
+				if req != nil {
+					if req["laravel/framework"] != nil {
+						info.Framework = "Laravel"
+					} else if req["slim/slim"] != nil {
+						info.Framework = "Slim"
+					} else if req["symfony/framework-bundle"] != nil {
+						info.Framework = "Symfony"
+					}
+				}
+			}
+		}
 	} else if _, err := os.Stat(filepath.Join(rootDir, "Cargo.toml")); err == nil {
 		info.Type = "Rust Crate"
 		info.Language = "Rust"
@@ -116,7 +137,7 @@ func AnalyzeProject(rootDir string) (*ProjectInfo, error) {
 		}
 		name := d.Name()
 		if d.IsDir() {
-			if name == ".git" || name == "node_modules" {
+			if name == ".git" || name == "node_modules" || name == "vendor" {
 				return filepath.SkipDir
 			}
 			info.TotalDirs++
@@ -228,6 +249,66 @@ func main() {
 		_ = os.WriteFile(filepath.Join(target, "src", "main.py"), []byte("def main():\n    print(\"Hello from Python app!\")\n\nif __name__ == \"__main__\":\n    main()\n"), 0644)
 		_ = os.WriteFile(filepath.Join(target, ".gitignore"), []byte("__pycache__/\n*.pyc\n.venv/\n.env\n"), 0644)
 		_ = os.WriteFile(filepath.Join(target, "README.md"), []byte(fmt.Sprintf("# %s\n\nA Python project created with devkit-cli.\n", name)), 0644)
+
+	case "php":
+		_ = os.MkdirAll(filepath.Join(target, "public"), 0755)
+		_ = os.MkdirAll(filepath.Join(target, "src"), 0755)
+		_ = os.MkdirAll(filepath.Join(target, "config"), 0755)
+
+		composerJson := fmt.Sprintf(`{
+  "name": "devkit/%s",
+  "description": "Modern PHP project scaffolded with devkit-cli",
+  "type": "project",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  },
+  "scripts": {
+    "start": "php -S 0.0.0.0:8000 -t public"
+  },
+  "require": {
+    "php": ">=8.1"
+  }
+}
+`, name)
+		_ = os.WriteFile(filepath.Join(target, "composer.json"), []byte(composerJson), 0644)
+
+		indexPhp := fmt.Sprintf(`<?php
+declare(strict_types=1);
+
+require_once __DIR__ . '/../src/App.php';
+
+use App\App;
+
+$app = new App();
+$app->run('%s');
+`, name)
+		_ = os.WriteFile(filepath.Join(target, "public", "index.php"), []byte(indexPhp), 0644)
+
+		appPhp := `<?php
+declare(strict_types=1);
+
+namespace App;
+
+class App
+{
+    public function run(string $appName): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'status' => 'success',
+            'message' => "Welcome to {$appName}!",
+            'runtime' => 'PHP ' . PHP_VERSION,
+            'timestamp' => time()
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    }
+}
+`
+		_ = os.WriteFile(filepath.Join(target, "src", "App.php"), []byte(appPhp), 0644)
+		_ = os.WriteFile(filepath.Join(target, ".gitignore"), []byte("vendor/\n.env\n*.log\n"), 0644)
+		_ = os.WriteFile(filepath.Join(target, "README.md"), []byte(fmt.Sprintf("# %s\n\nA modern PHP 8+ project scaffolded with devkit-cli.\n\n## Quick Start\n```bash\n# Run development built-in server\ncomposer run start\n# or\nphp -S 0.0.0.0:8000 -t public\n```\n", name)), 0644)
 
 	default:
 		// Generic empty project

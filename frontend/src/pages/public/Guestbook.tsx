@@ -1,20 +1,24 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { guestbookApi } from '../../services/api';
-import { Card, Button, Input, Textarea } from '../../components/ui';
+import { Card, Button, Input, Textarea, ConfirmDialog } from '../../components/ui';
 import { SkeletonCard } from '../../components/feedback/LoadingStates';
-import { MessageSquare, Send, ChevronLeft, ChevronRight, User } from 'lucide-react';
+import { MessageSquare, Send, ChevronLeft, ChevronRight, User, Trash2, ShieldCheck, Clock } from 'lucide-react';
 import { formatRelativeTime } from '../../utils';
 import { GuestbookEntry } from '../../types';
 import { useToast, useDocumentTitle } from '../../hooks';
+import { useAuthStore } from '../../store/auth';
 
 const sampleEntries: GuestbookEntry[] = [];
 
 export function Guestbook() {
   useDocumentTitle('Guestbook');
+  const { isAuthenticated } = useAuthStore();
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
   const [page, setPage] = useState(1);
+  const [deleteTarget, setDeleteTarget] = useState<GuestbookEntry | null>(null);
   const limit = 10;
   const { showToast } = useToast();
   const queryClient = useQueryClient();
@@ -29,13 +33,24 @@ export function Guestbook() {
   const submitMutation = useMutation({
     mutationFn: (data: { name: string; message: string }) => guestbookApi.create(data),
     onSuccess: () => {
-      showToast('Pesan berhasil terkirim dan disimpan!', 'success');
+      showToast('Pesan berhasil dikirim! Pesan berstatus pending dan akan muncul setelah disetujui operator.', 'success');
       setName('');
       setMessage('');
       queryClient.invalidateQueries({ queryKey: ['guestbook'] });
-      queryClient.refetchQueries({ queryKey: ['guestbook'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'guestbook'] });
     },
     onError: () => showToast('Gagal mengirim pesan', 'error'),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => guestbookApi.delete(id),
+    onSuccess: () => {
+      showToast('Pesan berhasil dihapus dari buku tamu!', 'success');
+      setDeleteTarget(null);
+      queryClient.invalidateQueries({ queryKey: ['guestbook'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'guestbook'] });
+    },
+    onError: () => showToast('Gagal menghapus pesan buku tamu', 'error'),
   });
 
   const entries = data?.data || sampleEntries;
@@ -93,18 +108,34 @@ export function Guestbook() {
                 <span>{submitMutation.isPending ? 'Mengirim...' : 'Kirim Pesan'}</span>
               </button>
             </div>
-            <p className="text-2xs font-mono text-dark-500 text-center pt-2 border-t border-dark-800/80">
-              Pesan Anda akan otomatis tampil di daftar buku tamu publik setelah berhasil terkirim.
-            </p>
+            <div className="flex items-center justify-center gap-1.5 text-2xs font-mono text-dark-400 text-center pt-2 border-t border-dark-800/80">
+              <Clock className="h-3 w-3 text-amber-400 flex-shrink-0" />
+              <span>Pesan baru akan berstatus pending dan tampil setelah disetujui oleh operator/admin.</span>
+            </div>
           </form>
         </div>
       </div>
 
       <section className="space-y-4">
-        <div className="flex items-center justify-between border-b border-dark-800/80 pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-dark-800/80 pb-3">
           <h2 className="text-base font-bold font-mono text-dark-100 uppercase tracking-wide">
             Daftar Pesan ({data?.total ?? entries.length})
           </h2>
+
+          {isAuthenticated && (
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400 text-2xs font-mono">
+                <ShieldCheck className="h-3.5 w-3.5 text-amber-400" />
+                <span>Mode Admin</span>
+              </div>
+              <Link
+                to="/admin/guestbook"
+                className="px-2.5 py-1 rounded-full bg-dark-800/80 hover:bg-dark-700 border border-dark-700 hover:border-amber-500/40 text-dark-300 hover:text-amber-400 text-2xs font-mono transition-colors"
+              >
+                Panel Moderasi &rarr;
+              </Link>
+            </div>
+          )}
         </div>
 
         {isLoading ? (
@@ -128,11 +159,25 @@ export function Guestbook() {
                     </div>
                     <span className="font-semibold text-xs text-dark-100 font-mono">{entry.name}</span>
                   </div>
-                  <span className="text-2xs font-mono text-dark-500">
-                    {formatRelativeTime(entry.createdAt)}
-                  </span>
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-2xs font-mono text-dark-500">
+                      {formatRelativeTime(entry.createdAt)}
+                    </span>
+                    {isAuthenticated && (
+                      <button
+                        type="button"
+                        onClick={() => setDeleteTarget(entry)}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-2xs font-mono text-red-400 hover:text-red-300 hover:bg-red-500/15 border border-red-500/25 transition-all"
+                        title="Hapus pesan ini (Akses Admin)"
+                        aria-label={`Hapus pesan dari ${entry.name}`}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        <span>Hapus</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <p className="text-dark-300 text-xs sm:text-sm leading-relaxed pl-9">{entry.message}</p>
+                <p className="text-dark-300 text-xs sm:text-sm leading-relaxed pl-9 whitespace-pre-wrap">{entry.message}</p>
               </Card>
             ))}
 
@@ -166,6 +211,18 @@ export function Guestbook() {
           </div>
         )}
       </section>
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
+        title="Hapus Pesan Buku Tamu"
+        message={`Apakah Anda yakin ingin menghapus pesan dari "${deleteTarget?.name}"? Pesan ini akan dihapus secara permanen.`}
+        confirmText="Hapus Pesan"
+        cancelText="Batal"
+        variant="danger"
+        loading={deleteMutation.isPending}
+      />
     </div>
   );
 }

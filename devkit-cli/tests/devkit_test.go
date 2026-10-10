@@ -61,6 +61,24 @@ func TestProjectScaffoldAndAnalyze(t *testing.T) {
 	if info.Language != "Go" {
 		t.Errorf("expected language Go, got %s", info.Language)
 	}
+
+	// Test PHP scaffolding & detection
+	err = project.InitProject("test-php", "php", tmpDir, false)
+	if err != nil {
+		t.Fatalf("InitProject php failed: %v", err)
+	}
+
+	phpInfo, err := project.AnalyzeProject(filepath.Join(tmpDir, "test-php"))
+	if err != nil {
+		t.Fatalf("AnalyzeProject php failed: %v", err)
+	}
+
+	if phpInfo.Language != "PHP" {
+		t.Errorf("expected language PHP, got %s", phpInfo.Language)
+	}
+	if phpInfo.PackageManager != "composer" {
+		t.Errorf("expected package manager composer, got %s", phpInfo.PackageManager)
+	}
 }
 
 func TestConfigDefaults(t *testing.T) {

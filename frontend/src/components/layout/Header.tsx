@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useUIStore } from '../../store/ui';
 import { useAuthStore } from '../../store/auth';
-import { Menu, Sun, Moon, LogOut, ChevronDown, ChevronRight, ChevronLeft, HardDrive, Shield, Terminal, LayoutGrid, Bot, ExternalLink, Sparkles, Wrench } from 'lucide-react';
+import { Menu, Sun, Moon, LogOut, ChevronDown, ChevronRight, ChevronLeft, HardDrive, Shield, Terminal, LayoutGrid, Bot, ExternalLink, Sparkles, Wrench, Eye, Globe } from 'lucide-react';
 import { cn } from '../../utils';
 import { Avatar } from '../ui/Avatar';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const ecosystemApps = [
   {
@@ -74,6 +74,22 @@ export function Header({ title }: { title: string }) {
   const { user, isAuthenticated, logout } = useAuthStore();
   const [profileOpen, setProfileOpen] = useState(false);
   const [appsOpen, setAppsOpen] = useState(false);
+  const location = useLocation();
+
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  // Smart contextual route mapping so admin can preview the exact page they are working on
+  const getPublicReviewPath = (path: string) => {
+    if (path.startsWith('/admin/guestbook')) return '/guestbook';
+    if (path.startsWith('/admin/projects')) return '/projects';
+    if (path.startsWith('/admin/notes')) return '/notes';
+    if (path.startsWith('/admin/certificates')) return '/certificates';
+    if (path.startsWith('/admin/gallery')) return '/gallery';
+    if (path.startsWith('/admin/changelog')) return '/changelog';
+    return '/';
+  };
+
+  const publicReviewPath = getPublicReviewPath(location.pathname);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -140,6 +156,30 @@ export function Header({ title }: { title: string }) {
 
         {/* Center / Right Status & Minimalist Futuristic Glass Controls */}
         <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Quick Switch Button: Halaman Pengguna (Live Review) / Admin Panel */}
+          {isAdminRoute ? (
+            <Link
+              to={publicReviewPath}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all text-xs font-mono font-medium shadow-sm bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 hover:border-emerald-500/50 text-emerald-400 hover:text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.15)] group"
+              title={`Buka Halaman Pengguna (${publicReviewPath}) untuk review langsung`}
+              aria-label="Masuk ke Halaman Pengguna"
+            >
+              <Globe className="h-3.5 w-3.5 text-emerald-400 group-hover:scale-110 transition-transform" />
+              <span className="hidden sm:inline font-semibold">Halaman Pengguna</span>
+              <ExternalLink className="h-3 w-3 opacity-60 group-hover:opacity-100 transition-opacity" />
+            </Link>
+          ) : isAuthenticated && user?.role === 'admin' ? (
+            <Link
+              to="/admin"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all text-xs font-mono font-medium shadow-sm bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 hover:border-amber-500/50 text-amber-400 hover:text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.15)] group"
+              title="Masuk ke Admin Panel"
+              aria-label="Admin Panel"
+            >
+              <Shield className="h-3.5 w-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
+              <span className="hidden sm:inline font-semibold">Admin Panel</span>
+            </Link>
+          ) : null}
+
           {/* Ecosystem Apps Launcher (Subdomains & Standalone Workstations) */}
           <div className="relative">
             <button
@@ -299,6 +339,20 @@ export function Header({ title }: { title: string }) {
                     </span>
                   </div>
                   
+                  <Link
+                    to={publicReviewPath}
+                    onClick={() => setProfileOpen(false)}
+                    className="w-full flex items-center justify-between px-4 py-2 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 transition-colors group"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Globe className="h-3.5 w-3.5 text-emerald-400 group-hover:scale-110 transition-transform" />
+                      <span>Halaman Pengguna</span>
+                    </div>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
+                      Live
+                    </span>
+                  </Link>
+
                   <Link
                     to="/admin"
                     onClick={() => setProfileOpen(false)}

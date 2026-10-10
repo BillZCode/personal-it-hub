@@ -148,6 +148,34 @@ function FileDownloader() {
                 )}
               </div>
               <p className="text-sm font-medium text-dark-100 truncate">{mediaInfo.title}</p>
+              {mediaInfo.author && (
+                <p className="text-xs text-dark-400 font-mono mt-0.5">Oleh: @{mediaInfo.author}</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {mediaInfo?.images && mediaInfo.images.length > 1 && (
+          <div className="space-y-2 p-3 bg-dark-950/60 border border-dark-800 rounded-xl">
+            <div className="flex items-center justify-between text-xs text-dark-300 font-mono">
+              <span>Semua Foto Slide ({mediaInfo.images.length} foto)</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {mediaInfo.images.map((imgUrl: string, idx: number) => (
+                <div key={idx} className="relative group border border-dark-800 rounded-lg overflow-hidden bg-dark-900 aspect-square">
+                  <img src={imgUrl} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
+                  <a
+                    href={`/api/download/proxy?url=${encodeURIComponent(imgUrl)}&filename=tiktok_photo_${idx + 1}.jpg`}
+                    download={`tiktok_photo_${idx + 1}.jpg`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="absolute inset-0 bg-dark-950/80 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-xs text-white font-mono transition-opacity gap-1 p-1 text-center"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span>Unduh #{idx + 1}</span>
+                  </a>
+                </div>
+              ))}
             </div>
           </div>
         )}

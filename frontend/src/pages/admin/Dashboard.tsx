@@ -273,17 +273,17 @@ export function AdminDashboard() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="list" aria-label="Quick management actions">
             <Link to="/tools" role="listitem" className="card-hover p-4 flex items-center gap-3">
-              <div className="p-2 bg-emerald-500/20 rounded-lg"><Plus className="h-5 w-5 text-emerald-400" aria-hidden="true" /></div>
+              <div className="p-2 bg-amber-500/20 rounded-lg"><Wrench className="h-5 w-5 text-amber-400" aria-hidden="true" /></div>
               <div>
-                <span className="font-medium text-dark-100 block">Tools & Downloader</span>
-                <span className="text-2xs text-dark-500 font-mono">TikTok, Hash, Base64, QR</span>
+                <span className="font-medium text-dark-100 block">Tools & Network Diagnostics</span>
+                <span className="text-2xs text-dark-500 font-mono">11 Utilities, Downloader & Ping/DNS</span>
               </div>
             </Link>
-            <Link to="/network" role="listitem" className="card-hover p-4 flex items-center gap-3">
-              <div className="p-2 bg-cyan-500/20 rounded-lg"><Plus className="h-5 w-5 text-cyan-400" aria-hidden="true" /></div>
+            <Link to="/admin/agent" role="listitem" className="card-hover p-4 flex items-center gap-3 border border-cyan-500/30 bg-cyan-500/5 hover:border-cyan-400">
+              <div className="p-2 bg-cyan-500/20 rounded-lg"><Activity className="h-5 w-5 text-cyan-400" aria-hidden="true" /></div>
               <div>
-                <span className="font-medium text-dark-100 block">Network Tools</span>
-                <span className="text-2xs text-dark-500 font-mono">Ping, DNS, Port Checker</span>
+                <span className="font-medium text-cyan-300 block">Antigravity Agent</span>
+                <span className="text-2xs text-cyan-500/90 font-mono">Autonomous Remote & Shell</span>
               </div>
             </Link>
             <Link to="/server" role="listitem" className="card-hover p-4 flex items-center gap-3">

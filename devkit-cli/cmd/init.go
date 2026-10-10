@@ -46,6 +46,6 @@ var (
 )
 
 func init() {
-	initCmd.Flags().StringVarP(&templateFlag, "template", "t", "go", "Project template (go, node, typescript, python, generic)")
+	initCmd.Flags().StringVarP(&templateFlag, "template", "t", "go", "Project template (go, node, typescript, python, php, generic)")
 	initCmd.Flags().BoolVar(&gitInitFlag, "git", true, "Initialize git repository")
 }

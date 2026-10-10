@@ -14,18 +14,24 @@ interface UIState {
 }
 
 
-// Initialize theme class on startup from localStorage (Base theme: light mode)
-try {
-  const stored = localStorage.getItem('ui-storage');
-  if (stored) {
-    const parsed = JSON.parse(stored);
-    const theme = parsed?.state?.theme || 'light';
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-  } else {
-    document.documentElement.classList.remove('dark');
+// Safe theme detection preventing Flash of Incorrect Theme (FOIT)
+const initialTheme: 'dark' | 'light' = (() => {
+  try {
+    const stored = localStorage.getItem('ui-storage');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed?.state?.theme === 'light' || parsed?.state?.theme === 'dark') {
+        return parsed.state.theme;
+      }
+    }
+  } catch {
+    // Ignore localStorage parse errors
   }
-} catch {
-  document.documentElement.classList.remove('dark');
+  return 'dark';
+})();
+
+if (typeof document !== 'undefined') {
+  document.documentElement.classList.toggle('dark', initialTheme === 'dark');
 }
 
 export const useUIStore = create<UIState>()(
@@ -33,7 +39,7 @@ export const useUIStore = create<UIState>()(
     (set) => ({
       sidebarOpen: false,
       sidebarCollapsed: false,
-      theme: 'light',
+      theme: initialTheme,
       toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
       toggleSidebarCollapse: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),

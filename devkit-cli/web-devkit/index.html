@@ -4,16 +4,38 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DevKit Studio - Modern Developer Toolbox Workstation</title>
+  <script>
+    // Ensure trailing slash if accessed under /devkit path so relative ./css/ resolves accurately
+    if (window.location.pathname === '/devkit') {
+      window.location.replace('/devkit/' + window.location.search + window.location.hash);
+    }
+  </script>
   <link rel="stylesheet" href="./css/devkit.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    // Fallback in case browser resolved ./css/devkit.css to root /css/devkit.css
+    (function() {
+      const link = document.querySelector('link[href*="devkit.css"]');
+      if (link && window.location.pathname.startsWith('/devkit') && !link.href.includes('/devkit/')) {
+        link.href = '/devkit/css/devkit.css';
+      }
+    })();
+  </script>
 </head>
 <body>
 
   <!-- Top Glass Header -->
   <header class="app-header">
     <div class="brand">
+      <button class="mobile-menu-btn" id="btn-devkit-menu" onclick="toggleDevkitSidebar()" aria-label="Toggle Navigation">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
       <div class="brand-icon">⚡</div>
       <div>
         <h1>
@@ -23,6 +45,10 @@
       </div>
     </div>
     <div class="header-meta">
+      <button class="btn-pill" id="devkit-theme-toggle" onclick="toggleDevkitTheme()" title="Beralih Tema (Dark / Light)">
+        <span id="devkit-theme-icon">🌙</span>
+        <span id="devkit-theme-text">Dark</span>
+      </button>
       <span class="btn-pill">Terminal: <code>devkit &lt;command&gt;</code></span>
       <span class="btn-pill" style="color:var(--accent-emerald);border-color:rgba(16,185,129,0.3);">● Online</span>
     </div>
@@ -30,8 +56,9 @@
 
   <!-- Main Container -->
   <div class="app-container">
+    <div class="sidebar-backdrop" id="devkit-sidebar-backdrop" onclick="toggleDevkitSidebar(false)"></div>
     <!-- Sidebar Navigation -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="devkit-sidebar">
       <div class="nav-item active" id="nav-subnet" onclick="switchTab('subnet')">
         <span>🌐</span> Subnet & CIDR
       </div>
@@ -100,11 +127,17 @@
             <input type="text" id="hash-input" class="input-box" value="Personal IT Hub 2026" oninput="runHash()">
           </div>
           <div class="form-group">
-            <label class="form-label">SHA-256 HASH</label>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <label class="form-label" style="margin-bottom:0;">SHA-256 HASH</label>
+              <button class="btn-copy" onclick="copyBoxText('hash-sha256')">Salin SHA-256</button>
+            </div>
             <div class="console-box" id="hash-sha256" style="min-height:50px;">-</div>
           </div>
           <div class="form-group">
-            <label class="form-label">SHA-512 HASH</label>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <label class="form-label" style="margin-bottom:0;">SHA-512 HASH</label>
+              <button class="btn-copy" onclick="copyBoxText('hash-sha512')">Salin SHA-512</button>
+            </div>
             <div class="console-box" id="hash-sha512" style="min-height:70px;">-</div>
           </div>
         </div>
@@ -126,13 +159,19 @@
                   <button class="btn-gold" onclick="runGeneratePassword()">Generate</button>
                 </div>
               </div>
-              <input type="text" id="pass-output" class="input-box" readonly>
+              <div style="display:flex;gap:8px;">
+                <input type="text" id="pass-output" class="input-box" readonly>
+                <button class="btn-copy" onclick="copyInputValue('pass-output')">Salin</button>
+              </div>
             </div>
             <div>
               <div class="form-group">
                 <label class="form-label">RFC 4122 UUID V4</label>
                 <button class="btn-cyan" onclick="runGenerateUUID()" style="width:100%;margin-bottom:10px;">Generate New UUID</button>
-                <input type="text" id="uuid-output" class="input-box" readonly>
+                <div style="display:flex;gap:8px;">
+                  <input type="text" id="uuid-output" class="input-box" readonly>
+                  <button class="btn-copy" onclick="copyInputValue('uuid-output')">Salin</button>
+                </div>
               </div>
             </div>
           </div>
@@ -150,9 +189,10 @@
             <label class="form-label">RAW JSON INPUT</label>
             <textarea id="json-input" class="textarea-box">{"project":"devkit-cli","version":"1.0.0","tools":["subnet","jwt","crypto"]}</textarea>
           </div>
-          <div style="display:flex;gap:10px;margin-bottom:12px;">
+          <div style="display:flex;gap:10px;margin-bottom:12px;align-items:center;flex-wrap:wrap;">
             <button class="btn-gold" onclick="runJsonFormat()">Format JSON</button>
             <button class="btn-cyan" onclick="runJsonMinify()">Minify JSON</button>
+            <button class="btn-copy" onclick="copyBoxText('json-output')">Salin Output</button>
             <span id="json-status" style="margin-left:auto;font-family:var(--font-mono);font-size:0.8rem;align-self:center;"></span>
           </div>
           <div class="console-box" id="json-output">// Formatted Output akan muncul disini...</div>
@@ -170,7 +210,10 @@
             <label class="form-label">JWT TOKEN STRING</label>
             <textarea id="jwt-input" class="textarea-box" placeholder="Paste encoded eyJhbGciOi... JWT token disini..."></textarea>
           </div>
-          <button class="btn-gold" onclick="runJwtDecode()">Decode & Inspect Claims</button>
+          <div style="display:flex;gap:10px;">
+            <button class="btn-gold" onclick="runJwtDecode()">Decode & Inspect Claims</button>
+            <button class="btn-copy" onclick="copyBoxText('jwt-output')">Salin Decoded JWT</button>
+          </div>
           <div class="console-box" id="jwt-output" style="margin-top:14px;">// Header dan Payload claims akan diurai disini...</div>
         </div>
       </section>
@@ -192,7 +235,10 @@
           </div>
           <div class="form-group">
             <label class="form-label">RESULT</label>
-            <input type="text" id="enc-output" class="input-box" readonly>
+            <div style="display:flex;gap:8px;">
+              <input type="text" id="enc-output" class="input-box" readonly>
+              <button class="btn-copy" onclick="copyInputValue('enc-output')">Salin</button>
+            </div>
           </div>
         </div>
       </section>
@@ -287,6 +333,7 @@
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
               <button class="btn-gold" onclick="loadCliSnippet('devkit doctor')">Run Doctor</button>
               <button class="btn-cyan" onclick="loadCliSnippet('devkit project info .')">Project Info</button>
+              <button class="btn-gold" onclick="loadCliSnippet('devkit project init php')">Init PHP Scaffold</button>
               <button class="btn-gold" onclick="loadCliSnippet('devkit clean --dry-run')">Scan Cleanable</button>
               <button class="btn-cyan" onclick="loadCliSnippet('devkit markdown links README.md')">Verify Links</button>
             </div>
@@ -297,6 +344,7 @@
     </main>
   </div>
 
+  <div id="toast-container"></div>
   <script src="./js/devkit.js"></script>
 </body>
 </html>

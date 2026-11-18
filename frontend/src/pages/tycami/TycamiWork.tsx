@@ -44,22 +44,6 @@ export const TycamiWork: React.FC = () => {
       url: '/tools',
       external: false,
     },
-    {
-      title: 'Enterprise OSPF Routing',
-      category: 'Cisco Packet Tracer / Net',
-      year: '2026',
-      img: '/images/gallery/cisco_ospf_topology.png',
-      url: 'https://github.com/BillZCode',
-      external: true,
-    },
-    {
-      title: 'AWS Multi-AZ Cloud VPC',
-      category: 'Cloud Infrastructure / AWS',
-      year: '2026',
-      img: '/images/gallery/aws_vpc_cloudkita_architecture.jpg',
-      url: 'https://github.com/BillZCode',
-      external: true,
-    },
   ];
 
   useLayoutEffect(() => {

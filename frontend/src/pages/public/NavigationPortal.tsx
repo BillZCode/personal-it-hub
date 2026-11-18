@@ -572,19 +572,6 @@ export function NavigationPortal() {
                       Asisten neural AI berkecepatan tinggi dengan kemampuan penalaran mendalam dan
                       analisis citra visual berbasis Google Gemma &amp; Flash 3.
                     </p>
-
-                    <div className="flex flex-wrap gap-2 mt-5">
-                      {['Neural Vision', 'Code Generation', 'Realtime Stream', 'Private Subdomain'].map(
-                        (tag) => (
-                          <span
-                            key={tag}
-                            className="px-2.5 py-1 rounded-full text-[10px] font-mono bg-[#080A10] text-[#A3ADC4] border border-white/[0.08]"
-                          >
-                            {tag}
-                          </span>
-                        )
-                      )}
-                    </div>
                   </div>
                 </div>
 
@@ -634,17 +621,6 @@ export function NavigationPortal() {
                       Laboratorium keamanan jaringan interaktif: pemindai port, kalkulator
                       kriptografi, toolkit audit penetration testing, dan simulasi CTF.
                     </p>
-
-                    <div className="flex flex-wrap gap-2 mt-5">
-                      {['Port Recon', 'Hash Tools', 'Network Scanner', 'CTF Labs'].map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-2.5 py-1 rounded-full text-[10px] font-mono bg-[#080A10] text-[#A3ADC4] border border-white/[0.08]"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
                   </div>
                 </div>
 
@@ -694,17 +670,6 @@ export function NavigationPortal() {
                       Dokumentasi lengkap panduan administrasi server Debian 12, konfigurasi Nginx
                       reverse proxy, manajemen jaringan Cisco, dan catatan teknis.
                     </p>
-
-                    <div className="flex flex-wrap gap-2 mt-5">
-                      {['Debian 12', 'Nginx SSL', 'Cisco Routing', 'Firewall UFW'].map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-2.5 py-1 rounded-full text-[10px] font-mono bg-[#080A10] text-[#A3ADC4] border border-white/[0.08]"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
                   </div>
                 </div>
 

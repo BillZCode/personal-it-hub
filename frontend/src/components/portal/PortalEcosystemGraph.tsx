@@ -99,6 +99,16 @@ const NODES: NodeInfo[] = [
     routeOrUrl: '/devkit',
   },
   {
+    id: 'transkrip',
+    name: 'Transkrip & Translation AI',
+    port: 'Port :8000',
+    role: 'Video Subtitle Extraction, Whisper STT & AI Translator',
+    tech: 'FastAPI • yt-dlp • Faster-Whisper • 9Router',
+    status: 'ONLINE',
+    type: 'service',
+    routeOrUrl: '/transkrip',
+  },
+  {
     id: 'host',
     name: 'Debian 12 Host OS',
     port: 'Kernel 6.1+ LTS',
@@ -140,7 +150,7 @@ export const PortalEcosystemGraph: React.FC = () => {
 
         <div className="flex items-center gap-2 text-[11px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20 font-semibold self-start md:self-auto">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>8 Active Service Nodes</span>
+          <span>{NODES.length} Active Service Nodes</span>
         </div>
       </div>
 

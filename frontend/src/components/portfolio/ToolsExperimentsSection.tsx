@@ -12,6 +12,7 @@ import {
   Cpu,
   Layers,
   Sparkles,
+  Languages,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../../utils';
@@ -19,8 +20,6 @@ import { cn } from '../../utils';
 interface ToolItem {
   id: string;
   title: string;
-  badge: string;
-  badgeColor: string;
   desc: string;
   path: string;
   features: string[];
@@ -34,8 +33,6 @@ const toolsData: ToolItem[] = [
   {
     id: 'devkit',
     title: 'DevKit CLI Studio',
-    badge: 'DEV TOOL',
-    badgeColor: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
     desc: 'Toolbox developer modern untuk kalkulasi subnet CIDR, inspeksi token JWT, generator hash kriptografi, format JSON, dan HTTP probe.',
     path: '/devkit',
     features: ['Subnet CIDR Calc', 'JWT Token Inspector', 'SHA/MD5 Hasher', 'JSON Validator & Path'],
@@ -47,8 +44,6 @@ const toolsData: ToolItem[] = [
   {
     id: 'cyberlab',
     title: 'CyberLab CTF Workstation',
-    badge: 'SECOPS LAB',
-    badgeColor: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
     desc: 'Workbench investigasi keamanan siber dengan 8 modul taktis: Classical/Modern Ciphers, File Magic Forensics, Steganografi LSB, dan ELF/PE binary analysis.',
     path: '/cyberlab',
     features: ['Vigenere & RSA Ciphers', 'Magic Byte Inspector', 'LSB Bit-plane Visualizer', 'ELF/PE Header Parser'],
@@ -60,8 +55,6 @@ const toolsData: ToolItem[] = [
   {
     id: 'network-tools',
     title: 'Tools & Network Diagnostics',
-    badge: 'DIAGNOSTICS',
-    badgeColor: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
     desc: 'Pengujian konektivitas online (Ping latency, DNS lookup resolver), kalkulator IP, format konversi data, serta media downloader serbaguna.',
     path: '/tools',
     features: ['Online Ping Latency', 'DNS Record Lookup', 'IP Subnetting Tool', 'yt-dlp Media Downloader'],
@@ -73,8 +66,6 @@ const toolsData: ToolItem[] = [
   {
     id: 'omni-ai',
     title: 'Omni AI Multimodal Studio',
-    badge: 'AI INFERENCE',
-    badgeColor: 'text-violet-400 bg-violet-500/10 border-violet-500/20',
     desc: 'Asisten cerdas berbasis model open-weights Gemma 4 & Flash 3 dengan streaming SSE real-time, penalaran kode pemrograman, dan analisis gambar visual.',
     path: '/ai',
     features: ['Real-time Streaming', 'Syntax Code Highlighter', 'Multimodal Vision', 'Custom System Prompt'],
@@ -84,10 +75,19 @@ const toolsData: ToolItem[] = [
     bgGlow: 'bg-violet-500/[0.03]',
   },
   {
+    id: 'transkrip-ai',
+    title: 'Transkrip & Terjemahan AI',
+    desc: 'Studio transkrip dan terjemahan video YouTube, TikTok, IG, atau file lokal ke berbagai bahasa dengan ekspor SRT, VTT, TXT & Markdown.',
+    path: '/transkrip',
+    features: ['YouTube & Social URL', 'Whisper CPU + AI STT', 'Contextual Translation', 'Bilingual SRT/VTT Export'],
+    icon: Languages,
+    accentColor: 'text-emerald-400',
+    borderColor: 'hover:border-emerald-500/30',
+    bgGlow: 'bg-emerald-500/[0.03]',
+  },
+  {
     id: 'system-overview',
     title: 'System & Infrastructure Center',
-    badge: 'TELEMETRY',
-    badgeColor: 'text-sky-400 bg-sky-500/10 border-sky-500/20',
     desc: 'Pusat telemetri terpadu: status layanan server Debian, monitoring hardware (CPU/RAM/Disk), dokumentasi dotfiles Linux, dan analitik pengunjung.',
     path: '/system',
     features: ['Live Server Telemetry', 'Service Health Check', 'Debian & Arch Configs', 'Cloudflare Analytics'],
@@ -99,8 +99,6 @@ const toolsData: ToolItem[] = [
   {
     id: 'drive',
     title: 'Private Cloud Drive',
-    badge: 'STORAGE NODE',
-    badgeColor: 'text-rose-400 bg-rose-500/10 border-rose-500/20',
     desc: 'Penyimpanan cloud mandiri terenkripsi dengan pembaca PDF responsif mobile, pemutar streaming video HTML5, dan manajemen file berbasis web.',
     path: '/drive',
     features: ['Virtual Storage Engine', 'Mobile PDF Reader', 'HTML5 Media Player', 'Secure File Sharing'],
@@ -142,14 +140,11 @@ export const ToolsExperimentsSection: React.FC = () => {
               )}
             >
               <div className="space-y-4">
-                {/* Card Top: Icon & Badge */}
+                {/* Card Top: Icon */}
                 <div className="flex items-center justify-between gap-2">
                   <div className={cn("p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08]", tool.accentColor)}>
                     <Icon className="w-5 h-5" />
                   </div>
-                  <span className={cn("px-2.5 py-0.5 rounded-md text-[10px] font-mono font-semibold border", tool.badgeColor)}>
-                    {tool.badge}
-                  </span>
                 </div>
 
                 {/* Title & Description */}

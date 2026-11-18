@@ -1,0 +1,7 @@
+{
+  "name": "omni-ai",
+  "version": "2.8.0",
+  "private": true,
+  "type": "module",
+  "description": "Omni AI Assistant - Multi-Model Workspace"
+}

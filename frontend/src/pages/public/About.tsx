@@ -64,15 +64,8 @@ export function About() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-10 animate-in pb-16">
-      {/* Header with Cyberpunk Status Tag */}
+      {/* Header */}
       <div className="space-y-1 border-b border-dark-800/80 pb-6">
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-2xs font-mono font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.15)]">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" aria-hidden="true" />
-            BIOGRAFI & PROFIL
-          </span>
-          <span className="text-2xs font-mono text-dark-500">SABBIL / SMKN 1 DENPASAR / TKJ</span>
-        </div>
         <h1 className="text-3xl sm:text-4xl font-bold text-dark-100 tracking-tight font-sans">
           About Me
         </h1>

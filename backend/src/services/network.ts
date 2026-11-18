@@ -5,7 +5,6 @@ import { lookup } from 'dns/promises';
 import fetch from 'node-fetch';
 import net from 'net';
 import ping from 'ping';
-import traceroute from 'traceroute';
 import { config } from '../config';
 
 const execFileAsync = promisify(execFile);
@@ -201,16 +200,80 @@ export async function checkPort(host: string, port: number, timeout = 4000) {
 
 export async function tracerouteHost(host: string) {
   const start = Date.now();
+  const cleanHost = host.trim();
+
+  // Strict hostname or IP validation before invoking OS binary
+  const isValidHost =
+    /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(cleanHost) ||
+    net.isIP(cleanHost) !== 0;
+
+  if (!isValidHost) {
+    return { success: false, error: 'Format host atau IP tidak valid', executionTime: Date.now() - start };
+  }
+
+  const isWin = process.platform === 'win32';
+  const binary = isWin ? 'tracert' : 'traceroute';
+  const args = isWin
+    ? ['-d', '-h', '30', '-w', '1500', cleanHost]
+    : ['-q', '1', '-n', '-m', '30', '-w', '2', cleanHost];
+
   try {
-    const hops = await new Promise<any[]>((resolve, reject) => {
-      traceroute.trace(host, (err: Error | null, hops: any[]) => {
-        if (err) reject(err);
-        else resolve(hops);
-      });
-    });
-    return { success: true, data: { host, hops: hops.slice(0, 30) }, executionTime: Date.now() - start };
-  } catch (err) {
-    return { success: false, error: 'Traceroute failed', executionTime: Date.now() - start };
+    const { stdout } = await execFileAsync(binary, args, { timeout: 15000 });
+    const lines = stdout.split('\n');
+    const hops: Array<{ hop: number; ip: string; rtt1: string }> = [];
+
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith('traceroute to') || line.startsWith('Tracing route')) continue;
+
+      const match = line.match(/^(\d+)\s+(.+)$/);
+      if (match) {
+        const hopNum = parseInt(match[1], 10);
+        const rest = match[2].trim();
+        if (rest.startsWith('*')) {
+          hops.push({ hop: hopNum, ip: '*', rtt1: '*' });
+        } else {
+          const parts = rest.split(/\s+/);
+          const ip = parts[0];
+          const rtt = parts[1] ? `${parts[1]} ms` : '-';
+          hops.push({ hop: hopNum, ip, rtt1: rtt });
+        }
+      }
+    }
+
+    return {
+      success: true,
+      data: { host: cleanHost, hops: hops.slice(0, 30) },
+      executionTime: Date.now() - start,
+    };
+  } catch (err: any) {
+    if (err.stdout) {
+      const lines = String(err.stdout).split('\n');
+      const hops: Array<{ hop: number; ip: string; rtt1: string }> = [];
+      for (const rawLine of lines) {
+        const line = rawLine.trim();
+        const match = line.match(/^(\d+)\s+(.+)$/);
+        if (match) {
+          const hopNum = parseInt(match[1], 10);
+          const rest = match[2].trim();
+          if (rest.startsWith('*')) {
+            hops.push({ hop: hopNum, ip: '*', rtt1: '*' });
+          } else {
+            const parts = rest.split(/\s+/);
+            hops.push({ hop: hopNum, ip: parts[0], rtt1: parts[1] ? `${parts[1]} ms` : '-' });
+          }
+        }
+      }
+      if (hops.length > 0) {
+        return {
+          success: true,
+          data: { host: cleanHost, hops: hops.slice(0, 30) },
+          executionTime: Date.now() - start,
+        };
+      }
+    }
+
+    return { success: false, error: 'Traceroute failed: ' + (err.message || 'Host unreachable'), executionTime: Date.now() - start };
   }
 }
 

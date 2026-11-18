@@ -5,7 +5,7 @@ import { HomelabTopologyVisualizer } from '../../components/data-display';
 import { animate, useDocumentTitle } from '../../hooks';
 import {
   FolderKanban, FileText, Award, Image, GitBranch, MessageSquare, BarChart3, Users, TrendingUp, Plus,
-  Cpu, HardDrive, MemoryStick, Radio, RefreshCw, Wrench, Activity
+  Cpu, HardDrive, MemoryStick, Radio, RefreshCw, Wrench, Activity, Server, Globe
 } from 'lucide-react';
 import { cn } from '../../utils';
 import { Link } from 'react-router-dom';
@@ -108,8 +108,17 @@ export function AdminDashboard() {
     <div className="max-w-7xl mx-auto space-y-8 animate-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          <p className="text-dark-400">Manage your content and monitor activity</p>
+          <h1 className="text-3xl font-bold">Admin Dashboard & Server Console</h1>
+          <p className="text-dark-400">Manage web hosting virtual hosts, services, databases, and content</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/admin/hosting"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-bold bg-amber-500 hover:bg-amber-400 text-dark-950 shadow-[0_0_20px_rgba(245,158,11,0.3)] transition-all"
+          >
+            <Server className="h-4 w-4" />
+            Buka Web Hosting Control Panel
+          </Link>
         </div>
       </div>
 
@@ -272,11 +281,11 @@ export function AdminDashboard() {
             <h2 id="quick-actions-heading" className="text-xl font-semibold">QUICK ACTIONS</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="list" aria-label="Quick management actions">
-            <Link to="/tools" role="listitem" className="card-hover p-4 flex items-center gap-3">
-              <div className="p-2 bg-amber-500/20 rounded-lg"><Wrench className="h-5 w-5 text-amber-400" aria-hidden="true" /></div>
+            <Link to="/admin/hosting" role="listitem" className="card-hover p-4 flex items-center gap-3 border border-amber-500/40 bg-amber-500/10 hover:border-amber-400">
+              <div className="p-2 bg-amber-500/20 rounded-lg"><Globe className="h-5 w-5 text-amber-400" aria-hidden="true" /></div>
               <div>
-                <span className="font-medium text-dark-100 block">Tools & Network Diagnostics</span>
-                <span className="text-2xs text-dark-500 font-mono">11 Utilities, Downloader & Ping/DNS</span>
+                <span className="font-medium text-amber-300 block">Web Hosting Control Panel</span>
+                <span className="text-2xs text-amber-400/90 font-mono">Domains, Nginx, Services, DB & Firewall</span>
               </div>
             </Link>
             <Link to="/admin/agent" role="listitem" className="card-hover p-4 flex items-center gap-3 border border-cyan-500/30 bg-cyan-500/5 hover:border-cyan-400">
@@ -284,6 +293,13 @@ export function AdminDashboard() {
               <div>
                 <span className="font-medium text-cyan-300 block">Antigravity Agent</span>
                 <span className="text-2xs text-cyan-500/90 font-mono">Autonomous Remote & Shell</span>
+              </div>
+            </Link>
+            <Link to="/tools" role="listitem" className="card-hover p-4 flex items-center gap-3">
+              <div className="p-2 bg-amber-500/20 rounded-lg"><Wrench className="h-5 w-5 text-amber-400" aria-hidden="true" /></div>
+              <div>
+                <span className="font-medium text-dark-100 block">Tools & Network Diagnostics</span>
+                <span className="text-2xs text-dark-500 font-mono">11 Utilities, Downloader & Ping/DNS</span>
               </div>
             </Link>
             <Link to="/server" role="listitem" className="card-hover p-4 flex items-center gap-3">

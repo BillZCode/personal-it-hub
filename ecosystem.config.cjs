@@ -1,9 +1,13 @@
+const path = require('path');
+
+const ROOT_DIR = __dirname;
+
 module.exports = {
   apps: [
     {
       name: 'it-hub-backend',
-      cwd: '/home/sabbil/Dokumen/TKJ/personal-it-hub/backend',
-      script: 'npm',
+      cwd: path.resolve(ROOT_DIR, 'backend'),
+      script: process.platform === 'win32' ? 'npm.cmd' : 'npm',
       args: 'run dev',
       autorestart: true,
       restart_delay: 3000,
@@ -14,8 +18,8 @@ module.exports = {
     },
     {
       name: 'it-hub-frontend',
-      cwd: '/home/sabbil/Dokumen/TKJ/personal-it-hub/frontend',
-      script: 'npm',
+      cwd: path.resolve(ROOT_DIR, 'frontend'),
+      script: process.platform === 'win32' ? 'npm.cmd' : 'npm',
       args: 'run dev',
       autorestart: true,
       restart_delay: 3000,
@@ -25,7 +29,7 @@ module.exports = {
     },
     {
       name: 'omni-ai',
-      cwd: '/home/sabbil/Dokumen/TKJ/personal-it-hub',
+      cwd: ROOT_DIR,
       script: 'node',
       args: 'scripts/omni-server.mjs',
       autorestart: true,
@@ -36,7 +40,7 @@ module.exports = {
     },
     {
       name: 'cyberlab-lks',
-      cwd: '/home/sabbil/Dokumen/TKJ/personal-it-hub',
+      cwd: ROOT_DIR,
       script: 'node',
       args: 'scripts/cyberlab-server.mjs',
       autorestart: true,
@@ -47,7 +51,7 @@ module.exports = {
     },
     {
       name: 'devkit-toolkit',
-      cwd: '/home/sabbil/Dokumen/TKJ/personal-it-hub',
+      cwd: ROOT_DIR,
       script: 'node',
       args: 'scripts/devkit-server.mjs',
       autorestart: true,

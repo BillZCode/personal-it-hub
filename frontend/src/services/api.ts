@@ -391,3 +391,33 @@ export const agentApi = {
   getDiagnostics: () => api.get<any>('/admin/agent/diagnostics'),
   getModelsQuota: () => api.get<any>('/admin/agent/models'),
 };
+
+export const hostingApi = {
+  getOverview: () => api.get<any>('/admin/hosting/overview'),
+  triggerDeployment: (data: { branch?: string; environment?: string; commitMessage?: string; project?: string }) =>
+    api.post<any>('/admin/hosting/deployments', data),
+  promoteDeployment: (id: string) => api.post<any>(`/admin/hosting/deployments/${id}/promote`, {}),
+  deleteDeployment: (id: string) => api.delete<any>(`/admin/hosting/deployments/${id}`),
+  upsertEnvVar: (data: { key: string; value: string; targets?: string[] }) =>
+    api.post<any>('/admin/hosting/env', data),
+  deleteEnvVar: (key: string) => api.delete<any>(`/admin/hosting/env/${key}`),
+  createDomain: (data: any) => api.post<any>('/admin/hosting/domains', data),
+  updateDomain: (id: string, data: any) => api.put<any>(`/admin/hosting/domains/${id}`, data),
+  deleteDomain: (id: string) => api.delete<any>(`/admin/hosting/domains/${id}`),
+  createDnsRecord: (data: any) => api.post<any>('/admin/hosting/dns', data),
+  deleteDnsRecord: (id: string) => api.delete<any>(`/admin/hosting/dns/${id}`),
+  healAllServices: () => api.post<any>('/admin/hosting/services/heal', {}),
+  controlService: (id: string, action: 'start' | 'stop' | 'restart' | 'reload') =>
+    api.post<any>(`/admin/hosting/services/${id}/control`, { action }),
+  createDatabase: (data: any) => api.post<any>('/admin/hosting/databases', data),
+  deleteDatabase: (id: string) => api.delete<any>(`/admin/hosting/databases/${id}`),
+  createDatabaseBackup: () => api.post<any>('/admin/hosting/databases/backup', {}),
+  toggleFirewall: (enabled: boolean) => api.put<any>('/admin/hosting/firewall/toggle', { enabled }),
+  createFirewallRule: (data: any) => api.post<any>('/admin/hosting/firewall/rules', data),
+  deleteFirewallRule: (id: string) => api.delete<any>(`/admin/hosting/firewall/rules/${id}`),
+  createCronJob: (data: any) => api.post<any>('/admin/hosting/cron', data),
+  runCronJobNow: (id: string) => api.post<any>(`/admin/hosting/cron/${id}/run`, {}),
+  deleteCronJob: (id: string) => api.delete<any>(`/admin/hosting/cron/${id}`),
+  saveNginxConfig: (data: { content?: string; mode?: 'sync_vhosts' | 'raw' }) =>
+    api.post<any>('/admin/hosting/nginx/save', data),
+};

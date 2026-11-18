@@ -61,10 +61,24 @@ ingress:
     path: ^/api
     service: http://localhost:3001
 
-  # Rute Frontend Website ke port 3000
+  # Rute Frontend Website ke port 3000 (Portal & Projects)
   - hostname: sabbilferdyansyah.my.id
     service: http://localhost:3000
   - hostname: www.sabbilferdyansyah.my.id
+    service: http://localhost:3000
+
+  # Rute API backend Portofolio (Domain Baru sabbilferdyans.cyou) ke port 3001
+  - hostname: sabbilferdyans.cyou
+    path: ^/api
+    service: http://localhost:3001
+  - hostname: www.sabbilferdyans.cyou
+    path: ^/api
+    service: http://localhost:3001
+
+  # Rute Frontend Portofolio (Domain Baru sabbilferdyans.cyou) ke port 3000
+  - hostname: sabbilferdyans.cyou
+    service: http://localhost:3000
+  - hostname: www.sabbilferdyans.cyou
     service: http://localhost:3000
 
   # Fallback 404

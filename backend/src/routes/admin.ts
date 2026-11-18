@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { adminController } from '../controllers/admin';
 import { agentController } from '../controllers/agent';
+import { hostingController } from '../controllers/hosting';
 import { authMiddleware, requireAdmin } from '../middleware/auth';
 import { generalRateLimit } from '../middleware/rateLimit';
 
@@ -9,6 +10,31 @@ const router = Router();
 router.use(generalRateLimit);
 router.use(authMiddleware);
 router.use(requireAdmin);
+
+// Hosting & Server Control Panel Routes (Vercel-Style Deployments, Env, Domains, Infra)
+router.get('/hosting/overview', hostingController.getOverview);
+router.post('/hosting/deployments', hostingController.triggerDeployment);
+router.post('/hosting/deployments/:id/promote', hostingController.promoteDeployment);
+router.delete('/hosting/deployments/:id', hostingController.deleteDeployment);
+router.post('/hosting/env', hostingController.upsertEnvVar);
+router.delete('/hosting/env/:key', hostingController.deleteEnvVar);
+router.post('/hosting/domains', hostingController.createDomain);
+router.put('/hosting/domains/:id', hostingController.updateDomain);
+router.delete('/hosting/domains/:id', hostingController.deleteDomain);
+router.post('/hosting/dns', hostingController.createDnsRecord);
+router.delete('/hosting/dns/:id', hostingController.deleteDnsRecord);
+router.post('/hosting/services/heal', hostingController.healAllServices);
+router.post('/hosting/services/:id/control', hostingController.controlService);
+router.post('/hosting/databases', hostingController.createDatabase);
+router.delete('/hosting/databases/:id', hostingController.deleteDatabase);
+router.post('/hosting/databases/backup', hostingController.createDatabaseBackup);
+router.put('/hosting/firewall/toggle', hostingController.toggleFirewall);
+router.post('/hosting/firewall/rules', hostingController.createFirewallRule);
+router.delete('/hosting/firewall/rules/:id', hostingController.deleteFirewallRule);
+router.post('/hosting/cron', hostingController.createCronJob);
+router.post('/hosting/cron/:id/run', hostingController.runCronJobNow);
+router.delete('/hosting/cron/:id', hostingController.deleteCronJob);
+router.post('/hosting/nginx/save', hostingController.saveNginxConfig);
 
 // Antigravity Agent Remote Management Routes
 router.get('/agent/status', agentController.getStatus);

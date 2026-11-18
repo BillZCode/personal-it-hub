@@ -23,10 +23,3 @@ declare module 'ping' {
     probe(addr: string, config?: PingOptions): Promise<PingResponse>;
   };
 }
-
-declare module 'traceroute' {
-  export function trace(
-    host: string,
-    callback: (err: Error | null, hops: any[]) => void
-  ): void;
-}

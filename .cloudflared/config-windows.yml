@@ -1,0 +1,50 @@
+tunnel: f3669dad-e89a-41de-be62-ff7760d2ad9d
+credentials-file: credentials.json
+
+originRequest:
+  connectTimeout: 10s
+  keepAliveTimeout: 15s
+  keepAliveConnections: 100
+  tcpKeepAlive: 15s
+
+ingress:
+  # Rute Subdomain CyberLab ke port 3003
+  - hostname: cybertool.sabbilferdyansyah.my.id
+    service: http://localhost:3003
+  - hostname: cybertool-sabbilferdyansyah.my.id
+    service: http://localhost:3003
+
+  # Rute Subdomain Omni AI ke port 3002
+  - hostname: ai.sabbilferdyansyah.my.id
+    service: http://localhost:3002
+
+  # Rute API backend ke port 3001
+  - hostname: sabbilferdyansyah.my.id
+    path: ^/api
+    service: http://localhost:3001
+  - hostname: www.sabbilferdyansyah.my.id
+    path: ^/api
+    service: http://localhost:3001
+
+  # Rute Frontend Website ke port 3000 (Portal & Projects)
+  - hostname: sabbilferdyansyah.my.id
+    service: http://localhost:3000
+  - hostname: www.sabbilferdyansyah.my.id
+    service: http://localhost:3000
+
+  # Rute API backend Portofolio (Domain Baru sabbilferdyans.cyou) ke port 3001
+  - hostname: sabbilferdyans.cyou
+    path: ^/api
+    service: http://localhost:3001
+  - hostname: www.sabbilferdyans.cyou
+    path: ^/api
+    service: http://localhost:3001
+
+  # Rute Frontend Portofolio (Domain Baru sabbilferdyans.cyou) ke port 3000
+  - hostname: sabbilferdyans.cyou
+    service: http://localhost:3000
+  - hostname: www.sabbilferdyans.cyou
+    service: http://localhost:3000
+
+  # Fallback 404
+  - service: http_status:404

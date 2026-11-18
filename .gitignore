@@ -68,3 +68,14 @@ prisma/migrations/.migration_lock.toml
 tmp/
 temp/
 *.tmp
+*.bak
+
+# Vercel / local deploy metadata
+.vercel/
+.env.local
+
+# Cloudflare Tunnel local config & credentials
+.cloudflared/*.json
+.cloudflared/*.exe
+*.cloudflared.json
+

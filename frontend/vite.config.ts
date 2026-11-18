@@ -13,6 +13,11 @@ export default defineConfig({
     port: 3000,
     host: true,
     allowedHosts: true,
+    watch: {
+      usePolling: true,
+      interval: 1000,
+      ignored: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
+    },
     proxy: {
       '/cyberlab': {
         target: 'http://localhost:3003',
@@ -28,6 +33,11 @@ export default defineConfig({
         target: 'http://localhost:3002',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/chatbot/, ''),
+      },
+      '/transkrip-app': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/transkrip-app/, ''),
       },
       '/api': {
         target: 'http://localhost:3001',
@@ -54,6 +64,11 @@ export default defineConfig({
         target: 'http://localhost:3002',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/chatbot/, ''),
+      },
+      '/transkrip-app': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/transkrip-app/, ''),
       },
       '/api': {
         target: 'http://localhost:3001',

@@ -1,0 +1,22 @@
+{
+  "name": "it-hub-control-panel",
+  "version": "3.0.0",
+  "description": "Vercel-Style Web Hosting & Edge Deployment Control Panel for Personal IT Hub",
+  "author": "Sabbil Abdillah Ferdyansyah <sabbilferdyansyah@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BillZCode/it-hub-control-panel.git"
+  },
+  "keywords": [
+    "control-panel",
+    "web-hosting",
+    "vercel-dashboard",
+    "nginx",
+    "pm2",
+    "devops",
+    "debian",
+    "react",
+    "typescript"
+  ]
+}

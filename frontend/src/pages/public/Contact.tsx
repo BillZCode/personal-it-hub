@@ -14,7 +14,6 @@ import {
   Check,
   ExternalLink,
   ShieldCheck,
-  Sparkles,
 } from 'lucide-react';
 import { useToast, useDocumentTitle } from '../../hooks';
 import { cn, copyToClipboard } from '../../utils';
@@ -171,12 +170,8 @@ export function Contact() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-10 animate-in pb-16">
-      {/* Header section with semantic H1 and badge */}
+      {/* Header section with semantic H1 */}
       <div className="text-center border-b border-dark-800/80 pb-6">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400 text-xs font-mono mb-3">
-          <Sparkles className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" />
-          <span>Direct Transmission Hub</span>
-        </div>
         <h1 className="text-3xl sm:text-4xl font-bold text-dark-100 tracking-tight font-sans">Contact & Hire</h1>
         <p className="text-dark-400 text-sm mt-2 max-w-lg mx-auto">
           Hubungi saya untuk diskusi teknis, kolaborasi proyek, konsultasi infrastruktur IT, atau peluang kerjasama.

@@ -3,7 +3,7 @@ import {
   Bell, CheckCircle2, Calendar, ArrowUpRight, Shield, Bot, HardDrive,
   FolderKanban, Sparkles, ExternalLink, Activity, Terminal, ChevronRight,
   TrendingUp, Layers, Plus, Search, GitBranch, Cpu,
-  Server, Wrench, X, Radio, ArrowRight
+  Server, Wrench, X, Radio, ArrowRight, Languages
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../../utils';
@@ -38,7 +38,6 @@ const workstationsData = [
     title: 'DevKit CLI Studio',
     desc: 'Modular Developer CLI & System Utilities Suite featuring API testers, encoders, JWT decoders, and shell tools.',
     icon: Wrench,
-    badge: 'DEV TOOL',
     accent: 'text-amber-400',
     border: 'border-amber-500/30',
     bg: 'bg-amber-500/10',
@@ -52,7 +51,6 @@ const workstationsData = [
     title: 'CyberLab CTF Lab',
     desc: 'Offensive & Defensive cybersecurity workbench with real-time ciphers, steganography, hash cracking, and forensic tools.',
     icon: Shield,
-    badge: 'CTF LAB',
     accent: 'text-cyan-400',
     border: 'border-cyan-500/30',
     bg: 'bg-cyan-500/10',
@@ -66,7 +64,6 @@ const workstationsData = [
     title: 'Omni AI Studio',
     desc: 'Next-generation multimodal reasoning agent powered by Flash & Gemma models with streaming responses.',
     icon: Bot,
-    badge: 'AI ENGINE',
     accent: 'text-yellow-400',
     border: 'border-yellow-500/30',
     bg: 'bg-yellow-500/10',
@@ -77,10 +74,22 @@ const workstationsData = [
     status: 'Nominal',
   },
   {
+    title: 'Transkrip & Terjemahan AI',
+    desc: 'Automated YouTube/social video transcription and multi-language translation studio with SRT/VTT/MD exports.',
+    icon: Languages,
+    accent: 'text-emerald-400',
+    border: 'border-emerald-500/30',
+    bg: 'bg-emerald-500/10',
+    subdomain: 'transkrip.sabbilferdyansyah.my.id',
+    internalPath: '/transkrip',
+    externalUrl: 'https://transkrip.sabbilferdyansyah.my.id',
+    features: ['YouTube Subtitle Dedup', 'Whisper STT + AI', 'Bilingual SRT/VTT', 'AI Summary'],
+    status: 'Online',
+  },
+  {
     title: 'Private Cloud Drive',
     desc: 'Self-hosted encrypted virtual storage with mobile-optimized PDF reading, video streaming, and playlist navigation.',
     icon: HardDrive,
-    badge: 'CLOUD NODE',
     accent: 'text-emerald-400',
     border: 'border-emerald-500/30',
     bg: 'bg-emerald-500/10',
@@ -94,7 +103,6 @@ const workstationsData = [
     title: 'Linux Sysadmin Lab',
     desc: 'High-availability Debian & Arch infrastructure running BIND9 authoritative DNS and Apache2 VirtualHosts.',
     icon: Terminal,
-    badge: 'NETWORK',
     accent: 'text-purple-400',
     border: 'border-purple-500/30',
     bg: 'bg-purple-500/10',
@@ -653,9 +661,6 @@ export function SettigationGlassyDashboard() {
                       <w.icon className={cn('h-5 w-5', w.accent)} />
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-dark-800 text-dark-300 border border-dark-700">
-                        {w.badge}
-                      </span>
                       <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
                         {w.status}
                       </span>

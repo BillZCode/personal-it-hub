@@ -2,6 +2,14 @@
 const DEFAULT_API_KEY = "";
 
 const validModels = [
+  'thirtystore/gpt-6-astra',
+  'gpt-6-astra',
+  'thirtystore/claude-sonnet-4.6',
+  'thirtystore/claude-opus-5',
+  'thirtystore/deepseek-v4-flash',
+  'thirtystore/gpt-5.6-sol',
+  'thirtystore/kimi-k3',
+  'ultra-1',
   'antigravity-agent',
   'gemini-flash-latest',
   'gemini-3-flash-preview',
@@ -11,6 +19,14 @@ const validModels = [
 ];
 
 const modelDisplayNames = {
+  'thirtystore/gpt-6-astra': 'GPT-6 Astra (ThirtyStore)',
+  'gpt-6-astra': 'GPT-6 Astra (ThirtyStore)',
+  'thirtystore/claude-sonnet-4.6': 'Claude Sonnet 4.6 (ThirtyStore)',
+  'thirtystore/claude-opus-5': 'Claude Opus 5 (ThirtyStore)',
+  'thirtystore/deepseek-v4-flash': 'DeepSeek V4 Flash (ThirtyStore)',
+  'thirtystore/gpt-5.6-sol': 'GPT 5.6 Sol (ThirtyStore)',
+  'thirtystore/kimi-k3': 'Kimi K3 (ThirtyStore)',
+  'ultra-1': 'Ultra-1 Combo (ThirtyStore)',
   'antigravity-agent': 'Antigravity Server Agent',
   'gemini-flash-latest': 'Gemini Flash Latest',
   'gemini-3-flash-preview': 'Flash 3 Preview',
@@ -101,12 +117,13 @@ const PROVIDER_DEFAULTS = {
     showModel: true
   },
   '9router': {
-    name: '9Router Local Proxy',
+    name: '9Router (ThirtyStore & Local Proxy)',
     endpoint: 'http://localhost:20128/v1/chat/completions',
-    model: 'gemini-3-flash-preview',
-    placeholder: 'Masukkan 9Router Token jika ada (atau kosongkan)',
-    help: 'Proxy lokal 9Router di port 20128.',
-    getLink: 'https://github.com',
+    model: 'thirtystore/claude-sonnet-4.6',
+    defaultKey: '',
+    placeholder: 'Masukkan 9Router API Key (atau kosongkan untuk pakai default server)...',
+    help: 'Proxy lokal 9Router (port 20128) terhubung langsung ke ThirtyStore.',
+    getLink: 'http://localhost:20128/dashboard',
     showEndpoint: true,
     showModel: true
   },
@@ -342,6 +359,14 @@ function setupEventListeners() {
   // Model change
   modelSelect.addEventListener('change', (e) => {
     state.model = e.target.value;
+    if (state.model.startsWith('thirtystore/') || state.model === 'ultra-1') {
+      if (state.provider !== '9router' && state.provider !== 'server_default') {
+        state.provider = '9router';
+        localStorage.setItem('omni_ai_provider', '9router');
+        if (providerSelect) providerSelect.value = '9router';
+        updateProviderUI('9router');
+      }
+    }
     activeModelBadge.textContent = getModelLabel(state.model);
     localStorage.setItem('omni_ai_model', state.model);
   });
@@ -747,7 +772,11 @@ function formatMarkdown(content) {
   if (!content) return '';
   if (window.marked) {
     try {
-      return marked.parse(content);
+      const rawHtml = marked.parse(content);
+      if (window.DOMPurify) {
+        return DOMPurify.sanitize(rawHtml);
+      }
+      return rawHtml;
     } catch (e) {
       return escapeHtml(content);
     }
@@ -1043,6 +1072,8 @@ async function handleSendMessage() {
 
       if (state.apiKey) {
         requestHeaders['Authorization'] = `Bearer ${state.apiKey}`;
+      } else if (state.provider === '9router') {
+        requestHeaders['Authorization'] = `Bearer ${providerConf.defaultKey || '__SERVER_DEFAULT__'}`;
       } else if (state.provider === 'server_default') {
         requestHeaders['Authorization'] = 'Bearer __SERVER_DEFAULT__';
       }

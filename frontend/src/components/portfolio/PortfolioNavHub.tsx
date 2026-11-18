@@ -17,6 +17,7 @@ import {
   ExternalLink,
   Layers,
   Sparkles,
+  Languages,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../../utils';
@@ -25,7 +26,6 @@ interface NavModule {
   title: string;
   desc: string;
   path: string;
-  badge: string;
   icon: React.ComponentType<{ className?: string }>;
 }
 
@@ -34,84 +34,78 @@ const navModules: NavModule[] = [
     title: 'Navigation Portal',
     desc: 'Indeks gerbang utama seluruh modul ekosistem web sabbilferdyansyah.my.id.',
     path: '/portal',
-    badge: 'PORTAL',
     icon: Compass,
   },
   {
     title: 'Featured Projects',
     desc: 'Koleksi lengkap seluruh proyek implementasi jaringan, CLI suite, dan arsitektur web.',
     path: '/projects',
-    badge: 'ARCHIVE',
     icon: FolderKanban,
   },
   {
     title: 'Certifications',
     desc: 'Daftar sertifikasi resmi Cisco Networking Academy, KOMDIGI, dan kurikulum Mimo.',
     path: '/certificates',
-    badge: 'CREDENTIAL',
     icon: Award,
   },
   {
     title: 'Technical Notes',
     desc: 'Panduan konfigurasi mendalam Linux, database MariaDB, dan web server dinamis.',
     path: '/notes',
-    badge: 'BLOG/WIKI',
     icon: BookOpen,
   },
   {
     title: 'DevKit CLI Studio',
     desc: 'Toolbox developer modular: CIDR subnetting, JWT inspector, dan kriptografi.',
     path: '/devkit',
-    badge: 'DEV TOOLS',
     icon: Wrench,
   },
   {
     title: 'CyberLab Workstation',
     desc: 'Platform investigasi keamanan siber, analisis kriptografi, dan modul CTF.',
     path: '/cyberlab',
-    badge: 'CTF LAB',
     icon: Shield,
   },
   {
     title: 'Omni AI Studio',
     desc: 'Chatbot asisten cerdas multimodal bertenaga model Gemma 4 & Flash 3.',
     path: '/ai',
-    badge: 'AI CORE',
     icon: Bot,
+  },
+  {
+    title: 'Transkrip & Terjemahan AI',
+    desc: 'Transkrip & terjemahan video YouTube, TikTok, IG, atau audio/video lokal.',
+    path: '/transkrip',
+    icon: Languages,
   },
   {
     title: 'Tools & Network Probe',
     desc: 'Pengujian konektivitas online (Ping, DNS), utilitas data, dan media downloader.',
     path: '/tools',
-    badge: 'DIAGNOSTICS',
     icon: Activity,
   },
   {
     title: 'System & Server Status',
     desc: 'Monitoring hardware server realtime (CPU, RAM, Disk) dan dotfiles Linux.',
     path: '/system',
-    badge: 'STATUS',
     icon: Server,
   },
   {
     title: 'Visual Gallery',
     desc: 'Dokumentasi visual konfigurasi rig workstation, diagram, dan media terpilih.',
     path: '/gallery',
-    badge: 'GALLERY',
     icon: Image,
   },
   {
     title: 'Guestbook',
     desc: 'Papan pesan publik untuk meninggalkan komentar dan apresiasi pengunjung.',
     path: '/guestbook',
-    badge: 'FEEDBACK',
     icon: MessageSquare,
   },
   {
     title: 'Changelog',
     desc: 'Riwayat pembaruan versi rilis fitur, optimasi performa, dan audit keamanan.',
     path: '/changelog',
-    badge: 'UPDATES',
     icon: GitBranch,
   },
 ];
@@ -156,12 +150,6 @@ export const PortfolioNavHub: React.FC = () => {
                   )}>
                     <Icon className="w-4 h-4" />
                   </div>
-                  <span className={cn(
-                    "text-[10px] font-mono px-2 py-0.5 rounded border",
-                    isActive ? "bg-violet-500/20 text-violet-300 border-violet-500/30 font-bold" : "bg-white/[0.02] text-slate-500 border-white/[0.04]"
-                  )}>
-                    {item.badge}
-                  </span>
                 </div>
 
                 <div>

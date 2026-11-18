@@ -2,7 +2,7 @@ import React, { useState, useRef, useLayoutEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Terminal, ExternalLink, X, BookOpen, Wrench, Shield, Cpu, HardDrive } from 'lucide-react';
+import { Terminal, ExternalLink, X, BookOpen, Wrench, Shield, Cpu, HardDrive, Languages } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -54,6 +54,7 @@ export const TycamiNavbar: React.FC = () => {
     { title: 'Technical Notes', desc: 'Sysadmin & Linux guides', path: '/notes', icon: BookOpen },
     { title: 'DevKit CLI Suite', desc: 'Sysadmin CLI & utilities', path: '/devkit', icon: Terminal },
     { title: 'CyberLab Arena', desc: 'Interactive security playground', path: '/cyberlab', icon: Shield },
+    { title: 'Transkrip AI Studio', desc: 'Video transcript & translator', path: '/transkrip', icon: Languages },
     { title: 'System Telemetry', desc: 'Live server metrics & status', path: '/system', icon: Cpu },
     { title: 'Unified Tools', desc: 'Networking & downloader suite', path: '/tools', icon: Wrench },
     { title: 'Cloud Vault Drive', desc: 'Personal encrypted storage', path: '/drive', icon: HardDrive },

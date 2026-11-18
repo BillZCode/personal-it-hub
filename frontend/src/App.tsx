@@ -6,6 +6,8 @@ import { StandaloneModuleLayout } from './layouts/StandaloneModuleLayout';
 import { AdminLayout } from './layouts/AdminLayout';
 import { AuthLayout } from './layouts/AuthLayout';
 import { PageLoading } from './components/feedback/LoadingStates';
+import { isPortfolioHost } from './utils/domain';
+import { SuspendedDomainScreen } from './components/common/SuspendedDomainScreen';
 
 // Tycami Tech Flagship Design System
 const TycamiLayout = React.lazy(() => import('./components/tycami/TycamiLayout').then(m => ({ default: m.TycamiLayout })));
@@ -41,6 +43,7 @@ const Contact = React.lazy(() => import('./pages/public/Contact').then(m => ({ d
 const Chatbot = React.lazy(() => import('./pages/public/Chatbot').then(m => ({ default: m.Chatbot })));
 const CyberLab = React.lazy(() => import('./pages/public/CyberLab').then(m => ({ default: m.CyberLab })));
 const DevKit = React.lazy(() => import('./pages/public/DevKit').then(m => ({ default: m.DevKit })));
+const Transkrip = React.lazy(() => import('./pages/public/Transkrip').then(m => ({ default: m.Transkrip })));
 const NotFound = React.lazy(() => import('./pages/public/NotFound').then(m => ({ default: m.NotFound })));
 
 
@@ -60,18 +63,74 @@ const AdminChangelog = React.lazy(() => import('./pages/admin/Changelog').then(m
 const AdminGuestbook = React.lazy(() => import('./pages/admin/Guestbook').then(m => ({ default: m.AdminGuestbook })));
 const AdminStatistics = React.lazy(() => import('./pages/admin/Statistics').then(m => ({ default: m.AdminStatistics })));
 const AdminAgent = React.lazy(() => import('./pages/admin/Agent').then(m => ({ default: m.AdminAgent })));
+const AdminHostingPanel = React.lazy(() => import('./pages/admin/HostingPanel').then(m => ({ default: m.AdminHostingPanel })));
 
 function LoadingFallback() {
   return <PageLoading />;
 }
 
 function App() {
+  const isPortfolio = isPortfolioHost();
+
+  const [domainStatus, setDomainStatus] = React.useState<{
+    isSuspended: boolean;
+    domain?: string;
+    checkedDomain?: string;
+    vhostId?: string;
+  } | null>(null);
+
+  React.useEffect(() => {
+    let mounted = true;
+    const checkDomain = async () => {
+      try {
+        const host = window.location.hostname;
+        const res = await fetch(`/api/vhost-status?hostname=${encodeURIComponent(host)}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (mounted) {
+            setDomainStatus(json);
+          }
+        }
+      } catch {
+        // ignore
+      }
+    };
+    checkDomain();
+    const interval = setInterval(checkDomain, 3000);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  const isAuthOrAdmin =
+    typeof window !== 'undefined' &&
+    (window.location.pathname.startsWith('/admin') ||
+      window.location.pathname === '/login' ||
+      window.location.pathname.startsWith('/drive/login'));
+
+  if (domainStatus?.isSuspended && !isAuthOrAdmin) {
+    return (
+      <SuspendedDomainScreen
+        domainInfo={domainStatus}
+        onUnsuspended={() => setDomainStatus({ isSuspended: false })}
+      />
+    );
+  }
+
   return (
     <ErrorBoundary>
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
-          {/* 1. Primary Entrypoint: Standalone Landing Portal */}
-          <Route path="/" element={<NavigationPortal />} />
+          {/* 1. Domain-Aware Primary Entrypoint:
+              - On Portfolio Domain (sabbilferdyans.cyou): root '/' directly loads Flagship Portfolio
+              - On Portal Domain (sabbilferdyansyah.my.id): root '/' loads Navigation Portal */}
+          <Route
+            path="/"
+            element={isPortfolio ? <TycamiLayout /> : <NavigationPortal />}
+          >
+            {isPortfolio && <Route index element={<TycamiHome />} />}
+          </Route>
           <Route path="/portal" element={<NavigationPortal />} />
 
           {/* 2. Flagship Tycami Tech Dashboard & Portfolio Experience */}
@@ -111,6 +170,7 @@ function App() {
             <Route path="chatbot" element={<Chatbot />} />
             <Route path="cyberlab" element={<CyberLab />} />
             <Route path="devkit" element={<DevKit />} />
+            <Route path="transkrip" element={<Transkrip />} />
             <Route path="*" element={<NotFound />} />
           </Route>
 
@@ -127,6 +187,7 @@ function App() {
           </Route>
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
+            <Route path="hosting" element={<AdminHostingPanel />} />
             <Route path="agent" element={<AdminAgent />} />
             <Route path="projects" element={<AdminProjects />} />
             <Route path="notes" element={<AdminNotes />} />

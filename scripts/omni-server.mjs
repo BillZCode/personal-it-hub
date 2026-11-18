@@ -9,22 +9,23 @@ const OMNI_DIR = path.resolve(__dirname, '../omni-ai');
 const ROOT_DIR = path.resolve(__dirname, '..');
 const PORT = 3002;
 
-// Load server environment API key if present in .env
-function getServerApiKey() {
-  if (process.env.GEMINI_API_KEY) return process.env.GEMINI_API_KEY.trim();
-  if (process.env.GOOGLE_AI_KEY) return process.env.GOOGLE_AI_KEY.trim();
-  if (process.env.OMNI_AI_KEY) return process.env.OMNI_AI_KEY.trim();
+// Load server environment variable if present in process.env or .env
+function getEnvSetting(keys) {
+  for (const key of keys) {
+    if (process.env[key]) return process.env[key].trim();
+  }
 
-  // Try reading from .env file
   const envPath = path.join(ROOT_DIR, '.env');
   if (fs.existsSync(envPath)) {
     try {
       const content = fs.readFileSync(envPath, 'utf8');
       const lines = content.split('\n');
       for (const line of lines) {
-        const match = line.match(/^\s*(?:GEMINI_API_KEY|GOOGLE_AI_KEY|OMNI_AI_KEY)\s*=\s*["']?([^"'\r\n]+)["']?/);
-        if (match && match[1]) {
-          return match[1].trim();
+        for (const key of keys) {
+          const match = line.match(new RegExp(`^\\s*${key}\\s*=\\s*["']?([^"'\\r\\n]+)["']?`));
+          if (match && match[1]) {
+            return match[1].trim();
+          }
         }
       }
     } catch {
@@ -32,6 +33,10 @@ function getServerApiKey() {
     }
   }
   return '';
+}
+
+function getServerApiKey() {
+  return getEnvSetting(['GEMINI_API_KEY', 'GOOGLE_AI_KEY', 'OMNI_AI_KEY']);
 }
 
 const MIME_TYPES = {
@@ -99,16 +104,67 @@ const server = http.createServer(async (req, res) => {
       try {
         const payload = JSON.parse(bodyData || '{}');
         const customAuth = req.headers['authorization'] || '';
-        let apiKey = '';
+        const providedKey = customAuth.startsWith('Bearer ') ? customAuth.slice(7).trim() : '';
+        const isServerDefault = !providedKey || providedKey === '__SERVER_DEFAULT__' || providedKey === 'server_default';
+        const requestedModel = payload.model || 'gemini-flash-latest';
 
-        if (customAuth.startsWith('Bearer ')) {
-          apiKey = customAuth.slice(7).trim();
+        // Direct forward to 9Router when requesting ThirtyStore, Kiro, OpenRouter, or combo models
+        if (
+          requestedModel.startsWith('thirtystore/') ||
+          requestedModel.startsWith('kr/') ||
+          requestedModel.startsWith('openrouter/') ||
+          requestedModel.startsWith('oc/') ||
+          requestedModel.startsWith('ag/') ||
+          requestedModel === 'ultra-1' ||
+          requestedModel === 'gpt-6-astra' ||
+          requestedModel === 'gpt6-astra' ||
+          requestedModel === 'agy' ||
+          requestedModel === 'skensa-failover'
+        ) {
+          const routerBase = getEnvSetting(['NINE_ROUTER_URL']) || 'http://localhost:20128';
+          const routerUrl = `${routerBase.replace(/\/+$/, '')}/v1/chat/completions`;
+          const routerApiKey = !isServerDefault ? providedKey : getEnvSetting(['NINE_ROUTER_KEY']);
+          if (!routerApiKey) {
+            res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify({
+              error: {
+                message: 'NINE_ROUTER_KEY belum dikonfigurasi di server environment atau menu Pengaturan Model.'
+              }
+            }));
+            return;
+          }
+          try {
+            const routerRes = await fetch(routerUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${routerApiKey}`
+              },
+              body: bodyData
+            });
+
+            res.writeHead(routerRes.status, {
+              'Content-Type': routerRes.headers.get('content-type') || (payload.stream ? 'text/event-stream; charset=utf-8' : 'application/json; charset=utf-8'),
+              'Cache-Control': 'no-cache',
+              'Connection': 'keep-alive'
+            });
+
+            if (routerRes.body) {
+              const { Readable } = await import('node:stream');
+              Readable.fromWeb(routerRes.body).pipe(res);
+            } else {
+              res.end();
+            }
+            return;
+          } catch (routerErr) {
+            console.error('Error proxying to 9router:', routerErr);
+            res.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify({ error: { message: `Gagal terhubung ke 9router (port 20128): ${routerErr.message}` } }));
+            return;
+          }
         }
 
-        // If client sends placeholder or empty key, fallback to server default key
-        if (!apiKey || apiKey === '__SERVER_DEFAULT__' || apiKey === 'server_default') {
-          apiKey = getServerApiKey();
-        }
+        const apiKey = isServerDefault ? getServerApiKey() : providedKey;
 
         if (!apiKey) {
           res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
@@ -120,7 +176,6 @@ const server = http.createServer(async (req, res) => {
           return;
         }
 
-        const requestedModel = payload.model || 'gemini-flash-latest';
         const messages = payload.messages || [];
 
         // Convert standard OpenAI-format messages to Gemini contents format
@@ -178,14 +233,21 @@ const server = http.createServer(async (req, res) => {
           };
         }
 
+        function resolveModelName(raw) {
+          if (raw === 'antigravity-agent') return 'gemini-3.1-pro-preview';
+          return raw;
+        }
+
         const candidateModels = [
-          requestedModel,
+          resolveModelName(requestedModel),
           'gemini-flash-latest',
           'gemini-flash-lite-latest',
           'gemini-3-flash-preview',
           'gemini-robotics-er-2-preview',
-          'gemma-4-26b-a4b-it'
-        ].filter((v, i, a) => a.indexOf(v) === i);
+          'gemma-4-26b-a4b-it',
+          'gemini-2.5-flash',
+          'gemini-2.5-pro'
+        ].filter((v, i, a) => Boolean(v) && a.indexOf(v) === i);
 
         let lastErrorMessage = '';
 

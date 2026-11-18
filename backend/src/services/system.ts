@@ -20,7 +20,7 @@ export async function getServerMetrics() {
     d.mount === '/media/sabbil/DebianServ' || 
     d.fs === '/dev/sda8' || 
     d.mount.toLowerCase().includes('debianserv')
-  ) || disk[0];
+  ) || disk.find(d => d.mount === "C:" || d.mount === "C:\\" || d.mount === "/") || disk[0];
 
   const diskUsage = debianServDisk && debianServDisk.size > 0 
     ? Math.round((debianServDisk.used / debianServDisk.size) * 1000) / 10 

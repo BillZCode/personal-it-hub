@@ -264,3 +264,6 @@ export function getStatusBg(status: string): string {
   };
   return colors[status] || 'bg-dark-700 border-dark-600';
 }
+
+export * from './domain';
+
